@@ -188,7 +188,8 @@ public class StandingInstructionDataValidator {
                     baseDataValidator.reset().parameter(AccountDetailConstants.transferTypeParamName).failWithCode(errorCode);
                 }
 
-                if (accountTransferType.isAccountTransfer() && fromPortfolioAccountType.isSavingsAccount() && toPortfolioAccountType.isSavingsAccount()) {
+                if (accountTransferType.isAccountTransfer() && PortfolioAccountType.SAVINGS.equals(fromPortfolioAccountType) 
+                        && PortfolioAccountType.SAVINGS.equals(toPortfolioAccountType)) {
                     
                     final Long fromAccountId = this.fromApiJsonHelper.extractLongNamed(AccountDetailConstants.fromAccountIdParamName, element);
                     final Long toAccountId = this.fromApiJsonHelper.extractLongNamed(AccountDetailConstants.toAccountIdParamName, element);
