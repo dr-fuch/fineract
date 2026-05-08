@@ -314,4 +314,13 @@ public final class StandingInstructionData {
         }
         return transferType;
     }
+
+    public Collection<EnumOptionData> getRecurrenceFrequencyOptions() {
+        if (this.recurrenceFrequencyOptions == null) {
+            return null;
+        }
+        return this.recurrenceFrequencyOptions.stream()
+                .filter(option -> option.getId() != null && option.getId() > 0)
+                .toList();
+    }
 }
