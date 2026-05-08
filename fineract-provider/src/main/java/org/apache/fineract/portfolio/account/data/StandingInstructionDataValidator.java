@@ -170,20 +170,38 @@ public class StandingInstructionDataValidator {
         }
 
         String errorCode = null;
-        AccountTransferType accountTransferType = AccountTransferType.fromInt(transferType);
-        final Integer fromAccountType = this.fromApiJsonHelper.extractIntegerSansLocaleNamed(AccountDetailConstants.fromAccountTypeParamName, element);
-        if (fromAccountType != null && toAccountType != null) {
-            PortfolioAccountType fromPortfolioAccountType = PortfolioAccountType.fromInt(fromAccountType);
-            PortfolioAccountType toPortfolioAccountType = PortfolioAccountType.fromInt(toAccountType);
-            if (accountTransferType.isAccountTransfer() && (PortfolioAccountType.LOAN.equals(fromPortfolioAccountType)
-                    || PortfolioAccountType.LOAN.equals(toPortfolioAccountType))) {
-                errorCode = "not.account.transfer";
-            } else if (accountTransferType.isLoanRepayment() && (PortfolioAccountType.LOAN.equals(fromPortfolioAccountType)
-                    || PortfolioAccountType.SAVINGS.equals(toPortfolioAccountType))) {
-                errorCode = "not.loan.repayment";
-            }
-            if (errorCode != null) {
-                baseDataValidator.reset().parameter(AccountDetailConstants.transferTypeParamName).failWithCode(errorCode);
+        if (transferType != null) {
+            AccountTransferType accountTransferType = AccountTransferType.fromInt(transferType);
+            final Integer fromAccountType = this.fromApiJsonHelper.extractIntegerSansLocaleNamed(AccountDetailConstants.fromAccountTypeParamName, element);
+            if (fromAccountType != null && toAccountType != null) {
+                PortfolioAccountType fromPortfolioAccountType = PortfolioAccountType.fromInt(fromAccountType);
+                PortfolioAccountType toPortfolioAccountType = PortfolioAccountType.fromInt(toAccountType);
+                if (accountTransferType.isAccountTransfer() && (PortfolioAccountType.LOAN.equals(fromPortfolioAccountType)
+                        || PortfolioAccountType.LOAN.equals(toPortfolioAccountType))) {
+                    errorCode = "not.account.transfer";
+                } else if (accountTransferType.isLoanRepayment() && (PortfolioAccountType.LOAN.equals(fromPortfolioAccountType)
+                        || PortfolioAccountType.SAVINGS.equals(toPortfolioAccountType))) {
+                    errorCode = "not.loan.repayment";
+                }
+
+                if (errorCode != null) {
+                    baseDataValidator.reset().parameter(AccountDetailConstants.transferTypeParamName).failWithCode(errorCode);
+                }
+
+                if (accountTransferType.isAccountTransfer() && fromPortfolioAccountType.isSavingsAccount() && toPortfolioAccountType.isSavingsAccount()) {
+                    
+                    final Long fromAccountId = this.fromApiJsonHelper.extractLongNamed(AccountDetailConstants.fromAccountIdParamName, element);
+                    final Long toAccountId = this.fromApiJsonHelper.extractLongNamed(AccountDetailConstants.toAccountIdParamName, element);
+                    final Long fromOfficeId = this.fromApiJsonHelper.extractLongNamed(AccountDetailConstants.fromOfficeIdParamName, element);
+                    final Long toOfficeId = this.fromApiJsonHelper.extractLongNamed(AccountDetailConstants.toOfficeIdParamName, element);
+
+                    if (fromAccountId != null && toAccountId != null && fromAccountId.equals(toAccountId)
+                            && fromOfficeId != null && toOfficeId != null && fromOfficeId.equals(toOfficeId)) {
+                        
+                        baseDataValidator.reset().parameter(AccountDetailConstants.toAccountIdParamName)
+                            .failWithCode("transfer.to.same.account.not.allowed");
+                    }
+                }
             }
         }
 
