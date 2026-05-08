@@ -18,10 +18,6 @@
  */
 package org.apache.fineract.portfolio.account.data;
 
-import static org.apache.fineract.portfolio.account.AccountDetailConstants.fromAccountTypeParamName;
-import static org.apache.fineract.portfolio.account.AccountDetailConstants.toAccountTypeParamName;
-import static org.apache.fineract.portfolio.account.AccountDetailConstants.transferTypeParamName;
-
 import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
@@ -102,89 +98,80 @@ public class StandingInstructionDataValidator {
 
         final JsonElement element = command.parsedJson();
 
-        final Integer status = this.fromApiJsonHelper.extractIntegerNamed(StandingInstructionApiConstants.statusParamName, element,
-                Locale.getDefault());
+        final Integer transferType = this.fromApiJsonHelper.extractIntegerNamed(AccountDetailConstants.transferTypeParamName, element, Locale.getDefault());
+        baseDataValidator.reset().parameter(AccountDetailConstants.transferTypeParamName).value(transferType).notNull().inMinMaxRange(1, 3);
+
+        final String name = this.fromApiJsonHelper.extractStringNamed(StandingInstructionApiConstants.nameParamName, element);
+        baseDataValidator.reset().parameter(StandingInstructionApiConstants.nameParamName).value(name).notBlank();
+
+        final Integer priority = this.fromApiJsonHelper.extractIntegerNamed(StandingInstructionApiConstants.priorityParamName, element, Locale.getDefault());
+        baseDataValidator.reset().parameter(StandingInstructionApiConstants.priorityParamName).value(priority).notNull().inMinMaxRange(1, 4);
+        
+        final Integer instructionType = this.fromApiJsonHelper.extractIntegerNamed(StandingInstructionApiConstants.instructionTypeParamName, element, Locale.getDefault());
+        baseDataValidator.reset().parameter(StandingInstructionApiConstants.instructionTypeParamName).value(instructionType).notNull().inMinMaxRange(1, 2);
+        
+        boolean isFixedInstructionType = instructionType != null && StandingInstructionType.fromInt(instructionType).isFixedAmoutTransfer();
+
+        final Integer status = this.fromApiJsonHelper.extractIntegerNamed(StandingInstructionApiConstants.statusParamName, element, Locale.getDefault());
         baseDataValidator.reset().parameter(StandingInstructionApiConstants.statusParamName).value(status).notNull().inMinMaxRange(1, 2);
 
-        final LocalDate validFrom = this.fromApiJsonHelper.extractLocalDateNamed(StandingInstructionApiConstants.validFromParamName,
-                element);
+        final LocalDate validFrom = this.fromApiJsonHelper.extractLocalDateNamed(StandingInstructionApiConstants.validFromParamName, element);
         baseDataValidator.reset().parameter(StandingInstructionApiConstants.validFromParamName).value(validFrom).notNull();
 
-        final LocalDate validTill = this.fromApiJsonHelper.extractLocalDateNamed(StandingInstructionApiConstants.validTillParamName,
-                element);
-        baseDataValidator.reset().parameter(StandingInstructionApiConstants.validTillParamName).value(validTill)
-                .validateDateAfter(validFrom);
+        final LocalDate validTill = this.fromApiJsonHelper.extractLocalDateNamed(StandingInstructionApiConstants.validTillParamName, element);
+        baseDataValidator.reset().parameter(StandingInstructionApiConstants.validTillParamName).value(validTill).validateDateAfter(validFrom);
 
-        final BigDecimal transferAmount = this.fromApiJsonHelper
-                .extractBigDecimalWithLocaleNamed(StandingInstructionApiConstants.amountParamName, element);
-        baseDataValidator.reset().parameter(StandingInstructionApiConstants.amountParamName).value(transferAmount).positiveAmount();
+        Integer recurrenceType = this.fromApiJsonHelper.extractIntegerNamed(StandingInstructionApiConstants.recurrenceTypeParamName, element, Locale.getDefault());
+        baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceTypeParamName).value(recurrenceType).notNull().inMinMaxRange(1, 2);
 
-        final Integer transferType = this.fromApiJsonHelper.extractIntegerNamed(transferTypeParamName, element, Locale.getDefault());
-        baseDataValidator.reset().parameter(transferTypeParamName).value(transferType).notNull().inMinMaxRange(1, 3);
-
-        final Integer priority = this.fromApiJsonHelper.extractIntegerNamed(StandingInstructionApiConstants.priorityParamName, element,
-                Locale.getDefault());
-        baseDataValidator.reset().parameter(StandingInstructionApiConstants.priorityParamName).value(priority).notNull().inMinMaxRange(1,
-                4);
-
-        final Integer standingInstructionType = this.fromApiJsonHelper
-                .extractIntegerNamed(StandingInstructionApiConstants.instructionTypeParamName, element, Locale.getDefault());
-        baseDataValidator.reset().parameter(StandingInstructionApiConstants.instructionTypeParamName).value(standingInstructionType)
-                .notNull().inMinMaxRange(1, 2);
-
-        final Integer recurrenceType = this.fromApiJsonHelper.extractIntegerNamed(StandingInstructionApiConstants.recurrenceTypeParamName,
-                element, Locale.getDefault());
-        baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceTypeParamName).value(recurrenceType).notNull()
-                .inMinMaxRange(1, 2);
-        boolean isPeriodic = false;
-        if (recurrenceType != null) {
-            isPeriodic = AccountTransferRecurrenceType.fromInt(recurrenceType).isPeriodicRecurrence();
-        }
-
-        final Integer recurrenceFrequency = this.fromApiJsonHelper
-                .extractIntegerNamed(StandingInstructionApiConstants.recurrenceFrequencyParamName, element, Locale.getDefault());
-        baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceFrequencyParamName).value(recurrenceFrequency)
-                .inMinMaxRange(0, 3);
-
-        if (recurrenceFrequency != null) {
-            PeriodFrequencyType frequencyType = PeriodFrequencyType.fromInt(recurrenceFrequency);
-            if (frequencyType.isMonthly() || frequencyType.isYearly()) {
-                final MonthDay monthDay = this.fromApiJsonHelper
-                        .extractMonthDayNamed(StandingInstructionApiConstants.recurrenceOnMonthDayParamName, element);
-                baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceOnMonthDayParamName).value(monthDay)
-                        .notNull();
+        final BigDecimal amount = this.fromApiJsonHelper.extractBigDecimalWithLocaleNamed(StandingInstructionApiConstants.amountParamName, element);
+        if (isFixedInstructionType) {
+            baseDataValidator.reset().parameter(StandingInstructionApiConstants.amountParamName).value(amount).notNull().positiveAmount();
+        } else {
+            if (amount != null) {
+                baseDataValidator.reset().parameter(StandingInstructionApiConstants.amountParamName).failWithCode("amount.not.allowed.for.dues.instruction");
             }
         }
 
-        final Integer recurrenceInterval = this.fromApiJsonHelper
-                .extractIntegerNamed(StandingInstructionApiConstants.recurrenceIntervalParamName, element, Locale.getDefault());
-        if (isPeriodic) {
-            baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceIntervalParamName).value(recurrenceInterval)
-                    .notNull();
-            baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceFrequencyParamName).value(recurrenceFrequency)
-                    .notNull();
+        final Integer recurrenceFrequency = this.fromApiJsonHelper.extractIntegerNamed(StandingInstructionApiConstants.recurrenceFrequencyParamName, element, Locale.getDefault());
+        final Integer recurrenceInterval = this.fromApiJsonHelper.extractIntegerNamed(StandingInstructionApiConstants.recurrenceIntervalParamName, element, Locale.getDefault());
+
+        boolean isPeriodicRecurrenceType = recurrenceType != null && AccountTransferRecurrenceType.fromInt(recurrenceType).isPeriodicRecurrence();
+        if (isPeriodicRecurrenceType) {
+            baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceFrequencyParamName).value(recurrenceFrequency).notNull();
+            baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceIntervalParamName).value(recurrenceInterval).notNull();
+
+            if (recurrenceFrequency != null) {
+                baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceFrequencyParamName).value(recurrenceFrequency).inMinMaxRange(0, 3);
+
+                PeriodFrequencyType recurrenceFrequencyType = PeriodFrequencyType.fromInt(recurrenceFrequency);
+                if (recurrenceFrequencyType.isMonthly() || recurrenceFrequencyType.isYearly()) {
+                    final String monthDayFormat = this.fromApiJsonHelper.extractStringNamed(StandingInstructionApiConstants.monthDayFormatParamName, element);
+                    baseDataValidator.reset().parameter(StandingInstructionApiConstants.monthDayFormatParamName).value(monthDayFormat).notBlank();
+                    
+                    final MonthDay monthDay = this.fromApiJsonHelper.extractMonthDayNamed(StandingInstructionApiConstants.recurrenceOnMonthDayParamName, element);
+                    baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceOnMonthDayParamName).value(monthDay).notNull();
+                }
+            }
+            if (recurrenceInterval != null) {
+                baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceIntervalParamName).value(recurrenceInterval).integerGreaterThanZero();
+            }
+        } else {
+            if (isFixedInstructionType) {
+                baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceTypeParamName)
+                    .failWithCode("recurrence.type.as.per.dues.not.allowed.with.fixed.amount");
+            }
         }
-        baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceIntervalParamName).value(recurrenceInterval)
-                .integerGreaterThanZero();
 
-        final String name = this.fromApiJsonHelper.extractStringNamed(StandingInstructionApiConstants.nameParamName, element);
-        baseDataValidator.reset().parameter(StandingInstructionApiConstants.nameParamName).value(name).notNull();
-
-        final Integer toAccountType = this.fromApiJsonHelper.extractIntegerSansLocaleNamed(toAccountTypeParamName, element);
+        final Integer toAccountType = this.fromApiJsonHelper.extractIntegerSansLocaleNamed(AccountDetailConstants.toAccountTypeParamName, element);
         if (toAccountType != null && PortfolioAccountType.SAVINGS.equals(PortfolioAccountType.fromInt(toAccountType))) {
-            baseDataValidator.reset().parameter(StandingInstructionApiConstants.instructionTypeParamName).value(standingInstructionType)
-                    .notNull().inMinMaxRange(1, 1);
-            baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceTypeParamName).value(recurrenceType).notNull()
-                    .inMinMaxRange(1, 1);
-
-        }
-        if (standingInstructionType != null && StandingInstructionType.fromInt(standingInstructionType).isFixedAmoutTransfer()) {
-            baseDataValidator.reset().parameter(StandingInstructionApiConstants.amountParamName).value(transferAmount).notNull();
+            baseDataValidator.reset().parameter(StandingInstructionApiConstants.instructionTypeParamName).value(instructionType).notNull().inMinMaxRange(1, 1);
+            baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceTypeParamName).value(recurrenceType).notNull().inMinMaxRange(1, 1);
         }
 
         String errorCode = null;
         AccountTransferType accountTransferType = AccountTransferType.fromInt(transferType);
-        final Integer fromAccountType = this.fromApiJsonHelper.extractIntegerSansLocaleNamed(fromAccountTypeParamName, element);
+        final Integer fromAccountType = this.fromApiJsonHelper.extractIntegerSansLocaleNamed(AccountDetailConstants.fromAccountTypeParamName, element);
         if (fromAccountType != null && toAccountType != null) {
             PortfolioAccountType fromPortfolioAccountType = PortfolioAccountType.fromInt(fromAccountType);
             PortfolioAccountType toPortfolioAccountType = PortfolioAccountType.fromInt(toAccountType);
@@ -196,7 +183,7 @@ public class StandingInstructionDataValidator {
                 errorCode = "not.loan.repayment";
             }
             if (errorCode != null) {
-                baseDataValidator.reset().parameter(transferTypeParamName).failWithCode(errorCode);
+                baseDataValidator.reset().parameter(AccountDetailConstants.transferTypeParamName).failWithCode(errorCode);
             }
         }
 
@@ -219,8 +206,7 @@ public class StandingInstructionDataValidator {
 
         final JsonElement element = command.parsedJson();
         if (this.fromApiJsonHelper.parameterExists(StandingInstructionApiConstants.validFromParamName, element)) {
-            final LocalDate validFrom = this.fromApiJsonHelper.extractLocalDateNamed(StandingInstructionApiConstants.validFromParamName,
-                    element);
+            final LocalDate validFrom = this.fromApiJsonHelper.extractLocalDateNamed(StandingInstructionApiConstants.validFromParamName,element);
             baseDataValidator.reset().parameter(StandingInstructionApiConstants.validFromParamName).value(validFrom).notNull();
         }
 
@@ -231,9 +217,9 @@ public class StandingInstructionDataValidator {
         }
 
         if (this.fromApiJsonHelper.parameterExists(StandingInstructionApiConstants.amountParamName, element)) {
-            final BigDecimal transferAmount = this.fromApiJsonHelper
+            final BigDecimal amount = this.fromApiJsonHelper
                     .extractBigDecimalWithLocaleNamed(StandingInstructionApiConstants.amountParamName, element);
-            baseDataValidator.reset().parameter(StandingInstructionApiConstants.amountParamName).value(transferAmount).positiveAmount();
+            baseDataValidator.reset().parameter(StandingInstructionApiConstants.amountParamName).value(amount).positiveAmount();
         }
 
         if (this.fromApiJsonHelper.parameterExists(StandingInstructionApiConstants.statusParamName, element)) {
@@ -251,9 +237,9 @@ public class StandingInstructionDataValidator {
         }
 
         if (this.fromApiJsonHelper.parameterExists(StandingInstructionApiConstants.instructionTypeParamName, element)) {
-            final Integer standingInstructionType = this.fromApiJsonHelper
+            final Integer instructionType = this.fromApiJsonHelper
                     .extractIntegerNamed(StandingInstructionApiConstants.instructionTypeParamName, element, Locale.getDefault());
-            baseDataValidator.reset().parameter(StandingInstructionApiConstants.instructionTypeParamName).value(standingInstructionType)
+            baseDataValidator.reset().parameter(StandingInstructionApiConstants.instructionTypeParamName).value(instructionType)
                     .notNull().inMinMaxRange(1, 2);
         }
 
