@@ -320,7 +320,7 @@ public final class StandingInstructionData {
             return null;
         }
         return this.recurrenceFrequencyOptions.stream()
-                .filter(option -> option.getId() != null && option.getId() > 0)
-                .toList();
+                    .filter(option -> option.getId() != null && option.getId() > 0)
+                    .collect(java.util.stream.Collectors.toList());
     }
 }
