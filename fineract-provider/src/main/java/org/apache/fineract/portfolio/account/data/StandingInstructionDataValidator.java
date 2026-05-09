@@ -88,6 +88,7 @@ public class StandingInstructionDataValidator {
             throw new InvalidJsonException();
         }
 
+        final JsonElement element = command.parsedJson();
         this.fromApiJsonHelper.checkForUnsupportedParameters(element.getAsJsonObject(), CREATE_REQUEST_DATA_PARAMETERS);
 
         final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
@@ -95,7 +96,6 @@ public class StandingInstructionDataValidator {
                 .resource(StandingInstructionApiConstants.STANDING_INSTRUCTION_RESOURCE_NAME);
         this.accountTransfersDetailDataValidator.validate(command, baseDataValidator);
 
-        final JsonElement element = command.parsedJson();
 
         final Integer transferType = this.fromApiJsonHelper.extractIntegerNamed(AccountDetailConstants.transferTypeParamName, element, Locale.getDefault());
         baseDataValidator.reset().parameter(AccountDetailConstants.transferTypeParamName).value(transferType).notNull().inMinMaxRange(1, 3);
