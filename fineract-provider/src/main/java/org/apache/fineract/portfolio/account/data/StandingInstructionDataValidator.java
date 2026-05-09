@@ -83,7 +83,6 @@ public class StandingInstructionDataValidator {
 
     public void validateForCreate(final JsonCommand command) {
         final String json = command.json();
-        System.out.println("JSON CRUDO: " + json);
 
         if (StringUtils.isBlank(json)) {
             throw new InvalidJsonException();
@@ -175,7 +174,7 @@ public class StandingInstructionDataValidator {
 
                 if (minValidTill != null && validTill.isBefore(minValidTill)) {
                     baseDataValidator.reset().parameter(StandingInstructionApiConstants.validTillParamName)
-                        .value(validTill).failWithCode("must.be.after.first.execution.date");
+                        .value(validTill).failWithCode("must.not.be.before.first.execution.date");
                 }
             }
         } else {
