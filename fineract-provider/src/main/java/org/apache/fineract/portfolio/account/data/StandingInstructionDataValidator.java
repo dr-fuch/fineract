@@ -179,7 +179,7 @@ public class StandingInstructionDataValidator {
                     }
                 }
 
-                if (minValidTill != null && validTill.isBefore(minValidTill)) {
+                if (minValidTill != null && !validTill.isBefore(validFrom) && validTill.isBefore(minValidTill)) {
                     baseDataValidator.reset().parameter(StandingInstructionApiConstants.validTillParamName)
                         .value(validTill).failWithCode("must.not.be.before.first.execution.date");
                 }
