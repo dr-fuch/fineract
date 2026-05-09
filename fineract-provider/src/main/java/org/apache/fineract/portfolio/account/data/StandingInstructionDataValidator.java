@@ -138,6 +138,9 @@ public class StandingInstructionDataValidator {
 
         boolean isPeriodicRecurrenceType = recurrenceType != null && AccountTransferRecurrenceType.fromInt(recurrenceType).isPeriodicRecurrence();
         if (isPeriodicRecurrenceType) {
+            baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceFrequencyParamName).value(recurrenceFrequency).notNull();
+            baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceIntervalParamName).value(recurrenceInterval).notNull();
+            
             MonthDay monthDay = null;
 
             if (recurrenceFrequency != null) {
