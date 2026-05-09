@@ -153,8 +153,29 @@ public class StandingInstructionDataValidator {
                     baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceOnMonthDayParamName).value(monthDay).notNull();
                 }
             }
+
             if (recurrenceInterval != null) {
                 baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceIntervalParamName).value(recurrenceInterval).integerGreaterThanZero();
+            }
+
+            if (validFrom != null && validTill != null && recurrenceFrequency != null && recurrenceInterval != null) {
+                LocalDate minValidTill = null;
+                PeriodFrequencyType frequencyType = PeriodFrequencyType.fromInt(recurrenceFrequency);
+
+                if (frequencyType.isDays()) {
+                    minValidTill = validFrom.plusDays(recurrenceInterval);
+                } else if (frequencyType.isWeeks()) {
+                    minValidTill = validFrom.plusWeeks(recurrenceInterval);
+                } else if (frequencyType.isMonthly()) {
+                    minValidTill = validFrom.plusMonths(recurrenceInterval);
+                } else if (frequencyType.isYearly()) {
+                    minValidTill = validFrom.plusYears(recurrenceInterval);
+                }
+
+                if (minValidTill != null && validTill.isBefore(minValidTill)) {
+                    baseDataValidator.reset().parameter(StandingInstructionApiConstants.validTillParamName)
+                        .value(validTill).failWithCode("must.be.after.first.execution.date");
+                }
             }
         } else {
             if (isFixedInstructionType) {
