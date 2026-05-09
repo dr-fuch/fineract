@@ -89,6 +89,7 @@ public class StandingInstructionDataValidator {
         }
 
         final JsonElement element = command.parsedJson();
+        System.out.println("JSON RECIBIDO EN VALIDADOR: " + element.toString());
         this.fromApiJsonHelper.checkForUnsupportedParameters(element.getAsJsonObject(), CREATE_REQUEST_DATA_PARAMETERS);
 
         final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
