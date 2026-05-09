@@ -83,15 +83,16 @@ public class StandingInstructionDataValidator {
 
     public void validateForCreate(final JsonCommand command) {
         final String json = command.json();
+        System.out.println("JSON CRUDO: " + json);
 
         if (StringUtils.isBlank(json)) {
             throw new InvalidJsonException();
         }
 
-        final JsonElement element = command.parsedJson();
-        System.out.println("JSON RECIBIDO EN VALIDADOR: " + element.toString());
-        this.fromApiJsonHelper.checkForUnsupportedParameters(element.getAsJsonObject(), CREATE_REQUEST_DATA_PARAMETERS);
+        final Type typeOfMap = new TypeToken<Map<String, Object>>() {}.getType();
+        this.fromApiJsonHelper.checkForUnsupportedParameters(typeOfMap, json, CREATE_REQUEST_DATA_PARAMETERS);
 
+        final JsonElement element = command.parsedJson();
         final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
         final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
                 .resource(StandingInstructionApiConstants.STANDING_INSTRUCTION_RESOURCE_NAME);
