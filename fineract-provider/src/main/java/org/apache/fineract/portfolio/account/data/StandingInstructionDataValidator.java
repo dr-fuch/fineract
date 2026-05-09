@@ -138,24 +138,27 @@ public class StandingInstructionDataValidator {
 
         boolean isPeriodicRecurrenceType = recurrenceType != null && AccountTransferRecurrenceType.fromInt(recurrenceType).isPeriodicRecurrence();
         if (isPeriodicRecurrenceType) {
-            baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceFrequencyParamName).value(recurrenceFrequency).notNull();
-            baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceIntervalParamName).value(recurrenceInterval).notNull();
+            MonthDay monthDay = null;
 
             if (recurrenceFrequency != null) {
                 baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceFrequencyParamName).value(recurrenceFrequency).inMinMaxRange(0, 3);
 
-                PeriodFrequencyType recurrenceFrequencyType = PeriodFrequencyType.fromInt(recurrenceFrequency);
-                if (recurrenceFrequencyType.isMonthly() || recurrenceFrequencyType.isYearly()) {
+                PeriodFrequencyType frequencyType = PeriodFrequencyType.fromInt(recurrenceFrequency);
+                if (frequencyType.isMonthly() || frequencyType.isYearly()) {
                     final String monthDayFormat = this.fromApiJsonHelper.extractStringNamed(StandingInstructionApiConstants.monthDayFormatParamName, element);
                     baseDataValidator.reset().parameter(StandingInstructionApiConstants.monthDayFormatParamName).value(monthDayFormat).notBlank();
-                    
-                    final MonthDay monthDay = this.fromApiJsonHelper.extractMonthDayNamed(StandingInstructionApiConstants.recurrenceOnMonthDayParamName, element);
-                    baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceOnMonthDayParamName).value(monthDay).notNull();
-                }
-            }
 
-            if (recurrenceInterval != null) {
-                baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceIntervalParamName).value(recurrenceInterval).integerGreaterThanZero();
+                    final String monthDayStr = this.fromApiJsonHelper.extractStringNamed(StandingInstructionApiConstants.recurrenceOnMonthDayParamName, element);
+                    baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceOnMonthDayParamName).value(monthDayStr).notBlank();
+
+                    if (StringUtils.isNotBlank(monthDayStr) && StringUtils.isNotBlank(monthDayFormat)) {
+                        try {
+                            monthDay = this.fromApiJsonHelper.extractMonthDayNamed(StandingInstructionApiConstants.recurrenceOnMonthDayParamName, element);
+                        } catch (Exception e) {
+                            baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceOnMonthDayParamName).failWithCode("invalid.month.day.format");
+                        }
+                    }
+                }
             }
 
             if (validFrom != null && validTill != null && recurrenceFrequency != null && recurrenceInterval != null) {
@@ -166,18 +169,10 @@ public class StandingInstructionDataValidator {
                     minValidTill = validFrom.plusDays(recurrenceInterval);
                 } else if (frequencyType.isWeekly()) {
                     minValidTill = validFrom.plusWeeks(recurrenceInterval);
-                } else if (frequencyType.isMonthly() || frequencyType.isYearly()) {
-                    final MonthDay monthDay = this.fromApiJsonHelper.extractMonthDayNamed(StandingInstructionApiConstants.recurrenceOnMonthDayParamName, element);
-
-                    if (monthDay != null) {
-                        minValidTill = monthDay.atYear(validFrom.getYear());
-                        if (minValidTill.isBefore(validFrom) || minValidTill.isEqual(validFrom)) {
-                            if (frequencyType.isMonthly()) {
-                                minValidTill = minValidTill.plusMonths(recurrenceInterval);
-                            } else {
-                                minValidTill = minValidTill.plusYears(recurrenceInterval);
-                            }
-                        }
+                } else if (monthDay != null) { 
+                    minValidTill = monthDay.atYear(validFrom.getYear());
+                    if (!minValidTill.isAfter(validFrom)) {
+                        minValidTill = frequencyType.isMonthly() ? minValidTill.plusMonths(recurrenceInterval) : minValidTill.plusYears(recurrenceInterval);
                     }
                 }
 
