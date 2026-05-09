@@ -180,6 +180,7 @@ public class StandingInstructionDataValidator {
                         }
                     }
                 }
+            }
         } else {
             if (isFixedInstructionType) {
                 baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceTypeParamName)
