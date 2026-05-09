@@ -166,17 +166,20 @@ public class StandingInstructionDataValidator {
                     minValidTill = validFrom.plusDays(recurrenceInterval);
                 } else if (frequencyType.isWeekly()) {
                     minValidTill = validFrom.plusWeeks(recurrenceInterval);
-                } else if (frequencyType.isMonthly()) {
-                    minValidTill = validFrom.plusMonths(recurrenceInterval);
-                } else if (frequencyType.isYearly()) {
-                    minValidTill = validFrom.plusYears(recurrenceInterval);
-                }
+                } else if (frequencyType.isMonthly() || frequencyType.isYearly()) {
+                    final MonthDay monthDay = this.fromApiJsonHelper.extractMonthDayNamed(StandingInstructionApiConstants.recurrenceOnMonthDayParamName, element);
 
-                if (minValidTill != null && validTill.isBefore(minValidTill)) {
-                    baseDataValidator.reset().parameter(StandingInstructionApiConstants.validTillParamName)
-                        .value(validTill).failWithCode("must.not.be.before.first.execution.date");
+                    if (monthDay != null) {
+                        minValidTill = monthDay.atYear(validFrom.getYear());
+                        if (minValidTill.isBefore(validFrom) || minValidTill.isEqual(validFrom)) {
+                            if (frequencyType.isMonthly()) {
+                                minValidTill = minValidTill.plusMonths(recurrenceInterval);
+                            } else {
+                                minValidTill = minValidTill.plusYears(recurrenceInterval);
+                            }
+                        }
+                    }
                 }
-            }
         } else {
             if (isFixedInstructionType) {
                 baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceTypeParamName)
