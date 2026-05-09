@@ -180,6 +180,11 @@ public class StandingInstructionDataValidator {
                         }
                     }
                 }
+
+                if (minValidTill != null && validTill.isBefore(minValidTill)) {
+                    baseDataValidator.reset().parameter(StandingInstructionApiConstants.validTillParamName)
+                        .value(validTill).failWithCode("must.not.be.before.first.execution.date");
+                }
             }
         } else {
             if (isFixedInstructionType) {
