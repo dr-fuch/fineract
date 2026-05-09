@@ -161,9 +161,9 @@ public class StandingInstructionDataValidator {
                 LocalDate minValidTill = null;
                 PeriodFrequencyType frequencyType = PeriodFrequencyType.fromInt(recurrenceFrequency);
 
-                if (frequencyType.isDays()) {
+                if (frequencyType.isDaily()) {
                     minValidTill = validFrom.plusDays(recurrenceInterval);
-                } else if (frequencyType.isWeeks()) {
+                } else if (frequencyType.isWeekly()) {
                     minValidTill = validFrom.plusWeeks(recurrenceInterval);
                 } else if (frequencyType.isMonthly()) {
                     minValidTill = validFrom.plusMonths(recurrenceInterval);
