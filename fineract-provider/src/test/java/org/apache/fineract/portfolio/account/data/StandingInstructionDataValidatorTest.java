@@ -67,7 +67,7 @@ public class StandingInstructionDataValidatorTest {
             final String nullJson = null;
             final JsonCommand command = createJsonCommand(nullJson);
 
-            InvalidJsonException = assertThrows(InvalidJsonException.class,
+            InvalidJsonException exception = assertThrows(InvalidJsonException.class,
                 () -> this.standingInstructionDataValidator.validateForCreate(command));
             assertEquals(message, exception.getGlobalisationMessageCode());
         }
