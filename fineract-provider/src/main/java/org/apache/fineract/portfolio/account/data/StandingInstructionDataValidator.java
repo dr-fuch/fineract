@@ -187,7 +187,7 @@ public class StandingInstructionDataValidator {
         } else {
             if (isFixedInstructionType) {
                 baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceTypeParamName)
-                    .failWithCode("recurrence.type.as.per.dues.not.allowed.with.fixed.amount");
+                    .failWithCode("as.per.dues.not.allowed.with.fixed.amount");
             }
         }
 
