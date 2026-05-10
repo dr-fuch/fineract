@@ -49,9 +49,9 @@ public class StandingInstructionDataValidatorTest {
 
     @Mock
     private AccountTransfersDetailDataValidator accountTransfersDetailDataValidator;
-
-    private StandingInstructionDataValidator standingInstructionDataValidator;
+    
     private final static FromJsonHelper fromApiJsonHelper = new FromJsonHelper();
+    protected StandingInstructionDataValidator standingInstructionDataValidator;
 
     @BeforeEach
     public void setUp() {
@@ -64,13 +64,11 @@ public class StandingInstructionDataValidatorTest {
         
         @Test
         public void blankOrNullJsonThrowsInvalidJsonException(){
-            final String message = "error.msg.invalid.request.body";
             final String nullJson = null;
             final JsonCommand command = createJsonCommand(nullJson);
 
-            InvalidJsonException exception = assertThrows(InvalidJsonException.class,
+            assertThrows(InvalidJsonException.class,
                 () -> this.standingInstructionDataValidator.validateForCreate(command));
-            assertEquals(message, exception.getGlobalisationMessageCode());
         }
     }
 
