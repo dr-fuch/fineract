@@ -63,20 +63,20 @@ public class StandingInstructionDataValidatorTest {
     class ValidateForCreate {
         
         @Test
-        void throwsExceptionWhenJsonIsBlankOrNull(){
+        void throwExceptionWhenJsonIsBlankOrNull(){
             final JsonCommand command = createJsonCommand(null);
             assertThrowsException(InvalidJsonException.class, command);
         }
 
         @Test
-        void throwsExceptionWhenJsonHasAnInvalidParam() {
+        void throwExceptionWhenJsonHasAnInvalidParam() {
             final JsonObject json = getBaseJsonObjectWithInvalidParam();
             final JsonCommand command = createJsonCommand(json);
             assertThrowsException(UnsupportedParameterException.class, command);
         }
 
         @Test
-        void shouldCallsAccountTransfersDetailDataValidator() {
+        void shouldCallAccountTransfersDetailDataValidator() {
             final JsonObject json = getBaseJsonObject();
             final JsonCommand command = createJsonCommand(json);
             standingInstructionDataValidator.validateForCreate(command);
@@ -88,37 +88,37 @@ public class StandingInstructionDataValidatorTest {
         }
 
         @Test
-        void throwsErrorWhenTransferTypeIsMissing() {
+        void throwErrorWhenTransferTypeIsMissing() {
             assertHasValidationError(AccountDetailConstants.transferTypeParamName);
         }
 
         @Test
-        void throwsErrorWhenNameIsMissing() {
+        void throwErrorWhenNameIsMissing() {
             assertHasValidationError(StandingInstructionApiConstants.nameParamName);
         }
 
         @Test
-        void throwsErrorWhenPriorityIsMissing() {
+        void throwErrorWhenPriorityIsMissing() {
             assertHasValidationError(StandingInstructionApiConstants.priorityParamName);
         }
 
         @Test
-        void throwsErrorWhenInstructionTypeIsMissing() {
+        void throwErrorWhenInstructionTypeIsMissing() {
             assertHasValidationError(StandingInstructionApiConstants.instructionTypeParamName);
         }
 
         @Test
-        void throwsErrorWhenStatusIsMissing() {
+        void throwErrorWhenStatusIsMissing() {
             assertHasValidationError(StandingInstructionApiConstants.statusParamName);
         }
 
         @Test
-        void throwsErrorWhenValidFromIsMissing() {
+        void throwErrorWhenValidFromIsMissing() {
             assertHasValidationError(StandingInstructionApiConstants.validFromParamName);
         }
 
         @Test 
-        void throwsErrorWhenValidTillIsBeforeValidFrom() {
+        void throwErrorWhenValidTillIsBeforeValidFrom() {
             final String parameterName = StandingInstructionApiConstants.validTillParamName;
             final String parameterValue = "07 May 2026";
 
