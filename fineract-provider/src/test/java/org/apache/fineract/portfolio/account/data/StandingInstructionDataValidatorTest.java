@@ -61,78 +61,86 @@ public class StandingInstructionDataValidatorTest {
 
     @Nested
     class ValidateForCreate {
+
+        @Nested
+        class UnconditionedBehavior {
+            @Test
+            void throwExceptionWhenJsonIsBlankOrNull(){
+                final JsonCommand command = createJsonCommand(null);
+                assertThrowsException(InvalidJsonException.class, command);
+            }
+
+            @Test
+            void throwExceptionWhenJsonHasAnInvalidParam() {
+                final JsonObject json = getBaseJsonObjectWithInvalidParam();
+                final JsonCommand command = createJsonCommand(json);
+                assertThrowsException(UnsupportedParameterException.class, command);
+            }
+
+            @Test
+            void shouldCallAccountTransfersDetailDataValidator() {
+                final JsonObject json = getBaseJsonObject();
+                final JsonCommand command = createJsonCommand(json);
+                standingInstructionDataValidator.validateForCreate(command);
+
+                verify(accountTransfersDetailDataValidator, times(1))
+                    .validate(
+                        any(JsonCommand.class),
+                        any(DataValidatorBuilder.class));
+            }
+
+            @Test
+            void throwErrorWhenTransferTypeIsMissing() {
+                assertHasValidationError(AccountDetailConstants.transferTypeParamName);
+            }
+
+            @Test
+            void throwErrorWhenNameIsMissing() {
+                assertHasValidationError(StandingInstructionApiConstants.nameParamName);
+            }
+
+            @Test
+            void throwErrorWhenPriorityIsMissing() {
+                assertHasValidationError(StandingInstructionApiConstants.priorityParamName);
+            }
+
+            @Test
+            void throwErrorWhenInstructionTypeIsMissing() {
+                assertHasValidationError(StandingInstructionApiConstants.instructionTypeParamName);
+            }
+
+            @Test
+            void throwErrorWhenStatusIsMissing() {
+                assertHasValidationError(StandingInstructionApiConstants.statusParamName);
+            }
+
+            @Test
+            void throwErrorWhenValidFromIsMissing() {
+                assertHasValidationError(StandingInstructionApiConstants.validFromParamName);
+            }
+
+            @Test 
+            void throwErrorWhenValidTillIsBeforeValidFrom() {
+                final String parameterName = StandingInstructionApiConstants.validTillParamName;
+                final String parameterValue = "07 May 2026";
+
+                final JsonObject json = getBaseJsonObject();
+                json.addProperty(parameterName, parameterValue);
+
+                final JsonCommand command = createJsonCommand(json);
+                final String expectedCode = "validation.msg.standinginstruction.validTill.is.less.than.date";
+                assertHasValidationError(command, parameterName, expectedCode);
+            }
+
+            @Test
+            void throwErrorWhenRecurrenceTypeIsMissing() {
+                assertHasValidationError(StandingInstructionApiConstants.recurrenceTypeParamName);
+            }
+        }
         
-        @Test
-        void throwExceptionWhenJsonIsBlankOrNull(){
-            final JsonCommand command = createJsonCommand(null);
-            assertThrowsException(InvalidJsonException.class, command);
-        }
+        @Nested
+        class AccountTransfer {
 
-        @Test
-        void throwExceptionWhenJsonHasAnInvalidParam() {
-            final JsonObject json = getBaseJsonObjectWithInvalidParam();
-            final JsonCommand command = createJsonCommand(json);
-            assertThrowsException(UnsupportedParameterException.class, command);
-        }
-
-        @Test
-        void shouldCallAccountTransfersDetailDataValidator() {
-            final JsonObject json = getBaseJsonObject();
-            final JsonCommand command = createJsonCommand(json);
-            standingInstructionDataValidator.validateForCreate(command);
-
-            verify(accountTransfersDetailDataValidator, times(1))
-                .validate(
-                    any(JsonCommand.class),
-                    any(DataValidatorBuilder.class));
-        }
-
-        @Test
-        void throwErrorWhenTransferTypeIsMissing() {
-            assertHasValidationError(AccountDetailConstants.transferTypeParamName);
-        }
-
-        @Test
-        void throwErrorWhenNameIsMissing() {
-            assertHasValidationError(StandingInstructionApiConstants.nameParamName);
-        }
-
-        @Test
-        void throwErrorWhenPriorityIsMissing() {
-            assertHasValidationError(StandingInstructionApiConstants.priorityParamName);
-        }
-
-        @Test
-        void throwErrorWhenInstructionTypeIsMissing() {
-            assertHasValidationError(StandingInstructionApiConstants.instructionTypeParamName);
-        }
-
-        @Test
-        void throwErrorWhenStatusIsMissing() {
-            assertHasValidationError(StandingInstructionApiConstants.statusParamName);
-        }
-
-        @Test
-        void throwErrorWhenValidFromIsMissing() {
-            assertHasValidationError(StandingInstructionApiConstants.validFromParamName);
-        }
-
-        @Test 
-        void throwErrorWhenValidTillIsBeforeValidFrom() {
-            final String parameterName = StandingInstructionApiConstants.validTillParamName;
-            final String parameterValue = "07 May 2026";
-
-            final JsonObject json = getBaseJsonObject();
-            json.addProperty(parameterName, parameterValue);
-
-            final JsonCommand command = createJsonCommand(json);
-            final String expectedCode = "validation.msg.standinginstruction.validTill.is.less.than.date";
-            assertHasValidationError(command, parameterName, expectedCode);
-        }
-
-        @Test
-        void throwErrorWhenRecurrenceTypeIsMissing() {
-            assertHasValidationError(StandingInstructionApiConstants.recurrenceTypeParamName);
         }
     }
 
@@ -171,7 +179,7 @@ public class StandingInstructionDataValidatorTest {
         jsonObject.addProperty(AccountDetailConstants.toAccountIdParamName, 2);
         jsonObject.addProperty(AccountDetailConstants.toAccountTypeParamName, 2);
         jsonObject.addProperty(AccountDetailConstants.transferTypeParamName, 1);
-        jsonObject.addProperty(StandingInstructionApiConstants.nameParamName, "TEST FROM SAVINGS TO SAVINGS");
+        jsonObject.addProperty(StandingInstructionApiConstants.nameParamName, "DUMMY TEST");
         jsonObject.addProperty(StandingInstructionApiConstants.priorityParamName, 1);
         jsonObject.addProperty(StandingInstructionApiConstants.instructionTypeParamName, 1);
         jsonObject.addProperty(StandingInstructionApiConstants.statusParamName, 1);
