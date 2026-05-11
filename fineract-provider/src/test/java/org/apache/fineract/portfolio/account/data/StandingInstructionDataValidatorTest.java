@@ -63,20 +63,20 @@ public class StandingInstructionDataValidatorTest {
     class ValidateForCreate {
         
         @Test
-        void blankOrNullJsonThrowsInvalidJsonException(){
+        void throwsExceptionWhenJsonIsBlankOrNull(){
             final JsonCommand command = createJsonCommand(null);
             assertThrowsException(InvalidJsonException.class, command);
         }
 
         @Test
-        void invalidParamInJsonThrowsUnsupportedParameterException() {
+        void throwsExceptionWhenJsonHasAnInvalidParam() {
             final JsonObject json = getBaseJsonObjectWithInvalidParam();
             final JsonCommand command = createJsonCommand(json);
             assertThrowsException(UnsupportedParameterException.class, command);
         }
 
         @Test
-        void shouldCallAccountTransfersDetailDataValidator() {
+        void shouldCallsAccountTransfersDetailDataValidator() {
             final JsonObject json = getBaseJsonObject();
             final JsonCommand command = createJsonCommand(json);
             standingInstructionDataValidator.validateForCreate(command);
@@ -88,8 +88,33 @@ public class StandingInstructionDataValidatorTest {
         }
 
         @Test
-        void nullTransferTypeThrowsPlatformApiDataValidationException() {
-            final JsonCommand command = createJsonCommand(null);
+        void throwsErrorWhenTransferTypeIsMissing() {
+            assertHasValidationError(AccountDetailConstants.transferTypeParamName);
+        }
+
+        @Test
+        void throwsErrorWhenNameIsMissing() {
+            assertHasValidationError(StandingInstructionApiConstants.nameParamName);
+        }
+
+        @Test
+        void throwsErrorWhenPriorityIsMissing() {
+            assertHasValidationError(StandingInstructionApiConstants.priorityParamName);
+        }
+
+        @Test
+        void throwsErrorWhenInstructionTypeIsMissing() {
+            assertHasValidationError(StandingInstructionApiConstants.instructionTypeParamName);
+        }
+
+        @Test
+        void throwsErrorWhenStatusIsMissing() {
+            assertHasValidationError(StandingInstructionApiConstants.statusParamName);
+        }
+
+        @Test
+        void throwsErrorWhenValidFromIsMissing() {
+            assertHasValidationError(StandingInstructionApiConstants.validFromParamName);
         }
     }
 
@@ -143,6 +168,28 @@ public class StandingInstructionDataValidatorTest {
         return jsonObject;
     }
 
+    private void assertHasValidationError(final String parameter) {
+        final String expectedCode = String.format(
+            "validation.msg.standinginstruction.%s.cannot.be.blank", parameter);
+        assertHasValidationError(parameter, expectedCode);
+    }
+
+    private void assertHasValidationError(final String parameter, final String expectedCode) {
+        final JsonObject json = getBaseJsonObjectWithoutParam(parameter);
+        final JsonCommand command = createJsonCommand(json);
+
+        PlatformApiDataValidationException ex = assertThrows(
+            PlatformApiDataValidationException.class, () -> {
+                this.standingInstructionDataValidator.validateForCreate(command);
+        });
+
+        boolean hasError = ex.getErrors().stream().anyMatch(error -> 
+            parameter.equals(error.getParameterName()) &&
+            expectedCode.equals(error.getGlobalisationMessageCode()));
+
+        assertEquals(true, hasError);
+    }
+    
     private void assertThrowsException(Class<? extends Throwable> exceptionClass, JsonCommand command) {
         assertThrows(exceptionClass, () -> this.standingInstructionDataValidator.validateForCreate(command));
     }
