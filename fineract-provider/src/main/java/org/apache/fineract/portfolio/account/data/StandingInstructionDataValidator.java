@@ -91,12 +91,12 @@ public class StandingInstructionDataValidator {
         final Type typeOfMap = new TypeToken<Map<String, Object>>() {}.getType();
         this.fromApiJsonHelper.checkForUnsupportedParameters(typeOfMap, json, CREATE_REQUEST_DATA_PARAMETERS);
 
-        final JsonElement element = command.parsedJson();
         final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
         final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
                 .resource(StandingInstructionApiConstants.STANDING_INSTRUCTION_RESOURCE_NAME);
         this.accountTransfersDetailDataValidator.validate(command, baseDataValidator);
 
+        final JsonElement element = command.parsedJson();
 
         final Integer transferType = this.fromApiJsonHelper.extractIntegerNamed(AccountDetailConstants.transferTypeParamName, element, Locale.getDefault());
         baseDataValidator.reset().parameter(AccountDetailConstants.transferTypeParamName).value(transferType).notNull().inMinMaxRange(1, 3);
