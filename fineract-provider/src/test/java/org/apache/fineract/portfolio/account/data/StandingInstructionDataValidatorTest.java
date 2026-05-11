@@ -64,27 +64,32 @@ public class StandingInstructionDataValidatorTest {
         
         @Test
         void blankOrNullJsonThrowsInvalidJsonException(){
-            final String nullJson = null;
-            final JsonCommand command = createJsonCommand(nullJson);
-
-            assertThrows(InvalidJsonException.class,
-                () -> standingInstructionDataValidator.validateForCreate(command));
+            final JsonCommand command = createJsonCommand("");
+            assertThrowsException(InvalidJsonException.class, command);
         }
 
         @Test
         void jsonWithInvalidParamThrowsUnsupportedParameterException() {
-            final JsonObject jsonObject = createBaseJsonObjectForCreate();
-            jsonObject.addProperty("invalidParam", "invalidValue");
-
-            final String json = jsonObject.toString();
+            final JsonObject json = getBaseJsonObjectWithInvalidParam();
             final JsonCommand command = createJsonCommand(json);
+            assertThrowsException(UnsupportedParameterException.class, command);
+        }
 
-            assertThrows(UnsupportedParameterException.class, 
-                () -> standingInstructionDataValidator.validateForCreate(command));
+        @Test
+        void shouldCallAccountTransfersDetailDataValidator() {
+            final JsonObject json = getBaseJsonObject();
+            final JsonCommand command = createJsonCommand(json);
+            standingInstructionDataValidator.validateForCreate(command);
+
+            vefify(accountTransfersDetailDataValidator, times(1))
+                .validate(
+                    any(JsonCommand.class),
+                    any(DataValidatorBuilder.class));
         }
     }
 
-    private JsonCommand createJsonCommand(final String json) {
+    private JsonCommand createJsonCommand(final JsonObject jsonObject) {
+        final String json = jsonObject.toString();
         final JsonElement parsedCommand = fromApiJsonHelper.parse(json);
 
         return JsonCommand.from(json, parsedCommand, fromApiJsonHelper, null,
@@ -92,13 +97,14 @@ public class StandingInstructionDataValidatorTest {
             null, null);
     }
 
-    private JsonObject createBaseJsonObjectForUpdate() {
-        JsonObject jsonObject = createBaseJsonObjectForCreate();
-        jsonObject.remove(AccountDetailConstants.idParamName);
+    private JsonObject getBaseJsonObjectWithInvalidParam() {
+        final JsonObject jsonObject = getBaseJsonObject();
+        jsonObject.addProperty("invalidParam", "invalidValue");
+
         return jsonObject;
     }
 
-    private JsonObject createBaseJsonObjectForCreate() {   
+    private JsonObject getBaseJsonObject() {   
         final JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty(AccountDetailConstants.localeParamName, "en");
         jsonObject.addProperty(AccountDetailConstants.dateFormatParamName, "dd MMMM yyyy");
@@ -124,5 +130,9 @@ public class StandingInstructionDataValidatorTest {
         jsonObject.addProperty(StandingInstructionApiConstants.recurrenceOnMonthDayParamName, "08 May");
         jsonObject.addProperty(StandingInstructionApiConstants.monthDayFormatParamName, "dd MMMM");
         return jsonObject;
+    }
+
+    private void assertThrowsException(Class<? extends Throwable> exceptionClass, JsonCommand command) {
+        assertThrows(exceptionClass, () -> this.standingInstructionDataValidator.validateForCreate(command));
     }
 }
