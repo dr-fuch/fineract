@@ -121,7 +121,10 @@ public class StandingInstructionDataValidatorTest {
 
             @Test 
             void throwErrorWhenValidTillIsBeforeValidFrom() {
-                final JsonObject json = getBaseJsonObject();
+                final JsonObject json = getBaseJsonObject("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 1, 2, 1,
+                    "UNCONDITIONED BEHAVIOR TEST", 1, 1, 1, "08 May 2026", "07 May 2026", 1,
+                    new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
+
                 final JsonCommand command = createJsonCommand(json);
                 assertThrowsValidationError(command, 
                     StandingInstructionApiConstants.validTillParamName,
@@ -140,7 +143,7 @@ public class StandingInstructionDataValidatorTest {
             @Test
             void throwExceptionWithEqualAccountsAndEqualOffices() {
                 final JsonObject json = getBaseJsonObject("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 1, 2, 1,
-                    "BASE TEST", 1, 1, 1, "08 May 2026", "07 May 2027", 1,
+                    "ACCOUNT TRANSFER TEST", 1, 1, 1, "08 May 2026", "07 May 2027", 1,
                     new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
 
                 final JsonCommand command = createJsonCommand(json);
@@ -176,7 +179,7 @@ public class StandingInstructionDataValidatorTest {
     private JsonObject getBaseJsonObject() {   
         final JsonObject jsonObject = new JsonObject();
         return getBaseJsonObject("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 2, 2, 1,
-            "BASE TEST", 1, 1, 1, "08 May 2026", "07 May 2026", 1,
+            "BASE TEST", 1, 1, 1, "08 May 2026", "07 May 2027", 1,
             new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
     }
 
