@@ -73,9 +73,10 @@ public class StandingInstructionDataValidatorTest {
 
         @Test
         void jsonWithInvalidParamThrowsUnsupportedParameterException() {
-            final String json = createBaseJsonObjectForCreate();
-            json.addProperty();
+            final JsonObject jsonObject = createBaseJsonObjectForCreate();
+            jsonObject.addProperty("invalidParam", "invalidValue");
 
+            final String json = jsonObject.toString();
             final JsonCommand command = createJsonCommand(json);
 
             assertThrows(UnsupportedParameterException, 
