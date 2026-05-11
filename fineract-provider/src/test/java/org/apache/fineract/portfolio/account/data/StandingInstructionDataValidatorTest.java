@@ -123,7 +123,7 @@ public class StandingInstructionDataValidatorTest {
             void throwErrorWhenValidTillIsBeforeValidFrom() {
                 final JsonObject json = getBaseJsonObject();
                 final JsonCommand command = createJsonCommand(json);
-                assertThrowEspecificValidationError(command, 
+                assertThrowsValidationError(command, 
                     StandingInstructionApiConstants.validTillParamName,
                     "validation.msg.standinginstruction.validTill.is.less.than.date");
             }
@@ -144,7 +144,7 @@ public class StandingInstructionDataValidatorTest {
                     new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
 
                 final JsonCommand command = createJsonCommand(json);
-                assertHasValidationError(command, 
+                assertThrowsValidationError(command, 
                     AccountDetailConstants.toAccountIdParamName,
                     "validation.msg.standinginstruction.toAccountId.transfer.to.same.account.not.allowed");
             }
@@ -224,10 +224,10 @@ public class StandingInstructionDataValidatorTest {
         final JsonObject json = getBaseJsonObjectWithoutParam(parameter);
         final JsonCommand command = createJsonCommand(json);
 
-        assertThrowEspecificValidationError(command, parameter, expectedCode);
+        assertThrowsValidationError(command, parameter, expectedCode);
     }
 
-    private void assertThrowEspecificValidationError(final JsonCommand command, final String parameter,
+    private void assertThrowsValidationError(final JsonCommand command, final String parameter,
         final String expectedCode) {
 
         PlatformApiDataValidationException ex = assertThrows(
