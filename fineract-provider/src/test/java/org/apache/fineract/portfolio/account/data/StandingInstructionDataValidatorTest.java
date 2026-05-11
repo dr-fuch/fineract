@@ -70,6 +70,17 @@ public class StandingInstructionDataValidatorTest {
             assertThrows(InvalidJsonException.class,
                 () -> standingInstructionDataValidator.validateForCreate(command));
         }
+
+        @Test
+        void jsonWithInvalidParamThrowsUnsupportedParameterException() {
+            final String json = createBaseJsonObjectForCreate();
+            json.addProperty();
+
+            final JsonCommand command = createJsonCommand(json);
+
+            assertThrows(UnsupportedParameterException, 
+                () -> standingInstructionDataValidator.validateForCreate(command))
+        }
     }
 
     private JsonCommand createJsonCommand(final String json) {
