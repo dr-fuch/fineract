@@ -79,7 +79,7 @@ public class StandingInstructionDataValidatorTest {
             final String json = jsonObject.toString();
             final JsonCommand command = createJsonCommand(json);
 
-            assertThrows(UnsupportedParameterException, 
+            assertThrows(UnsupportedParameterException.class, 
                 () -> standingInstructionDataValidator.validateForCreate(command));
         }
     }
