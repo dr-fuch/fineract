@@ -116,6 +116,18 @@ public class StandingInstructionDataValidatorTest {
         void throwsErrorWhenValidFromIsMissing() {
             assertHasValidationError(StandingInstructionApiConstants.validFromParamName);
         }
+
+        @Test throwsErrorWhenValidTillIsBeforeValidFrom() {
+            final String parameterName = StandingInstructionApiConstants.validTillParamName;
+            final String parameterValue = "07 May 2026";
+
+            final JsonObject json = getBaseJsonObject();
+            json.addProperty(parameterName, parameterValue);
+
+            final JsonCommand command = createJsonCommand(json);
+            final String expectedCode = "validation.msg.standinginstruction.validTill.is.less.than.date";
+            assertHasValidationError(command, parameterName, expectedCode);
+        }
     }
 
     private JsonCommand createJsonCommand(final JsonObject jsonObject) {
@@ -177,6 +189,21 @@ public class StandingInstructionDataValidatorTest {
     private void assertHasValidationError(final String parameter, final String expectedCode) {
         final JsonObject json = getBaseJsonObjectWithoutParam(parameter);
         final JsonCommand command = createJsonCommand(json);
+
+        PlatformApiDataValidationException ex = assertThrows(
+            PlatformApiDataValidationException.class, () -> {
+                this.standingInstructionDataValidator.validateForCreate(command);
+        });
+
+        boolean hasError = ex.getErrors().stream().anyMatch(error -> 
+            parameter.equals(error.getParameterName()) &&
+            expectedCode.equals(error.getUserMessageGlobalisationCode()));
+
+        assertEquals(true, hasError);
+    }
+
+    private void assertHasValidationError(final JsonCommand command, final String parameter,
+        final String expectedCode) {
 
         PlatformApiDataValidationException ex = assertThrows(
             PlatformApiDataValidationException.class, () -> {
