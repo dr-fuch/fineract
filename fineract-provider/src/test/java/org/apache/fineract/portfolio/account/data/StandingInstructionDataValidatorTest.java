@@ -117,7 +117,8 @@ public class StandingInstructionDataValidatorTest {
             assertHasValidationError(StandingInstructionApiConstants.validFromParamName);
         }
 
-        @Test throwsErrorWhenValidTillIsBeforeValidFrom() {
+        @Test 
+        void throwsErrorWhenValidTillIsBeforeValidFrom() {
             final String parameterName = StandingInstructionApiConstants.validTillParamName;
             final String parameterValue = "07 May 2026";
 
