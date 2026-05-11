@@ -185,7 +185,7 @@ public class StandingInstructionDataValidatorTest {
 
         boolean hasError = ex.getErrors().stream().anyMatch(error -> 
             parameter.equals(error.getParameterName()) &&
-            expectedCode.equals(error.getGlobalisationMessageCode()));
+            expectedCode.equals(error.getUserMessageGlobalisationCode()));
 
         assertEquals(true, hasError);
     }
