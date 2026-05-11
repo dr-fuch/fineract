@@ -129,6 +129,11 @@ public class StandingInstructionDataValidatorTest {
             final String expectedCode = "validation.msg.standinginstruction.validTill.is.less.than.date";
             assertHasValidationError(command, parameterName, expectedCode);
         }
+
+        @Test
+        void throwErrorWhenRecurrenceTypeIsMissing() {
+            assertHasValidationError(StandingInstructionApiConstants.recurrenceTypeParamName);
+        }
     }
 
     private JsonCommand createJsonCommand(final JsonObject jsonObject) {
