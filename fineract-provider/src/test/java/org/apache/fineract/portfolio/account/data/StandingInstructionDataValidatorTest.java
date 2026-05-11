@@ -51,7 +51,7 @@ public class StandingInstructionDataValidatorTest {
     private AccountTransfersDetailDataValidator accountTransfersDetailDataValidator;
     
     private final static FromJsonHelper fromApiJsonHelper = new FromJsonHelper();
-    protected StandingInstructionDataValidator standingInstructionDataValidator;
+    private StandingInstructionDataValidator standingInstructionDataValidator;
 
     @BeforeEach
     public void setUp() {
@@ -60,15 +60,15 @@ public class StandingInstructionDataValidatorTest {
     }
 
     @Nested
-    public class ValidateForCreate {
+    class ValidateForCreate {
         
         @Test
-        public void blankOrNullJsonThrowsInvalidJsonException(){
+        void blankOrNullJsonThrowsInvalidJsonException(){
             final String nullJson = null;
             final JsonCommand command = createJsonCommand(nullJson);
 
             assertThrows(InvalidJsonException.class,
-                () -> this.standingInstructionDataValidator.validateForCreate(command));
+                () -> standingInstructionDataValidator.validateForCreate(command));
         }
     }
 
