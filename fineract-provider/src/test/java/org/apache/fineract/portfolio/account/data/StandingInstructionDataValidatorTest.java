@@ -91,56 +91,63 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhenTransferTypeIsMissing() {
-                assertHasValidationError(AccountDetailConstants.transferTypeParamName);
+                assertThrowsBlankValidationError(AccountDetailConstants.transferTypeParamName);
             }
 
             @Test
             void throwErrorWhenNameIsMissing() {
-                assertHasValidationError(StandingInstructionApiConstants.nameParamName);
+                assertThrowsBlankValidationError(StandingInstructionApiConstants.nameParamName);
             }
 
             @Test
             void throwErrorWhenPriorityIsMissing() {
-                assertHasValidationError(StandingInstructionApiConstants.priorityParamName);
+                assertThrowsBlankValidationError(StandingInstructionApiConstants.priorityParamName);
             }
 
             @Test
             void throwErrorWhenInstructionTypeIsMissing() {
-                assertHasValidationError(StandingInstructionApiConstants.instructionTypeParamName);
+                assertThrowsBlankValidationError(StandingInstructionApiConstants.instructionTypeParamName);
             }
 
             @Test
             void throwErrorWhenStatusIsMissing() {
-                assertHasValidationError(StandingInstructionApiConstants.statusParamName);
+                assertThrowsBlankValidationError(StandingInstructionApiConstants.statusParamName);
             }
 
             @Test
             void throwErrorWhenValidFromIsMissing() {
-                assertHasValidationError(StandingInstructionApiConstants.validFromParamName);
+                assertThrowsBlankValidationError(StandingInstructionApiConstants.validFromParamName);
             }
 
             @Test 
             void throwErrorWhenValidTillIsBeforeValidFrom() {
-                final String parameterName = StandingInstructionApiConstants.validTillParamName;
-                final String parameterValue = "07 May 2026";
-
                 final JsonObject json = getBaseJsonObject();
-                json.addProperty(parameterName, parameterValue);
-
                 final JsonCommand command = createJsonCommand(json);
-                final String expectedCode = "validation.msg.standinginstruction.validTill.is.less.than.date";
-                assertHasValidationError(command, parameterName, expectedCode);
+                assertThrowEspecificValidationError(command, 
+                    StandingInstructionApiConstants.validTillParamName,
+                    "validation.msg.standinginstruction.validTill.is.less.than.date");
             }
 
             @Test
             void throwErrorWhenRecurrenceTypeIsMissing() {
-                assertHasValidationError(StandingInstructionApiConstants.recurrenceTypeParamName);
+                assertThrowsBlankValidationError(StandingInstructionApiConstants.recurrenceTypeParamName);
             }
         }
         
         @Nested
         class AccountTransfer {
+            
+            @Test
+            void throwExceptionWithEqualAccountsAndEqualOffices() {
+                final JsonObject json = getBaseJsonObject("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 2, 2, 1,
+                    "BASE TEST", 1, 1, 1, "08 May 2026", "07 May 2027", 1,
+                    new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
 
+                final JsonCommand command = createJsonCommand(json);
+                assertHasValidationError(command, 
+                    AccountDetailConstants.toAccountIdParamName,
+                    "validation.msg.standinginstruction.toAccountId.transfer.to.same.account.not.allowed");
+            }
         }
     }
 
@@ -168,55 +175,59 @@ public class StandingInstructionDataValidatorTest {
 
     private JsonObject getBaseJsonObject() {   
         final JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty(AccountDetailConstants.localeParamName, "en");
-        jsonObject.addProperty(AccountDetailConstants.dateFormatParamName, "dd MMMM yyyy");
-        jsonObject.addProperty(AccountDetailConstants.fromOfficeIdParamName, 1);
-        jsonObject.addProperty(AccountDetailConstants.fromClientIdParamName, 1);
-        jsonObject.addProperty(AccountDetailConstants.fromAccountIdParamName, 1);
-        jsonObject.addProperty(AccountDetailConstants.fromAccountTypeParamName, 2);
-        jsonObject.addProperty(AccountDetailConstants.toOfficeIdParamName, 1);
-        jsonObject.addProperty(AccountDetailConstants.toClientIdParamName, 2);
-        jsonObject.addProperty(AccountDetailConstants.toAccountIdParamName, 2);
-        jsonObject.addProperty(AccountDetailConstants.toAccountTypeParamName, 2);
-        jsonObject.addProperty(AccountDetailConstants.transferTypeParamName, 1);
-        jsonObject.addProperty(StandingInstructionApiConstants.nameParamName, "DUMMY TEST");
-        jsonObject.addProperty(StandingInstructionApiConstants.priorityParamName, 1);
-        jsonObject.addProperty(StandingInstructionApiConstants.instructionTypeParamName, 1);
-        jsonObject.addProperty(StandingInstructionApiConstants.statusParamName, 1);
-        jsonObject.addProperty(StandingInstructionApiConstants.amountParamName, 10.00);
-        jsonObject.addProperty(StandingInstructionApiConstants.validFromParamName, "08 May 2026");
-        jsonObject.addProperty(StandingInstructionApiConstants.validTillParamName, "08 May 2027");
-        jsonObject.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 1);
-        jsonObject.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, 2);
-        jsonObject.addProperty(StandingInstructionApiConstants.recurrenceIntervalParamName, 1);
-        jsonObject.addProperty(StandingInstructionApiConstants.recurrenceOnMonthDayParamName, "08 May");
-        jsonObject.addProperty(StandingInstructionApiConstants.monthDayFormatParamName, "dd MMMM");
+        return getBaseJsonObject("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 2, 2, 1,
+            "BASE TEST", 1, 1, 1, "08 May 2026", "07 May 2027", 1,
+            new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
+    }
+
+    private JsonObject getBaseJsonObject(final String locale, final String dateFormat, final Integer fromOfficeId,
+        final Integer fromClientId, final Integer fromAccountId, final Integer fromAccountType, final Integer toOfficeId,
+        final Integer toClientId, final Integer toAccountId, final Integer toAccountType, final Integer transferType,
+        final String name, final Integer priority, final Integer instructionType, final Integer status,
+        final String validFrom, final String validTill, final Integer recurrenceType, final BigDecimal amount,
+        final Integer recurrenceFrequency, final Integer recurrenceInterval, final String recurrenceOnMonthDay,
+        final String monthDayFormat) {
+
+        final JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty(AccountDetailConstants.localeParamName, locale);
+        jsonObject.addProperty(AccountDetailConstants.dateFormatParamName, dateFormat);
+        jsonObject.addProperty(AccountDetailConstants.fromOfficeIdParamName, fromOfficeId);
+        jsonObject.addProperty(AccountDetailConstants.fromClientIdParamName, fromClientId);
+        jsonObject.addProperty(AccountDetailConstants.fromAccountIdParamName, fromAccountId);
+        jsonObject.addProperty(AccountDetailConstants.fromAccountTypeParamName, fromAccountType);
+        jsonObject.addProperty(AccountDetailConstants.toOfficeIdParamName, toOfficeId);
+        jsonObject.addProperty(AccountDetailConstants.toClientIdParamName, toClientId);
+        jsonObject.addProperty(AccountDetailConstants.toAccountIdParamName, toAccountId);
+        jsonObject.addProperty(AccountDetailConstants.toAccountTypeParamName, toAccountType);
+        jsonObject.addProperty(AccountDetailConstants.transferTypeParamName, transferType);
+        jsonObject.addProperty(StandingInstructionApiConstants.nameParamName, name);
+        jsonObject.addProperty(StandingInstructionApiConstants.priorityParamName, priority);
+        jsonObject.addProperty(StandingInstructionApiConstants.instructionTypeParamName, instructionType);
+        jsonObject.addProperty(StandingInstructionApiConstants.statusParamName, status);
+        jsonObject.addProperty(StandingInstructionApiConstants.validFromParamName, validFrom);
+        jsonObject.addProperty(StandingInstructionApiConstants.validTillParamName, validTill);
+        jsonObject.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, recurrenceType);
+        jsonObject.addProperty(StandingInstructionApiConstants.amountParamName, amount);
+        jsonObject.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, recurrenceFrequency);
+        jsonObject.addProperty(StandingInstructionApiConstants.recurrenceIntervalParamName, recurrenceInterval);
+        jsonObject.addProperty(StandingInstructionApiConstants.recurrenceOnMonthDayParamName, recurrenceOnMonthDay);
+        jsonObject.addProperty(StandingInstructionApiConstants.monthDayFormatParamName, monthDayFormat);
         return jsonObject;
     }
 
-    private void assertHasValidationError(final String parameter) {
-        final String expectedCode = String.format(
-            "validation.msg.standinginstruction.%s.cannot.be.blank", parameter);
-        assertHasValidationError(parameter, expectedCode);
+    private void assertThrowsBlankValidationError(final String parameter) {
+        final String expectedCode = String.format("validation.msg.standinginstruction.%s.cannot.be.blank", parameter);
+        assertThrowsBlankValidationError(parameter, expectedCode);
     }
 
-    private void assertHasValidationError(final String parameter, final String expectedCode) {
+    private void assertThrowsBlankValidationError(final String parameter, final String expectedCode) {
         final JsonObject json = getBaseJsonObjectWithoutParam(parameter);
         final JsonCommand command = createJsonCommand(json);
 
-        PlatformApiDataValidationException ex = assertThrows(
-            PlatformApiDataValidationException.class, () -> {
-                this.standingInstructionDataValidator.validateForCreate(command);
-        });
-
-        boolean hasError = ex.getErrors().stream().anyMatch(error -> 
-            parameter.equals(error.getParameterName()) &&
-            expectedCode.equals(error.getUserMessageGlobalisationCode()));
-
-        assertEquals(true, hasError);
+        assertThrowEspecificValidationError(command, parameter, expectedCode);
     }
 
-    private void assertHasValidationError(final JsonCommand command, final String parameter,
+    private void assertThrowEspecificValidationError(final JsonCommand command, final String parameter,
         final String expectedCode) {
 
         PlatformApiDataValidationException ex = assertThrows(
