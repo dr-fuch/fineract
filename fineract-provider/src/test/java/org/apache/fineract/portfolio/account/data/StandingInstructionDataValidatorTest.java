@@ -69,7 +69,7 @@ public class StandingInstructionDataValidatorTest {
         }
 
         @Test
-        void jsonWithInvalidParamThrowsUnsupportedParameterException() {
+        void invalidParamInJsonThrowsUnsupportedParameterException() {
             final JsonObject json = getBaseJsonObjectWithInvalidParam();
             final JsonCommand command = createJsonCommand(json);
             assertThrowsException(UnsupportedParameterException.class, command);
@@ -86,6 +86,11 @@ public class StandingInstructionDataValidatorTest {
                     any(JsonCommand.class),
                     any(DataValidatorBuilder.class));
         }
+
+        @Test
+        void nullTransferTypeThrowsPlatformApiDataValidationException() {
+            final JsonCommand command = createJsonCommand(null);
+        }
     }
 
     private JsonCommand createJsonCommand(final JsonObject jsonObject) {
@@ -95,6 +100,12 @@ public class StandingInstructionDataValidatorTest {
         return JsonCommand.from(json, parsedCommand, fromApiJsonHelper, null,
             null, null, null, null, null, null, null, null, null, null, null,
             null, null);
+    }
+
+    private JsonObject getBaseJsonObjectWithoutParam(final String paramName) {
+        final JsonObject jsonObject = getBaseJsonObject();
+        jsonObject.remove(paramName);
+        return jsonObject;
     }
 
     private JsonObject getBaseJsonObjectWithInvalidParam() {
