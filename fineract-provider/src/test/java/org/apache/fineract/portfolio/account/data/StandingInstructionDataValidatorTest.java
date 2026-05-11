@@ -81,7 +81,7 @@ public class StandingInstructionDataValidatorTest {
             final JsonCommand command = createJsonCommand(json);
             standingInstructionDataValidator.validateForCreate(command);
 
-            vefify(accountTransfersDetailDataValidator, times(1))
+            verify(accountTransfersDetailDataValidator, times(1))
                 .validate(
                     any(JsonCommand.class),
                     any(DataValidatorBuilder.class));
