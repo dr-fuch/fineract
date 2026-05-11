@@ -64,7 +64,7 @@ public class StandingInstructionDataValidatorTest {
         
         @Test
         void blankOrNullJsonThrowsInvalidJsonException(){
-            final JsonCommand command = createJsonCommand("");
+            final JsonCommand command = createJsonCommand(null);
             assertThrowsException(InvalidJsonException.class, command);
         }
 
@@ -89,7 +89,7 @@ public class StandingInstructionDataValidatorTest {
     }
 
     private JsonCommand createJsonCommand(final JsonObject jsonObject) {
-        final String json = jsonObject.toString();
+        final String json = jsonObject == null ? "" : jsonObject.toString();
         final JsonElement parsedCommand = fromApiJsonHelper.parse(json);
 
         return JsonCommand.from(json, parsedCommand, fromApiJsonHelper, null,
