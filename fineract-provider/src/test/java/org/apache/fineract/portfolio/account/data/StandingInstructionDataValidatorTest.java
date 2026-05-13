@@ -98,11 +98,7 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhitTransferTypeInvalidValue() {
-                final JsonObject json = getBaseJsonObject();
-                final JsonCommand command = createJsonCommand(json);
-                assertThrowsValidationError(command,
-                    AccountDetailConstants.transferTypeParamName,
-                    "validation.msg.standinginstruction.transferType.is.not.within.expected.range");
+                assertThrowsOutOfRangeValidationError(AccountDetailConstants.transferTypeParamName);
             }
 
             @Test
@@ -116,13 +112,28 @@ public class StandingInstructionDataValidatorTest {
             }
 
             @Test
+            void throwErrorWhitPriorityInvalidValue() {
+                assertThrowsOutOfRangeValidationError(StandingInstructionApiConstants.priorityParamName);
+            }
+
+            @Test
             void throwErrorWhenInstructionTypeIsMissing() {
                 assertThrowsBlankValidationError(StandingInstructionApiConstants.instructionTypeParamName);
             }
 
             @Test
+            void throwErrorWhitInstructionTypeInvalidValue() {
+                assertThrowsOutOfRangeValidationError(StandingInstructionApiConstants.instructionTypeParamName);
+            }
+
+            @Test
             void throwErrorWhenStatusIsMissing() {
                 assertThrowsBlankValidationError(StandingInstructionApiConstants.statusParamName);
+            }
+
+            @Test
+            void throwErrorWhitStatusTypeInvalidValue() {
+                assertThrowsOutOfRangeValidationError(StandingInstructionApiConstants.instructionTypeParamName);
             }
 
             @Test
@@ -142,6 +153,11 @@ public class StandingInstructionDataValidatorTest {
             @Test
             void throwErrorWhenRecurrenceTypeIsMissing() {
                 assertThrowsBlankValidationError(StandingInstructionApiConstants.recurrenceTypeParamName);
+            }
+
+            @Test
+            void throwErrorWhitRecurrenceTypeInvalidValue() {
+                assertThrowsOutOfRangeValidationError(StandingInstructionApiConstants.recurrenceTypeParamName);
             }
         }
         
@@ -186,8 +202,8 @@ public class StandingInstructionDataValidatorTest {
 
     private JsonObject getBaseJsonObject() {   
         final JsonObject jsonObject = new JsonObject();
-        return getBaseJsonObject("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 2, 2, 4,
-            "BASE TEST", 1, 1, 1, "08 May 2026", "07 May 2026", 1,
+        return getBaseJsonObject("en", "dd MMMM yyyy", 1, 1, 1, 1, 1, 1, 1, 1, 4,
+            "BASE TEST", 5, 3, 3, "08 May 2026", "07 May 2026", 3,
             new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
     }
 
@@ -226,12 +242,18 @@ public class StandingInstructionDataValidatorTest {
         return jsonObject;
     }
 
-    private void assertThrowsBlankValidationError(final String parameter) {
-        final String expectedCode = String.format("validation.msg.standinginstruction.%s.cannot.be.blank", parameter);
-        assertThrowsBlankValidationError(parameter, expectedCode);
+    private void assertThrowsOutOfRangeValidationError(final String parameter) {
+        final String expectedCode = String.format(
+            "validation.msg.standinginstruction.%s.is.not.within.expected.range", parameter);
+        final JsonObject json = getBaseJsonObject();
+        final JsonCommand command = createJsonCommand(json);
+
+        assertThrowsValidationError(command, parameter, expectedCode);
     }
 
-    private void assertThrowsBlankValidationError(final String parameter, final String expectedCode) {
+    private void assertThrowsBlankValidationError(final String parameter) {
+        final String expectedCode = String.format(
+            "validation.msg.standinginstruction.%s.cannot.be.blank", parameter);
         final JsonObject json = getBaseJsonObjectWithoutParam(parameter);
         final JsonCommand command = createJsonCommand(json);
 
