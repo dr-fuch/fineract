@@ -95,6 +95,15 @@ public class StandingInstructionDataValidatorTest {
             }
 
             @Test
+            void throwErrorWhitTransferTypeInvalidValue() {
+                final JsonObject json = getBaseJson();
+                final JsonCommand command = createJsonCommand(json);
+                assertThrowsValidationError(command,
+                    AccountDetailConstants.transferTypeParamName,
+                    "validation.msg.standinginstruction.transferType.is.not.within.expected.range");
+            }
+
+            @Test
             void throwErrorWhenNameIsMissing() {
                 assertThrowsBlankValidationError(StandingInstructionApiConstants.nameParamName);
             }
@@ -178,7 +187,7 @@ public class StandingInstructionDataValidatorTest {
 
     private JsonObject getBaseJsonObject() {   
         final JsonObject jsonObject = new JsonObject();
-        return getBaseJsonObject("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 2, 2, 1,
+        return getBaseJsonObject("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 2, 2, 4,
             "BASE TEST", 1, 1, 1, "08 May 2026", "07 May 2027", 1,
             new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
     }
