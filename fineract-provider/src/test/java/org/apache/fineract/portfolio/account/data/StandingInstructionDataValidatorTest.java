@@ -96,7 +96,7 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhitTransferTypeInvalidValue() {
-                final JsonObject json = getBaseJson();
+                final JsonObject json = getBaseJsonObject();
                 final JsonCommand command = createJsonCommand(json);
                 assertThrowsValidationError(command,
                     AccountDetailConstants.transferTypeParamName,
