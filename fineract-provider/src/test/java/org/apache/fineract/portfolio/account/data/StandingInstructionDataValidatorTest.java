@@ -94,12 +94,15 @@ public class StandingInstructionDataValidatorTest {
             void throwErrorWhenTransferTypeIsMissing() {
                 final JsonObject json = getBaseRequest();
                 json.remove(AccountDetailConstants.transferTypeParamName);
-                assertValidation(json, AccountDetailConstants.transferTypeParamName, "cannot.be.blank");
+                assertValidation(json, 
+                    AccountDetailConstants.transferTypeParamName, "cannot.be.blank");
             }
 
             @Test
             void throwErrorWhitTransferTypeInvalidValue() {
-                assertThrowsOutOfRangeValidationError(AccountDetailConstants.transferTypeParamName);
+                final JsonObject json = getBaseRequest();
+                assertValidation(json, 
+                    AccountDetailConstants.transferTypeParamName, "is.not.within.expected.range");
             }
 
             @Test
