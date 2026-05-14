@@ -80,7 +80,7 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void shouldCallAccountTransfersDetailDataValidator() {
-                final JsonObject json = getMiminalBaseRequest();
+                final JsonObject json = getMinimalBaseRequest();
                 final JsonCommand command = createJsonCommand(json);
                 standingInstructionDataValidator.validateForCreate(command);
 
@@ -397,7 +397,7 @@ public class StandingInstructionDataValidatorTest {
         json.addProperty(StandingInstructionApiConstants.nameParamName, "LOAN REPAYMENT TEST");
         json.addProperty(AccountDetailConstants.transferTypeParamName, 2);
         json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 2);
-        json.addProperty(AccountDetailConstants.instructionTypeParamName, 1);
+        json.addProperty(StandingInstructionApiConstants.instructionTypeParamName, 1);
         return json;
     }
 
