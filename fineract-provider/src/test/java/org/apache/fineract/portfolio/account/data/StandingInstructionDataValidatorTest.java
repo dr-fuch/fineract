@@ -100,8 +100,7 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhitTransferTypeInvalidValue() {
-                final JsonObject json = getBaseRequest();
-                assertValidation(json, 
+                assertValidation(getBaseRequest(), 
                     AccountDetailConstants.transferTypeParamName, "is.not.within.expected.range");
             }
 
@@ -123,8 +122,7 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhitPriorityInvalidValue() {
-                final JsonObject json = getBaseRequest();
-                assertValidation(json, 
+                assertValidation(getBaseRequest(), 
                     StandingInstructionApiConstants.priorityParamName, "is.not.within.expected.range");
             }
 
@@ -138,8 +136,7 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhitInstructionTypeInvalidValue() {
-                final JsonObject json = getBaseRequest();
-                assertValidation(json, 
+                assertValidation(getBaseRequest(), 
                     StandingInstructionApiConstants.instructionTypeParamName, "is.not.within.expected.range");
             }
 
@@ -153,8 +150,7 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhitStatusTypeInvalidValue() {
-                final JsonObject json = getBaseRequest();
-                assertValidation(json, 
+                assertValidation(getBaseRequest(), 
                     StandingInstructionApiConstants.statusParamName, "is.not.within.expected.range");
             }
 
