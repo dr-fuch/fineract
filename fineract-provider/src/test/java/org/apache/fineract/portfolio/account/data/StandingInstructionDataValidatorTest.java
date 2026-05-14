@@ -272,28 +272,9 @@ public class StandingInstructionDataValidatorTest {
             void throwErrorWhenInstructionTypeIsFixedAndRecurrenceTypeIsAsPerDues() {
                 final JsonObject json = getLoanRepaymentRequest();
                 final JsonCommand command = createJsonCommand(json);
-                final String parameter = StandingInstructionApiConstants.recurrenceTypeParamName;
-                final String expectedCode = "validation.msg.standinginstruction.recurrenceType.as.per.dues.not.allowed.with.fixed.amount";
-                
-                PlatformApiDataValidationException ex = assertThrows(
-                    PlatformApiDataValidationException.class, () -> {
-                        standingInstructionDataValidator.validateForCreate(command);
-                });
-            
-                List<String> actualCodes = ex.getErrors().stream()
-                    .map(error -> error.getUserMessageGlobalisationCode())
-                    .toList();
-            
-                boolean hasError = ex.getErrors().stream().anyMatch(error -> 
-                    parameter.equals(error.getParameterName()) &&
-                    expectedCode.equals(error.getUserMessageGlobalisationCode()));
-                
-                String mensajeError = String.format(
-                    "No se encontró el error esperado. \nParámetro esperado: [%s] \nCódigo esperado: [%s] \nCódigos encontrados: %s",
-                    parameter, expectedCode, actualCodes
-                );
-            
-                assertTrue(hasError, mensajeError);
+                assertThrowsValidationError(command,
+                    StandingInstructionApiConstants.recurrenceTypeParamName,
+                    "validation.msg.standinginstruction.recurrenceType.as.per.dues.not.allowed.with.fixed.amount");
             }
         }
     }
