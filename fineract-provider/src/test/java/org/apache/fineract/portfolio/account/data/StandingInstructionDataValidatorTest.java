@@ -369,10 +369,8 @@ public class StandingInstructionDataValidatorTest {
             void throwErrorWhenIsNotALoanRepayment() {
                 final JsonObject json = getLoanRepaymentRequest();
                 json.addProperty(AccountDetailConstants.toAccountTypeParamName, 2);
-                final JsonCommand command = createJsonCommand(json);
-                assertThrowsValidationError(command,
-                    AccountDetailConstants.transferTypeParamName,
-                    "validation.msg.standinginstruction.transferType.not.loan.repayment");
+                assertValidation(json,
+                    AccountDetailConstants.transferTypeParamName, "not.loan.repayment");
             }
 
             @Test
