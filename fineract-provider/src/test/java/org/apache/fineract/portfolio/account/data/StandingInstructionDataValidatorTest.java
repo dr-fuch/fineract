@@ -275,7 +275,7 @@ public class StandingInstructionDataValidatorTest {
                 json.addProperty(AccountDetailConstants.fromAccountTypeParamName, 1);
                 final JsonCommand command = createJsonCommand(json);
                 assertThrowsValidationError(command,
-                    AccountDetailConstants.fromAccountTypeParamName,
+                    AccountDetailConstants.transferTypeParamName,
                     "validation.msg.standinginstruction.transferType.not.account.transfer");
             }
 
@@ -301,6 +301,16 @@ public class StandingInstructionDataValidatorTest {
                 assertThrowsValidationError(command,
                     StandingInstructionApiConstants.recurrenceTypeParamName,
                     "validation.msg.standinginstruction.recurrenceType.as.per.dues.not.allowed.with.fixed.amount");
+            }
+
+            @Test
+            void throwErrorWhenIsNotALoanRepayment() {
+                final JsonObject json = getLoanRepaymentRequest();
+                json.addProperty(AccountDetailConstants.toAccountTypeParamName, 2);
+                final JsonCommand command = createJsonCommand(json);
+                assertThrowsValidationError(command,
+                    AccountDetailConstants.transferTypeParamName,
+                    "validation.msg.standinginstruction.transferType.not.loan.repayment");
             }
         }
     }
