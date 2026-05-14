@@ -462,6 +462,10 @@ public class StandingInstructionDataValidatorTest {
         assertEquals(true, hasError);
     }
     
+    private void assertRange(JsonObject json, String param) {
+        assertValidation(json, param, "is.not.within.expected.range");
+    }
+
     private void assertRange(String param) {
         assertValidation(getBaseRequest(), param, "is.not.within.expected.range");
     }
