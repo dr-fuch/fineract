@@ -317,6 +317,13 @@ public class StandingInstructionDataValidatorTest {
                     AccountDetailConstants.transferTypeParamName,
                     "validation.msg.standinginstruction.transferType.not.loan.repayment");
             }
+
+            @Test
+            void shouldNotThrowErrorWithValidLoanRepayment() {
+                final JsonObject json = getLoanRepaymentRequest();
+                final JsonCommand command = createJsonCommand(json);
+                assertDoesNotThrow(() -> { standingInstructionDataValidator.validateForCreate(command); });
+            }
         }
     }
 
