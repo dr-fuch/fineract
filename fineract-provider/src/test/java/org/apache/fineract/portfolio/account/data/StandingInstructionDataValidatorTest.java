@@ -171,6 +171,14 @@ public class StandingInstructionDataValidatorTest {
             }
 
             @Test
+            void throwErrorWhitRecurrenceFrequencyInvalidValue() {
+                final JsonObject json = getPeriodicRequest();
+                json.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, 4);
+                assertThrowsBlankValidationError(json,
+                    StandingInstructionApiConstants.recurrenceFrequencyParamName);
+            }
+
+            @Test
             void throwErrorWhenRecurrenceIntervalIsMissing() {
                 final JsonObject json = getPeriodicRequest();
                 assertThrowsBlankValidationError(json,
@@ -265,10 +273,21 @@ public class StandingInstructionDataValidatorTest {
         return String.format("validation.msg.standinginstruction.%s.cannot.be.blank", parameter);
     }
 
-    private void assertThrowsOutOfRangeValidationError(final String parameter) {
+    private String getOutOfRangeValidationError(final String parameter) {
         final String expectedCode = String.format(
             "validation.msg.standinginstruction.%s.is.not.within.expected.range", parameter);
+    }
+
+    private void assertThrowsOutOfRangeValidationError(final String parameter) {
+        final String expectedCode = getOutOfRangeValidationError(parameter);
         final JsonObject json = getBaseRequest();
+        final JsonCommand command = createJsonCommand(json);
+
+        assertThrowsValidationError(command, parameter, expectedCode);
+    }
+
+    private void assertThrowsOutOfRangeValidationError(final JsonObject json, final String parameter) {
+        final String expectedCode = getOutOfRangeValidationError(parameter);
         final JsonCommand command = createJsonCommand(json);
 
         assertThrowsValidationError(command, parameter, expectedCode);
