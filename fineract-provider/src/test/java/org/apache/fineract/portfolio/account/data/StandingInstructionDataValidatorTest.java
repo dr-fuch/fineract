@@ -165,12 +165,16 @@ public class StandingInstructionDataValidatorTest {
         class PeriodicRecurrenceType {
             @Test
             void throwErrorWhenRecurrenceFrequencyIsMissing() {
-                final JsonObject json = getRequest("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 2, 2, 1,
-                    "ACCOUNT TRANSFER TEST", 1, 1, 1, "08 May 2026", "07 May 2027", 1,
-                    new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
-
+                final JsonObject json = getPeriodicRequest();
                 assertThrowsBlankValidationError(json,
                     StandingInstructionApiConstants.recurrenceFrequencyParamName);
+            }
+
+            @Test
+            void throwErrorWhenRecurrenceIntervalIsMissing() {
+                final JsonObject json = getPeriodicRequest();
+                assertThrowsBlankValidationError(json,
+                    StandingInstructionApiConstants.recurrenceIntervalParamName);
             }
         }
         @Nested
@@ -208,17 +212,20 @@ public class StandingInstructionDataValidatorTest {
     private JsonObject getBaseRequestWithInvalidParam() {
         final JsonObject jsonObject = getBaseRequest();
         jsonObject.addProperty("invalidParam", "invalidValue");
-
         return jsonObject;
     }
 
     private JsonObject getBaseRequest() {   
-        final JsonObject jsonObject = new JsonObject();
         return getRequest("en", "dd MMMM yyyy", 1, 1, 1, 1, 1, 1, 1, 1, 4,
             "BASE TEST", 5, 3, 3, "08 May 2026", "07 May 2026", 3,
             new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
     }
 
+    private JsonObject getPeriodicRequest() {
+        return getRequest("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 2, 2, 1,
+            "PERIODIC TEST", 1, 1, 1, "08 May 2026", "07 May 2027", 1,
+            new BigDecimal(10.00), 1, 1, "08 May", "dd MMMM");
+    }
     private JsonObject getRequest(final String locale, final String dateFormat, final Integer fromOfficeId,
         final Integer fromClientId, final Integer fromAccountId, final Integer fromAccountType, final Integer toOfficeId,
         final Integer toClientId, final Integer toAccountId, final Integer toAccountType, final Integer transferType,
