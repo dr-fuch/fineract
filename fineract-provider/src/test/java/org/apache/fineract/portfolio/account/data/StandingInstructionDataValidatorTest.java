@@ -229,10 +229,8 @@ public class StandingInstructionDataValidatorTest {
             void throwErrorWithRecurrenceOnMonthDayInvalidValue() {
                 final JsonObject json = getPeriodicRequest();
                 json.addProperty(StandingInstructionApiConstants.recurrenceOnMonthDayParamName, "08 Mayo");
-                final JsonCommand command = createJsonCommand(json);
-                assertThrowsValidationError(command,
-                    StandingInstructionApiConstants.recurrenceOnMonthDayParamName,
-                    "validation.msg.standinginstruction.recurrenceOnMonthDay.invalid.month.day.format");
+                assertValidation(json,
+                    StandingInstructionApiConstants.recurrenceOnMonthDayParamName, "invalid.month.day.format");
             }
 
 
