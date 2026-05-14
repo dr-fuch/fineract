@@ -173,40 +173,6 @@ public class StandingInstructionDataValidatorTest {
             }
 
             @Test
-            void throwErrorWhenValidTillIsBeforeFirstDailyExecution() {
-                final JsonObject json = getPeriodicRequest();
-                json.addProperty(StandingInstructionApiConstants.validFromParamName, "08 May 2026");
-                json.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, 1); 
-                json.addProperty(StandingInstructionApiConstants.recurrenceIntervalParamName, 5);
-                json.addProperty(StandingInstructionApiConstants.validTillParamName, "10 May 2026");
-                assertValidation(json, 
-                    StandingInstructionApiConstants.validTillParamName, "must.not.be.before.first.execution.date");
-            }
-
-            @Test
-            void throwErrorWhenValidTillIsBeforeFirstWeeklyExecution() {
-                final JsonObject json = getPeriodicRequest();
-                json.addProperty(StandingInstructionApiConstants.validFromParamName, "08 May 2026");
-                json.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, 2);
-                json.addProperty(StandingInstructionApiConstants.recurrenceIntervalParamName, 2);
-                json.addProperty(StandingInstructionApiConstants.validTillParamName, "15 May 2026");
-                assertValidation(json, 
-                    StandingInstructionApiConstants.validTillParamName, "must.not.be.before.first.execution.date");
-            }
-
-            @Test
-            void throwErrorWhenValidTillIsBeforeFirstMonthlyExecutionWithMonthDay() {
-                final JsonObject json = getPeriodicRequest();
-                json.addProperty(StandingInstructionApiConstants.validFromParamName, "15 May 2026");
-                json.addProperty(StandingInstructionApiConstants.recurrenceOnMonthDayParamName, "10 May");
-                json.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, 3); // Monthly
-                json.addProperty(StandingInstructionApiConstants.recurrenceIntervalParamName, 1);
-                json.addProperty(StandingInstructionApiConstants.validTillParamName, "25 May 2026");
-            
-                assertValidation(json, StandingInstructionApiConstants.validTillParamName, "must.not.be.before.first.execution.date");
-            }
-
-            @Test
             void throwErrorWhenRecurrenceTypeIsMissing() {
                 assertThrowsBlankValidationError(StandingInstructionApiConstants.recurrenceTypeParamName);
             }
@@ -263,6 +229,41 @@ public class StandingInstructionDataValidatorTest {
                 assertThrowsValidationError(command,
                     StandingInstructionApiConstants.recurrenceOnMonthDayParamName,
                     "validation.msg.standinginstruction.recurrenceOnMonthDay.invalid.month.day.format");
+            }
+
+
+            @Test
+            void throwErrorWhenValidTillIsBeforeFirstDailyExecution() {
+                final JsonObject json = getPeriodicRequest();
+                json.addProperty(StandingInstructionApiConstants.validFromParamName, "08 May 2026");
+                json.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, 1); 
+                json.addProperty(StandingInstructionApiConstants.recurrenceIntervalParamName, 5);
+                json.addProperty(StandingInstructionApiConstants.validTillParamName, "10 May 2026");
+                assertValidation(json, 
+                    StandingInstructionApiConstants.validTillParamName, "must.not.be.before.first.execution.date");
+            }
+
+            @Test
+            void throwErrorWhenValidTillIsBeforeFirstWeeklyExecution() {
+                final JsonObject json = getPeriodicRequest();
+                json.addProperty(StandingInstructionApiConstants.validFromParamName, "08 May 2026");
+                json.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, 2);
+                json.addProperty(StandingInstructionApiConstants.recurrenceIntervalParamName, 2);
+                json.addProperty(StandingInstructionApiConstants.validTillParamName, "15 May 2026");
+                assertValidation(json, 
+                    StandingInstructionApiConstants.validTillParamName, "must.not.be.before.first.execution.date");
+            }
+
+            @Test
+            void throwErrorWhenValidTillIsBeforeFirstMonthlyExecutionWithMonthDay() {
+                final JsonObject json = getPeriodicRequest();
+                json.addProperty(StandingInstructionApiConstants.validFromParamName, "15 May 2026");
+                json.addProperty(StandingInstructionApiConstants.recurrenceOnMonthDayParamName, "10 May");
+                json.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, 3);
+                json.addProperty(StandingInstructionApiConstants.recurrenceIntervalParamName, 1);
+                json.addProperty(StandingInstructionApiConstants.validTillParamName, "25 May 2026");
+            
+                assertValidation(json, StandingInstructionApiConstants.validTillParamName, "must.not.be.before.first.execution.date");
             }
 
         }
