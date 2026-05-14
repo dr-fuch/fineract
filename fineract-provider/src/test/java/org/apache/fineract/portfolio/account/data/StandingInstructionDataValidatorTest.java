@@ -242,6 +242,16 @@ public class StandingInstructionDataValidatorTest {
             }
 
             @Test
+            void throwErrorWhenInstructionTypeIsDues() {
+                final JsonObject json = getPeriodicRequest();
+                json.addProperty(StandingInstructionApiConstants.instructionTypeParamName, 2);
+                final JsonCommand command = createJsonCommand(json);
+                assertThrowsValidationError(command,
+                    StandingInstructionApiConstants.instructionTypeParamName,
+                    "validation.msg.standinginstruction.instructionType.dues.not.allowed.for.account.transfer");
+            }
+
+            @Test
             void throwErrorWithEqualAccountsAndEqualOffices() {
                 final JsonObject json = getRequest("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 1, 2, 1,
                     "ACCOUNT TRANSFER TEST", 1, 1, 1, "08 May 2026", "07 May 2027", 1,
@@ -251,6 +261,18 @@ public class StandingInstructionDataValidatorTest {
                 assertThrowsValidationError(command, 
                     AccountDetailConstants.toAccountIdParamName,
                     "validation.msg.standinginstruction.toAccountId.transfer.to.same.account.not.allowed");
+            }
+        }
+
+        @Nested
+        class LoanRepayment {
+            @Test
+            void throwErrorWhenInstructionTypeIsFixedAndRecurrenceTypeIsAsPerDues() {
+                final JsonObject json = getLoanRepaymentRequest();
+                final JsonCommand command = createJsonCommand(json);
+                assertThrowsValidationError(command,
+                    StandingInstructionApiConstants.recurrenceTypeParamName,
+                    "validation.msg.standinginstruction.recurrenceType.as.per.dues.not.allowed.with.fixed.amount");
             }
         }
     }
@@ -291,6 +313,12 @@ public class StandingInstructionDataValidatorTest {
     private JsonObject getDuesRequest() {
         return getRequest("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 2, 2, 1,
             "PERIODIC TEST", 1, 2, 1, "08 May 2026", "07 May 2027", 1,
+            new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
+    }
+
+    private JsonObject getLoanRepaymentRequest() {
+        return getRequest("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 1, 1, 1,
+            "PERIODIC TEST", 1, 1, 1, "08 May 2026", "07 May 2027", 2,
             new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
     }
 
