@@ -292,10 +292,8 @@ public class StandingInstructionDataValidatorTest {
             @Test
             void throwErrorWhenInstructionTypeIsDuesAndAmountIsNotNull() {
                 final JsonObject json = getDuesRequest();
-                final JsonCommand command = createJsonCommand(json);
-                assertThrowsValidationError(command,
-                    StandingInstructionApiConstants.amountParamName,
-                    "validation.msg.standinginstruction.amount.not.allowed.for.dues.instruction");
+                assertValidation(json,
+                    StandingInstructionApiConstants.amountParamName, "not.allowed.for.dues.instruction");
             }
         }
 
