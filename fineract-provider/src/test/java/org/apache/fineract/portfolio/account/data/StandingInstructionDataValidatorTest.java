@@ -174,7 +174,10 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhenRecurrenceTypeIsMissing() {
-                assertThrowsBlankValidationError(StandingInstructionApiConstants.recurrenceTypeParamName);
+                final JsonObject json = getBaseRequest();
+                json.remove(StandingInstructionApiConstants.recurrenceTypeParamName);
+                assertValidation(json, 
+                    StandingInstructionApiConstants.recurrenceTypeParamName, "cannot.be.blank");
             }
 
             @Test
