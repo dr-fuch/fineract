@@ -230,10 +230,19 @@ public class StandingInstructionDataValidatorTest {
         }
 
         @Nested
-        class ConditionedBehavior {
+        class AccountTransfer {
+            @Test
+            void throwErrorWhenRecurrenceTypeIsAsPerDues() {
+                final JsonObject json = getPeriodicRequest();
+                json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 2);
+                final JsonCommand command = createJsonCommand(json);
+                assertThrowsValidationError(command,
+                    StandingInstructionApiConstants.recurrenceTypeParamName,
+                    "validation.msg.standinginstruction.recurrenceType.as.per.dues.not.allowed.for.account.transfer.");
+            }
 
             @Test
-            void throwExceptionWithEqualAccountsAndEqualOffices() {
+            void throwErrorWithEqualAccountsAndEqualOffices() {
                 final JsonObject json = getRequest("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 1, 2, 1,
                     "ACCOUNT TRANSFER TEST", 1, 1, 1, "08 May 2026", "07 May 2027", 1,
                     new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
