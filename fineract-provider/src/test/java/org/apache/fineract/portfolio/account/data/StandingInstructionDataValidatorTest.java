@@ -123,7 +123,9 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhitPriorityInvalidValue() {
-                assertThrowsOutOfRangeValidationError(StandingInstructionApiConstants.priorityParamName);
+                final JsonObject json = getBaseRequest();
+                assertValidation(json, 
+                    StandingInstructionApiConstants.priorityParamName, "is.not.within.expected.range");
             }
 
             @Test
