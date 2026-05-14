@@ -270,6 +270,14 @@ public class StandingInstructionDataValidatorTest {
             }
 
             @Test
+            void throwErrorWhenIsNotAnAccountTransfer() {
+                final JsonObject json = getAccountTransferRequest();
+                json.addProperty(AccountDetailConstants.fromAccountTypeParamName, 1);
+                assertThrowsOutOfRangeValidationError(json,
+                    AccountDetailConstants.fromAccountTypeParamName);
+            }
+
+            @Test
             void throwErrorWithEqualAccountsAndEqualOffices() {
                 final JsonObject json = getRequest("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 1, 2, 1,
                     "ACCOUNT TRANSFER TEST", 1, 1, 1, "08 May 2026", "07 May 2027", 1,
