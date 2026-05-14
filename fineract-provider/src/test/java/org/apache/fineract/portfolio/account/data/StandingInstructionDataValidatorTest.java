@@ -130,7 +130,10 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhenInstructionTypeIsMissing() {
-                assertThrowsBlankValidationError(StandingInstructionApiConstants.instructionTypeParamName);
+                final JsonObject json = getBaseRequest();
+                json.remove(StandingInstructionApiConstants.instructionTypeParamName);
+                assertValidation(json, 
+                    StandingInstructionApiConstants.instructionTypeParamName, "cannot.be.blank");
             }
 
             @Test
