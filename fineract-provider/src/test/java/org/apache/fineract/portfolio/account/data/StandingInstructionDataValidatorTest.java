@@ -94,7 +94,8 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhenTransferTypeIsMissing() {
-                assertBlank(AccountDetailConstants.transferTypeParamName);
+                assertBlank(getBaseRequest(),
+                    AccountDetailConstants.transferTypeParamName);
             }
 
             @Test
@@ -105,12 +106,14 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhenNameIsMissing() {
-                assertBlank(StandingInstructionApiConstants.nameParamName);
+                assertBlank(getBaseRequest(),
+                    StandingInstructionApiConstants.nameParamName);
             }
 
             @Test
             void throwErrorWhenPriorityIsMissing() {
-                assertBlank(StandingInstructionApiConstants.priorityParamName);
+                assertBlank(getBaseRequest(),
+                    StandingInstructionApiConstants.priorityParamName);
             }
 
             @Test
@@ -121,7 +124,8 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhenInstructionTypeIsMissing() {
-                assertBlank(StandingInstructionApiConstants.instructionTypeParamName);
+                assertBlank(getBaseRequest(),
+                    StandingInstructionApiConstants.instructionTypeParamName);
             }
 
             @Test
@@ -132,7 +136,8 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhenStatusIsMissing() {
-                assertBlank(StandingInstructionApiConstants.statusParamName);
+                assertBlank(getBaseRequest(),
+                    StandingInstructionApiConstants.statusParamName);
             }
 
             @Test
@@ -143,7 +148,8 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhenValidFromIsMissing() {
-                assertBlank(StandingInstructionApiConstants.validFromParamName);
+                assertBlank(getBaseRequest(),
+                    StandingInstructionApiConstants.validFromParamName);
             }
 
             @Test 
@@ -154,7 +160,8 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhenRecurrenceTypeIsMissing() {
-                assertBlank(StandingInstructionApiConstants.recurrenceTypeParamName);
+                assertBlank(getBaseRequest(),
+                    StandingInstructionApiConstants.recurrenceTypeParamName);
             }
 
             @Test
@@ -479,12 +486,6 @@ public class StandingInstructionDataValidatorTest {
     }
 
     private void assertBlank(JsonObject json, String param) {
-        json.remove(param);
-        assertValidation(json, param, MSG_CODE_CANNOT_BE_BLANK);
-    }
-
-    private void assertBlank(String param) {
-        JsonObject json = getBaseRequest();
         json.remove(param);
         assertValidation(json, param, MSG_CODE_CANNOT_BE_BLANK);
     }
