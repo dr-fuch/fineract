@@ -206,7 +206,7 @@ public class StandingInstructionDataValidatorTest {
                 final JsonCommand command = createJsonCommand(json);
                 assertThrowsValidationError(command,
                     StandingInstructionApiConstants.recurrenceOnMonthDayParamName,
-                    "recurrenceOnMonthDay.invalid.month.day.format");
+                    "validation.msg.standinginstruction.recurrenceOnMonthDay.invalid.month.day.format");
             }
 
         }
