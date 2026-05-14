@@ -193,11 +193,11 @@ public class StandingInstructionDataValidator {
             if (accountTransferType.isAccountTransfer()) {
                 if (isAsPerDuesRecurrenceType) {
                     baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceTypeParamName)
-                        .failWithCode("recurrence.type.as.per.dues.not.allowed.for.account.transfer");
+                        .failWithCode("as.per.dues.not.allowed.for.account.transfer");
                 }
                 if (isDuesInstructionType) {
                     baseDataValidator.reset().parameter(StandingInstructionApiConstants.instructionTypeParamName)
-                        .failWithCode("instruction.type.dues.not.allowed.for.account.transfer");
+                        .failWithCode("dues.not.allowed.for.account.transfer");
                 }
             }
         
