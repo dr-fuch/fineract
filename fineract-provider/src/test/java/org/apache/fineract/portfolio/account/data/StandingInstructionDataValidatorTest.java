@@ -302,7 +302,7 @@ public class StandingInstructionDataValidatorTest {
             void throwErrorWhenRecurrenceTypeIsAsPerDues() {
                 final JsonObject json = getPeriodicRequest();
                 json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 2);
-                assertThrowsValidationError(json,
+                assertValidation(json,
                     StandingInstructionApiConstants.recurrenceTypeParamName,
                     "as.per.dues.not.allowed.for.account.transfer");
             }
@@ -311,7 +311,7 @@ public class StandingInstructionDataValidatorTest {
             void throwErrorWhenInstructionTypeIsDues() {
                 final JsonObject json = getPeriodicRequest();
                 json.addProperty(StandingInstructionApiConstants.instructionTypeParamName, 2);
-                assertThrowsValidationError(json,
+                assertValidation(json,
                     StandingInstructionApiConstants.instructionTypeParamName, "dues.not.allowed.for.account.transfer");
             }
 
@@ -477,25 +477,6 @@ public class StandingInstructionDataValidatorTest {
         json.addProperty(StandingInstructionApiConstants.nameParamName, "ACCOUNT TRANSFER TEST");
         json.addProperty(AccountDetailConstants.toAccountIdParamName, 2);
         return json;
-    }
-
-    private String getValidationError(final String parameter, final String reason) {
-        return String.format("validation.msg.standinginstruction.%s.%s", parameter, reason);
-    }
-
-    private void assertThrowsOutOfRangeValidationError(final String parameter) {
-        final String expectedCode = getValidationError(parameter, "is.not.within.expected.range");
-        final JsonObject json = getBaseRequest();
-        final JsonCommand command = createJsonCommand(json);
-
-        assertThrowsValidationError(command, parameter, expectedCode);
-    }
-
-    private void assertThrowsOutOfRangeValidationError(final JsonObject json, final String parameter) {
-        final String expectedCode = getValidationError(parameter, "is.not.within.expected.range");
-        final JsonCommand command = createJsonCommand(json);
-
-        assertThrowsValidationError(command, parameter, expectedCode);
     }
 
     private void assertValidation(final JsonObject json, final String parameter, final String reason) {
