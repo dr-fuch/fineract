@@ -285,10 +285,8 @@ public class StandingInstructionDataValidatorTest {
             void throwErrorWhenAmountIsNotPositive() {
                 final JsonObject json = getPeriodicRequest();
                 json.addProperty(StandingInstructionApiConstants.amountParamName, new BigDecimal("-10.00"));
-                final JsonCommand command = createJsonCommand(json);
-                assertThrowsValidationError(command,
-                    StandingInstructionApiConstants.amountParamName,
-                    "validation.msg.standinginstruction.amount.not.greater.than.zero");
+                assertValidation(json,
+                    StandingInstructionApiConstants.amountParamName, "not.greater.than.zero");
             }
 
             @Test
