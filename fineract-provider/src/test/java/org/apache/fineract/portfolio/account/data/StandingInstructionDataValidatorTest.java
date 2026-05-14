@@ -160,7 +160,10 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhenValidFromIsMissing() {
-                assertThrowsBlankValidationError(StandingInstructionApiConstants.validFromParamName);
+                final JsonObject json = getBaseRequest();
+                json.remove(StandingInstructionApiConstants.validFromParamName);
+                assertValidation(json, 
+                    StandingInstructionApiConstants.validFromParamName, "cannot.be.blank");
             }
 
             @Test 
