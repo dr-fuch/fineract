@@ -176,7 +176,7 @@ public class StandingInstructionDataValidatorTest {
             void throwErrorWhitRecurrenceFrequencyInvalidValue() {
                 final JsonObject json = getPeriodicRequest();
                 json.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, 4);
-                assertThrowsBlankValidationError(json,
+                assertThrowsOutOfRangeValidationError(json,
                     StandingInstructionApiConstants.recurrenceFrequencyParamName);
             }
 
@@ -254,6 +254,14 @@ public class StandingInstructionDataValidatorTest {
             }
 
             @Test
+            void throwErrorWhenInstructionTypeIsNotFixed() {
+                final JsonObject json = getPeriodicRequest();
+                json.addProperty(StandingInstructionApiConstants.instructionTypeParamName, 2);
+                assertThrowsOutOfRangeValidationError(json,
+                    StandingInstructionApiConstants.instructionTypeParamName);
+            }
+
+            @Test
             void throwErrorWithEqualAccountsAndEqualOffices() {
                 final JsonObject json = getRequest("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 1, 2, 1,
                     "ACCOUNT TRANSFER TEST", 1, 1, 1, "08 May 2026", "07 May 2027", 1,
@@ -314,13 +322,19 @@ public class StandingInstructionDataValidatorTest {
 
     private JsonObject getDuesRequest() {
         return getRequest("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 2, 2, 1,
-            "PERIODIC TEST", 1, 2, 1, "08 May 2026", "07 May 2027", 1,
+            "DUES TEST", 1, 2, 1, "08 May 2026", "07 May 2027", 1,
             new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
     }
 
     private JsonObject getLoanRepaymentRequest() {
         return getRequest("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 1, 1, 2,
-            "PERIODIC TEST", 1, 1, 1, "08 May 2026", "07 May 2027", 2,
+            "LOAN REPAYMENT TEST", 1, 1, 1, "08 May 2026", "07 May 2027", 2,
+            new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
+    }
+
+    private JsonObject getAccountTransferRequest() {
+        return getRequest("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 2, 2, 1,
+            "ACCOUNT TRANSFER TEST", 1, 1, 1, "08 May 2026", "07 May 2027", 1,
             new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
     }
 
