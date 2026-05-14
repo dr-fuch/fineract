@@ -115,7 +115,10 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhenPriorityIsMissing() {
-                assertThrowsBlankValidationError(StandingInstructionApiConstants.priorityParamName);
+                final JsonObject json = getBaseRequest();
+                json.remove(StandingInstructionApiConstants.priorityParamName);
+                assertValidation(json, 
+                    StandingInstructionApiConstants.priorityParamName, "cannot.be.blank");
             }
 
             @Test
