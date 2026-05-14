@@ -99,7 +99,7 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhitTransferTypeInvalidValue() {
-                assertRange(getBaseRequest()
+                assertRange(getBaseRequest(),
                     AccountDetailConstants.transferTypeParamName);
             }
 
