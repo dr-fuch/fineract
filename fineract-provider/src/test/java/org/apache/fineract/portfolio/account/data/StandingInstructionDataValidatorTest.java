@@ -18,14 +18,13 @@
  */
 package org.apache.fineract.portfolio.account.data;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue; //borrar
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
 
-import java.util.List; //borrar
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import java.math.BigDecimal;
@@ -289,6 +288,15 @@ public class StandingInstructionDataValidatorTest {
                 assertThrowsValidationError(command, 
                     AccountDetailConstants.toAccountIdParamName,
                     "validation.msg.standinginstruction.toAccountId.transfer.to.same.account.not.allowed");
+            }
+
+            @Test
+            void shouldNotThrowErrorWithValidAccountTransfer() {
+                final JsonObject json = getAccountTransferRequest();
+                final JsonCommand command = createJsonCommand(json);
+                assertDoesNotThrow(() -> {
+                    this.standingInstructionDataValidator.validateForCreate(command);
+                });
             }
         }
 
