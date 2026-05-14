@@ -490,21 +490,6 @@ public class StandingInstructionDataValidatorTest {
 
         assertEquals(true, hasError);
     }
-
-    private void assertThrowsValidationError(final JsonCommand command, final String parameter,
-        final String expectedCode) {
-
-        PlatformApiDataValidationException ex = assertThrows(
-            PlatformApiDataValidationException.class, () -> {
-                this.standingInstructionDataValidator.validateForCreate(command);
-        });
-
-        boolean hasError = ex.getErrors().stream().anyMatch(error -> 
-            parameter.equals(error.getParameterName()) &&
-            expectedCode.equals(error.getUserMessageGlobalisationCode()));
-
-        assertEquals(true, hasError);
-    }
     
     private void assertThrowsException(Class<? extends Throwable> exceptionClass, JsonObject json) {
         final JsonCommand command = createJsonCommand(json);
