@@ -218,6 +218,15 @@ public class StandingInstructionDataValidatorTest {
                 final JsonObject json = getPeriodicRequest();
                 assertThrowsBlankValidationError(json, StandingInstructionApiConstants.amountParamName);
             }
+
+            @Test
+            void throwErrorWhenInstructionTypeIsDuesAndAmountIsNotNull() {
+                final JsonObject json = getDuesRequest();
+                final JsonCommand command = createJsonCommand(json);
+                assertThrowsValidationError(command,
+                    StandingInstructionApiConstants.amountParamName,
+                    "validation.msg.standinginstruction.amount.not.allowed.for.dues.instruction");
+            }
         }
 
         @Nested
@@ -267,6 +276,12 @@ public class StandingInstructionDataValidatorTest {
     private JsonObject getPeriodicRequest() {
         return getRequest("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 2, 2, 1,
             "PERIODIC TEST", 1, 1, 1, "08 May 2026", "07 May 2027", 1,
+            new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
+    }
+
+    private JsonObject getDuesRequest() {
+        return getRequest("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 2, 2, 1,
+            "PERIODIC TEST", 1, 2, 1, "08 May 2026", "07 May 2027", 1,
             new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
     }
 
