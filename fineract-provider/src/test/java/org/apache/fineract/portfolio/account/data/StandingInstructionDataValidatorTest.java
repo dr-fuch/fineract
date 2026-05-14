@@ -192,6 +192,12 @@ public class StandingInstructionDataValidatorTest {
                     StandingInstructionApiConstants.monthDayFormatParamName);
             }
 
+            @Test
+            void throwErrorWhenRecurrenceFrequencyIsMonthlyAndRecurrenceOnMonthDayIsMissing() {
+                final JsonObject json = getPeriodicRequest();
+                assertThrowsBlankValidationError(json,
+                    StandingInstructionApiConstants.recurrenceOnMonthDayParamName);
+            }
 
         }
         @Nested
