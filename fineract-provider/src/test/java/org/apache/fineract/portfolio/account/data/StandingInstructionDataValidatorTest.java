@@ -302,10 +302,9 @@ public class StandingInstructionDataValidatorTest {
             void throwErrorWhenRecurrenceTypeIsAsPerDues() {
                 final JsonObject json = getPeriodicRequest();
                 json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 2);
-                final JsonCommand command = createJsonCommand(json);
-                assertThrowsValidationError(command,
+                assertThrowsValidationError(json,
                     StandingInstructionApiConstants.recurrenceTypeParamName,
-                    "validation.msg.standinginstruction.recurrenceType.as.per.dues.not.allowed.for.account.transfer");
+                    "as.per.dues.not.allowed.for.account.transfer");
             }
 
             @Test
