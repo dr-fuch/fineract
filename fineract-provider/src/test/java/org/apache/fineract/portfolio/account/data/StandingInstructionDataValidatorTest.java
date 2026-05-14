@@ -255,10 +255,18 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhenInstructionTypeIsNotFixed() {
-                final JsonObject json = getPeriodicRequest();
+                final JsonObject json = getAccountTransferRequest();
                 json.addProperty(StandingInstructionApiConstants.instructionTypeParamName, 2);
                 assertThrowsOutOfRangeValidationError(json,
                     StandingInstructionApiConstants.instructionTypeParamName);
+            }
+
+            @Test
+            void throwErrorWhenRecurrenceTypeIsNotPeriodic() {
+                final JsonObject json = getAccountTransferRequest();
+                json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 2);
+                assertThrowsOutOfRangeValidationError(json,
+                    StandingInstructionApiConstants.recurrenceTypeParamName);
             }
 
             @Test
