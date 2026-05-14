@@ -80,9 +80,7 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void shouldCallAccountTransfersDetailDataValidator() {
-                final JsonObject json = getRequest("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 2, 2, 1,
-                    "BASE TEST", 1, 1, 1, "08 May 2026", "07 May 2027", 1,
-                    new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
+                final JsonObject json = getMiminalBaseRequest();
                 final JsonCommand command = createJsonCommand(json);
                 standingInstructionDataValidator.validateForCreate(command);
 
@@ -366,29 +364,49 @@ public class StandingInstructionDataValidatorTest {
             new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
     }
 
+    private JsonObject getMinimalBaseRequest() {
+        final JsonObject json = getBaseRequest();
+        json.addProperty(AccountDetailConstants.fromAccountTypeParamName, 2);
+        json.addProperty(AccountDetailConstants.transferTypeParamName, 1);
+        json.addProperty(StandingInstructionApiConstants.priorityParamName, 1);
+        json.addProperty(StandingInstructionApiConstants.instructionTypeParamName, 1);
+        json.addProperty(StandingInstructionApiConstants.statusParamName, 1);
+        json.addProperty(StandingInstructionApiConstants.validTillParamName, "07 May 2027");
+        json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 1);
+
+        return json;
+    }
+
     private JsonObject getPeriodicRequest() {
-        return getRequest("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 2, 2, 1,
-            "PERIODIC TEST", 1, 1, 1, "08 May 2026", "07 May 2027", 1,
-            new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
+        JsonObject json = getMinimalBaseRequest();
+        json.addProperty(StandingInstructionApiConstants.nameParamName, "PERIODIC TEST");
+        json.addProperty(AccountDetailConstants.toAccountTypeParamName, 2);
+        return json;
     }
 
     private JsonObject getDuesRequest() {
-        return getRequest("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 2, 2, 1,
-            "DUES TEST", 1, 2, 1, "08 May 2026", "07 May 2027", 1,
-            new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
+        JsonObject json = getMinimalBaseRequest();
+        json.addProperty(StandingInstructionApiConstants.nameParamName, "DUES TEST");
+        json.addProperty(StandingInstructionApiConstants.instructionTypeParamName, 2);
+        json.addProperty(AccountDetailConstants.toAccountTypeParamName, 2);
+        return json;
     }
 
     private JsonObject getLoanRepaymentRequest() {
-        final JsonObject json = getRequest("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 1, 1, 2,
-            "LOAN REPAYMENT TEST", 1, 1, 1, "08 May 2026", "07 May 2027", 2,
-            new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
+        JsonObject json = getMinimalBaseRequest();
+        json.addProperty(StandingInstructionApiConstants.nameParamName, "LOAN REPAYMENT TEST");
+        json.addProperty(AccountDetailConstants.transferTypeParamName, 2);
+        json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 2);
+        json.addProperty(AccountDetailConstants.instructionTypeParamName, 1);
         return json;
     }
 
     private JsonObject getAccountTransferRequest() {
-        return getRequest("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 2, 2, 1,
-            "ACCOUNT TRANSFER TEST", 1, 1, 1, "08 May 2026", "07 May 2027", 1,
-            new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
+        JsonObject json = getMinimalBaseRequest();
+        json.addProperty(StandingInstructionApiConstants.nameParamName, "ACCOUNT TRANSFER TEST");
+        json.addProperty(AccountDetailConstants.transferTypeParamName, 1);
+        json.addProperty(AccountDetailConstants.toAccountTypeParamName, 2);
+        return json;
     }
 
     private JsonObject getRequest(final String locale, final String dateFormat, final Integer fromOfficeId,
