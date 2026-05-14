@@ -107,7 +107,10 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhenNameIsMissing() {
-                assertThrowsBlankValidationError(StandingInstructionApiConstants.nameParamName);
+                final JsonObject json = getBaseRequest();
+                json.remove(StandingInstructionApiConstants.nameParamName);
+                assertValidation(json, 
+                    StandingInstructionApiConstants.nameParamName, "cannot.be.blank");
             }
 
             @Test
