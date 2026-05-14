@@ -265,7 +265,8 @@ public class StandingInstructionDataValidatorTest {
                 json.addProperty(StandingInstructionApiConstants.recurrenceIntervalParamName, 1);
                 json.addProperty(StandingInstructionApiConstants.validTillParamName, "25 May 2026");
             
-                assertValidation(json, StandingInstructionApiConstants.validTillParamName, "must.not.be.before.first.execution.date");
+                assertValidation(json, 
+                    StandingInstructionApiConstants.validTillParamName, "must.not.be.before.first.execution.date");
             }
 
         }
