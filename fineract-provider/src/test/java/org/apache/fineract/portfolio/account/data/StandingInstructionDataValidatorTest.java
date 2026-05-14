@@ -197,8 +197,8 @@ public class StandingInstructionDataValidatorTest {
             void throwErrorWhitRecurrenceFrequencyInvalidValue() {
                 final JsonObject json = getPeriodicRequest();
                 json.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, 4);
-                assertThrowsOutOfRangeValidationError(json,
-                    StandingInstructionApiConstants.recurrenceFrequencyParamName);
+                assertValidation(json,
+                    StandingInstructionApiConstants.recurrenceFrequencyParamNam, "is.not.within.expected.range");
             }
 
             @Test
