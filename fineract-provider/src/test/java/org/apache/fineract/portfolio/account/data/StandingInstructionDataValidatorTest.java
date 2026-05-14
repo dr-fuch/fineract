@@ -506,23 +506,7 @@ public class StandingInstructionDataValidatorTest {
 
         assertThrowsValidationError(command, parameter, expectedCode);
     }
-
-    private void assertThrowsBlankValidationError(final String parameter) {
-        final String expectedCode = getValidationError(parameter, "cannot.be.blank");
-        final JsonObject json = getBaseRequest();
-        json.remove(parameter);
-        final JsonCommand command = createJsonCommand(json);
-        assertThrowsValidationError(command, parameter, expectedCode);
-    }
-
-    private void assertThrowsBlankValidationError(final JsonObject json, final String parameter) {
-        final String expectedCode = getValidationError(parameter, "cannot.be.blank");
-        json.remove(parameter);
-        final JsonCommand command = createJsonCommand(json);
-
-        assertThrowsValidationError(command, parameter, expectedCode);
-    }
-
+    
     private void assertValidation(final JsonObject json, final String parameter, final String reason) {
         final String expectedCode = BASE_ERR + parameter + "." + reason;
         final JsonCommand command = createJsonCommand(json);
