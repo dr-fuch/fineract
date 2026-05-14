@@ -319,8 +319,8 @@ public class StandingInstructionDataValidatorTest {
             void throwErrorWhenInstructionTypeIsNotFixed() {
                 final JsonObject json = getAccountTransferRequest();
                 json.addProperty(StandingInstructionApiConstants.instructionTypeParamName, 2);
-                assertThrowsOutOfRangeValidationError(json,
-                    StandingInstructionApiConstants.instructionTypeParamName);
+                assertValidation(json,
+                    StandingInstructionApiConstants.instructionTypeParamName, "is.not.within.expected.range");
             }
 
             @Test
