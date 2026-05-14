@@ -68,15 +68,14 @@ public class StandingInstructionDataValidatorTest {
         class UnconditionedBehavior {
             @Test
             void throwExceptionWhenJsonIsBlankOrNull(){
-                final JsonCommand command = createJsonCommand(null);
-                assertThrowsException(InvalidJsonException.class, command);
+                assertThrowsException(InvalidJsonException.class, "");
             }
 
             @Test
             void throwExceptionWhenJsonHasAnInvalidParam() {
                 final JsonObject json = getBaseRequest();
                 json.addProperty("invalidParam", "invalidValue");
-                assertThrowsException(UnsupportedParameterException.class);
+                assertThrowsException(UnsupportedParameterException.class, json);
             }
 
             @Test
