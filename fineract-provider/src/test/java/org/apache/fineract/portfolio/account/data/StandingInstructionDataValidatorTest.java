@@ -321,6 +321,7 @@ public class StandingInstructionDataValidatorTest {
             @Test
             void shouldNotThrowErrorWithValidLoanRepayment() {
                 final JsonObject json = getLoanRepaymentRequest();
+                json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 1);
                 final JsonCommand command = createJsonCommand(json);
                 assertDoesNotThrow(() -> { standingInstructionDataValidator.validateForCreate(command); });
             }
@@ -368,7 +369,7 @@ public class StandingInstructionDataValidatorTest {
 
     private JsonObject getLoanRepaymentRequest() {
         final JsonObject json = getRequest("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 1, 1, 2,
-            "LOAN REPAYMENT TEST", 1, 1, 1, "08 May 2026", "07 May 2027", 1,
+            "LOAN REPAYMENT TEST", 1, 1, 1, "08 May 2026", "07 May 2027", 2,
             new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
         return json;
     }
