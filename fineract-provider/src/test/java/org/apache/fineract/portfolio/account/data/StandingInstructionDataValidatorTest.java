@@ -238,7 +238,7 @@ public class StandingInstructionDataValidatorTest {
                 final JsonCommand command = createJsonCommand(json);
                 assertThrowsValidationError(command,
                     StandingInstructionApiConstants.recurrenceTypeParamName,
-                    "validation.msg.standinginstruction.recurrenceType.as.per.dues.not.allowed.for.account.transfer.");
+                    "validation.msg.standinginstruction.recurrenceType.as.per.dues.not.allowed.for.account.transfer");
             }
 
             @Test
