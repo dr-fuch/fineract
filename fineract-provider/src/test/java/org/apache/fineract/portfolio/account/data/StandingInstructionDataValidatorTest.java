@@ -165,14 +165,12 @@ public class StandingInstructionDataValidatorTest {
         class PeriodicRecurrenceType {
             @Test
             void throwErrorWhenRecurrenceFrequencyIsMissing() {
-                final String expectedCode = String.format(
-                    "validation.msg.standinginstruction.%s.cannot.be.blank", parameter);
-                final JsonObject json = getRequest("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 1, 2, 1,
+                final JsonObject jsonObject = getRequest("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 2, 2, 1,
                     "ACCOUNT TRANSFER TEST", 1, 1, 1, "08 May 2026", "07 May 2027", 1,
                     new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
-                final JsonCommand command = createJsonCommand(json);
 
-                assertThrowsValidationError(command, parameter, expectedCode);   
+                assertThrowsBlankValidationError(jsonObject,
+                    StandingInstructionApiConstants.recurrenceFrequencyParamName);
             }
         }
         @Nested
@@ -256,6 +254,10 @@ public class StandingInstructionDataValidatorTest {
         return jsonObject;
     }
 
+    private String getBlankValidationError(final String parameter) {
+        return String.format("validation.msg.standinginstruction.%s.cannot.be.blank", parameter);
+    }
+
     private void assertThrowsOutOfRangeValidationError(final String parameter) {
         final String expectedCode = String.format(
             "validation.msg.standinginstruction.%s.is.not.within.expected.range", parameter);
@@ -266,18 +268,16 @@ public class StandingInstructionDataValidatorTest {
     }
 
     private void assertThrowsBlankValidationError(final String parameter) {
-        final String expectedCode = String.format(
-            "validation.msg.standinginstruction.%s.cannot.be.blank", parameter);
+        final String expectedCode = getBlankValidationError(parameter)
         final JsonObject json = getBaseRequestWithoutParam(parameter);
         final JsonCommand command = createJsonCommand(json);
 
         assertThrowsValidationError(command, parameter, expectedCode);
     }
 
-    private void assertThrowsBlankValidationError(final JsonObject json, final String parameter) {
-        final String expectedCode = String.format(
-            "validation.msg.standinginstruction.%s.cannot.be.blank", parameter);
-        final JsonObject json = getBaseRequestWithoutParam(parameter);
+    private void assertThrowsBlankValidationError(final JsonObject jsonObject, final String parameter) {
+        final String expectedCode = getBlankValidationError(parameter);
+        jsonObject.remove(parameter);
         final JsonCommand command = createJsonCommand(json);
 
         assertThrowsValidationError(command, parameter, expectedCode);
