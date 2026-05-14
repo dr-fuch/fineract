@@ -144,7 +144,7 @@ public class StandingInstructionDataValidatorTest {
 
             @Test 
             void throwErrorWhenValidTillIsBeforeValidFrom() {
-                assertThrowsValidationError(getBaseRequest(), 
+                assertValidation(getBaseRequest(), 
                     StandingInstructionApiConstants.validTillParamName, "is.less.than.date");
             }
 
