@@ -92,7 +92,9 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhenTransferTypeIsMissing() {
-                assertThrowsBlankValidationError(AccountDetailConstants.transferTypeParamName);
+                final JsonObject json = getBaseRequest();
+                json.remove(AccountDetailConstants.transferTypeParamName);
+                assertValidation(json, AccountDetailConstants.transferTypeParamName, "cannot.be.blank");
             }
 
             @Test
