@@ -198,7 +198,7 @@ public class StandingInstructionDataValidatorTest {
                 final JsonObject json = getPeriodicRequest();
                 json.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, 4);
                 assertValidation(json,
-                    StandingInstructionApiConstants.recurrenceFrequencyParamNam, "is.not.within.expected.range");
+                    StandingInstructionApiConstants.recurrenceFrequencyParamName, "is.not.within.expected.range");
             }
 
             @Test
