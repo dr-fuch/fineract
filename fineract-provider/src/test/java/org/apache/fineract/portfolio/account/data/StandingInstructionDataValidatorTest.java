@@ -204,8 +204,9 @@ public class StandingInstructionDataValidatorTest {
             @Test
             void throwErrorWhenRecurrenceIntervalIsMissing() {
                 final JsonObject json = getPeriodicRequest();
-                assertThrowsBlankValidationError(json,
-                    StandingInstructionApiConstants.recurrenceIntervalParamName);
+                json.remove(StandingInstructionApiConstants.recurrenceIntervalParamName);
+                assertValidation(json, 
+                    StandingInstructionApiConstants.recurrenceIntervalParamName, "cannot.be.blank");
             }
 
             @Test
