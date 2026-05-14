@@ -76,8 +76,7 @@ public class StandingInstructionDataValidatorTest {
             void throwExceptionWhenJsonHasAnInvalidParam() {
                 final JsonObject json = getBaseRequest();
                 json.addProperty("invalidParam", "invalidValue");
-                final JsonCommand command = createJsonCommand(json);
-                assertThrowsException(UnsupportedParameterException.class, command);
+                assertThrowsException(UnsupportedParameterException.class);
             }
 
             @Test
@@ -493,7 +492,9 @@ public class StandingInstructionDataValidatorTest {
         assertEquals(true, hasError);
     }
     
-    private void assertThrowsException(Class<? extends Throwable> exceptionClass, JsonCommand command) {
-        assertThrows(exceptionClass, () -> this.standingInstructionDataValidator.validateForCreate(command));
+    private void assertThrowsException(Class<? extends Throwable> exceptionClass, JsonObject json) {
+        final JsonCommand command = createJsonCommand(json);
+        assertThrows(exceptionClass, () -> 
+            this.standingInstructionDataValidator.validateForCreate(command));
     }
 }
