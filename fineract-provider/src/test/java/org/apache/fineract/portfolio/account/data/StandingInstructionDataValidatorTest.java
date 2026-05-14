@@ -335,10 +335,8 @@ public class StandingInstructionDataValidatorTest {
             void throwErrorWhenIsNotAnAccountTransfer() {
                 final JsonObject json = getAccountTransferRequest();
                 json.addProperty(AccountDetailConstants.fromAccountTypeParamName, 1);
-                final JsonCommand command = createJsonCommand(json);
-                assertThrowsValidationError(command,
-                    AccountDetailConstants.transferTypeParamName,
-                    "validation.msg.standinginstruction.transferType.not.account.transfer");
+                assertValidation(json,
+                    AccountDetailConstants.transferTypeParamName, "not.account.transfer");
             }
 
             @Test
