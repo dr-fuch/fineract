@@ -360,10 +360,9 @@ public class StandingInstructionDataValidatorTest {
             @Test
             void throwErrorWhenInstructionTypeIsFixedAndRecurrenceTypeIsAsPerDues() {
                 final JsonObject json = getLoanRepaymentRequest();
-                final JsonCommand command = createJsonCommand(json);
-                assertThrowsValidationError(command,
+                assertValidation(json,
                     StandingInstructionApiConstants.recurrenceTypeParamName,
-                    "validation.msg.standinginstruction.recurrenceType.as.per.dues.not.allowed.with.fixed.amount");
+                    "as.per.dues.not.allowed.with.fixed.amount");
             }
 
             @Test
