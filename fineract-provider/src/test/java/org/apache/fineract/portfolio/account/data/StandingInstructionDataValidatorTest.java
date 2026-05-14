@@ -81,7 +81,7 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void shouldCallAccountTransfersDetailDataValidator() {
-                final JsonObject json = getMinimalBaseRequest();
+                final JsonObject json = getBaseRequest();
                 json.addProperty(AccountDetailConstants.toAccountIdParamName, 2);
                 final JsonCommand command = createJsonCommand(json);
                 standingInstructionDataValidator.validateForCreate(command);
