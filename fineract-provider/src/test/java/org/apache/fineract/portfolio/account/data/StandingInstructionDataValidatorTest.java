@@ -274,8 +274,7 @@ public class StandingInstructionDataValidatorTest {
     }
 
     private String getOutOfRangeValidationError(final String parameter) {
-        final String expectedCode = String.format(
-            "validation.msg.standinginstruction.%s.is.not.within.expected.range", parameter);
+        return String.format("validation.msg.standinginstruction.%s.is.not.within.expected.range", parameter);
     }
 
     private void assertThrowsOutOfRangeValidationError(final String parameter) {
