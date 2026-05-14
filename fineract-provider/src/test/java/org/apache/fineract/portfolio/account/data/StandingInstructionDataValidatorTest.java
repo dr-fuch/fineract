@@ -358,7 +358,10 @@ public class StandingInstructionDataValidatorTest {
 
     @Nested
     class ValidateForUpdate {
-
+        @Test
+        void throwExceptionWhenJsonIsBlank() {
+            assertThrowsException(InvalidJsonException.class, null);
+        }
     }
 
     private JsonCommand createJsonCommand(final JsonObject jsonObject) {
