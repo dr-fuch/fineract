@@ -68,7 +68,7 @@ public class StandingInstructionDataValidatorTest {
         class UnconditionedBehavior {
             @Test
             void throwExceptionWhenJsonIsBlankOrNull(){
-                assertThrowsException(InvalidJsonException.class, "");
+                assertThrowsException(InvalidJsonException.class, null);
             }
 
             @Test
