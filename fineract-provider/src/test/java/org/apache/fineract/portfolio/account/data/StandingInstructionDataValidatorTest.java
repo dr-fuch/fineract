@@ -184,6 +184,15 @@ public class StandingInstructionDataValidatorTest {
                 assertThrowsBlankValidationError(json,
                     StandingInstructionApiConstants.recurrenceIntervalParamName);
             }
+
+            @Test
+            void throwErrorWhenRecurrenceFrequencyIsMonthlyAndMonthDayFormatIsMissing() {
+                final JsonObject json = getPeriodicRequest();
+                assertThrowsBlankValidationError(json,
+                    StandingInstructionApiConstants.monthDayFormatParamName);
+            }
+
+
         }
         @Nested
         class ConditionedBehavior {
@@ -232,8 +241,9 @@ public class StandingInstructionDataValidatorTest {
     private JsonObject getPeriodicRequest() {
         return getRequest("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 2, 2, 1,
             "PERIODIC TEST", 1, 1, 1, "08 May 2026", "07 May 2027", 1,
-            new BigDecimal(10.00), 1, 1, "08 May", "dd MMMM");
+            new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
     }
+
     private JsonObject getRequest(final String locale, final String dateFormat, final Integer fromOfficeId,
         final Integer fromClientId, final Integer fromAccountId, final Integer fromAccountType, final Integer toOfficeId,
         final Integer toClientId, final Integer toAccountId, final Integer toAccountType, final Integer transferType,
