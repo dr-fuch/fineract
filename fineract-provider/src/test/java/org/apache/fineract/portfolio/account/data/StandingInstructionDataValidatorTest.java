@@ -465,11 +465,11 @@ public class StandingInstructionDataValidatorTest {
     }
     
     private void assertRange(JsonObject json, String param) {
-        assertValidation(json, param, RANGE_ERR);
+        assertValidation(json, param, RANGE_ERROR);
     }
 
     private void assertRange(String param) {
-        assertValidation(getBaseRequest(), param, RANGE_ERR);
+        assertValidation(getBaseRequest(), param, RANGE_ERROR);
     }
 
     private void assertBlank(JsonObject json, String param) {
