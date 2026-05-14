@@ -165,11 +165,11 @@ public class StandingInstructionDataValidatorTest {
         class PeriodicRecurrenceType {
             @Test
             void throwErrorWhenRecurrenceFrequencyIsMissing() {
-                final JsonObject jsonObject = getRequest("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 2, 2, 1,
+                final JsonObject json = getRequest("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 2, 2, 1,
                     "ACCOUNT TRANSFER TEST", 1, 1, 1, "08 May 2026", "07 May 2027", 1,
                     new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
 
-                assertThrowsBlankValidationError(jsonObject,
+                assertThrowsBlankValidationError(json,
                     StandingInstructionApiConstants.recurrenceFrequencyParamName);
             }
         }
@@ -275,9 +275,9 @@ public class StandingInstructionDataValidatorTest {
         assertThrowsValidationError(command, parameter, expectedCode);
     }
 
-    private void assertThrowsBlankValidationError(final JsonObject jsonObject, final String parameter) {
+    private void assertThrowsBlankValidationError(final JsonObject json, final String parameter) {
         final String expectedCode = getBlankValidationError(parameter);
-        jsonObject.remove(parameter);
+        json.remove(parameter);
         final JsonCommand command = createJsonCommand(json);
 
         assertThrowsValidationError(command, parameter, expectedCode);
