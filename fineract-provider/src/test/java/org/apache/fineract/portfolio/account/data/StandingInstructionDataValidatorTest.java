@@ -210,6 +210,16 @@ public class StandingInstructionDataValidatorTest {
             }
 
         }
+
+        @Nested
+        class Amount {
+            @Test
+            void throwErrorWhenAmountIsMissing() {
+                final JsonObject json = getPeriodicRequest();
+                assertThrowsBlankValidationError(json, StandingInstructionApiConstants.amountParamName);
+            }
+        }
+
         @Nested
         class ConditionedBehavior {
 
