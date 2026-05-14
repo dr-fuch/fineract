@@ -173,6 +173,17 @@ public class StandingInstructionDataValidatorTest {
             }
 
             @Test
+            void throwErrorWhenValidTillIsBeforeFirstDailyExecution() {
+                final JsonObject json = getPeriodicRequest();
+                json.addProperty(StandingInstructionApiConstants.validFromParamName, "08 May 2026");
+                json.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, 1); 
+                json.addProperty(StandingInstructionApiConstants.recurrenceIntervalParamName, 5);
+                json.addProperty(StandingInstructionApiConstants.validTillParamName, "10 May 2026");
+                assertValidation(json, 
+                    StandingInstructionApiConstants.validTillParamName, "must.not.be.before.first.execution.date");
+            }
+
+            @Test
             void throwErrorWhenRecurrenceTypeIsMissing() {
                 assertThrowsBlankValidationError(StandingInstructionApiConstants.recurrenceTypeParamName);
             }
