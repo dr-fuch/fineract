@@ -100,8 +100,7 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhitTransferTypeInvalidValue() {
-                assertValidation(getBaseRequest(), 
-                    AccountDetailConstants.transferTypeParamName, "is.not.within.expected.range");
+                assertRange(AccountDetailConstants.transferTypeParamName);
             }
 
             @Test
@@ -122,8 +121,7 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhitPriorityInvalidValue() {
-                assertValidation(getBaseRequest(), 
-                    StandingInstructionApiConstants.priorityParamName, "is.not.within.expected.range");
+                assertRange(StandingInstructionApiConstants.priorityParamName);
             }
 
             @Test
@@ -136,8 +134,7 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhitInstructionTypeInvalidValue() {
-                assertValidation(getBaseRequest(), 
-                    StandingInstructionApiConstants.instructionTypeParamName, "is.not.within.expected.range");
+                assertRange(StandingInstructionApiConstants.instructionTypeParamName);
             }
 
             @Test
@@ -150,8 +147,7 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhitStatusTypeInvalidValue() {
-                assertValidation(getBaseRequest(), 
-                    StandingInstructionApiConstants.statusParamName, "is.not.within.expected.range");
+                assertRange(StandingInstructionApiConstants.statusParamName);
             }
 
             @Test
@@ -178,8 +174,7 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhitRecurrenceTypeInvalidValue() {
-                assertValidation(getBaseRequest(),
-                    StandingInstructionApiConstants.recurrenceTypeParamName, "is.not.within.expected.range");
+                assertRange(StandingInstructionApiConstants.recurrenceTypeParamName);
             }
         }
         
@@ -197,8 +192,7 @@ public class StandingInstructionDataValidatorTest {
             void throwErrorWhitRecurrenceFrequencyInvalidValue() {
                 final JsonObject json = getPeriodicRequest();
                 json.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, 4);
-                assertValidation(json,
-                    StandingInstructionApiConstants.recurrenceFrequencyParamName, "is.not.within.expected.range");
+                assertRange(StandingInstructionApiConstants.recurrenceFrequencyParamName);
             }
 
             @Test
@@ -319,16 +313,14 @@ public class StandingInstructionDataValidatorTest {
             void throwErrorWhenInstructionTypeIsNotFixed() {
                 final JsonObject json = getAccountTransferRequest();
                 json.addProperty(StandingInstructionApiConstants.instructionTypeParamName, 2);
-                assertValidation(json,
-                    StandingInstructionApiConstants.instructionTypeParamName, "is.not.within.expected.range");
+                assertRange(StandingInstructionApiConstants.instructionTypeParamName);
             }
 
             @Test
             void throwErrorWhenRecurrenceTypeIsNotPeriodic() {
                 final JsonObject json = getAccountTransferRequest();
                 json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 2);
-                assertValidation(json,
-                    StandingInstructionApiConstants.recurrenceTypeParamName, "is.not.within.expected.range");
+                assertRange(StandingInstructionApiConstants.recurrenceTypeParamName);
             }
 
             @Test
@@ -491,6 +483,10 @@ public class StandingInstructionDataValidatorTest {
         assertEquals(true, hasError);
     }
     
+    private void assertRange(String param) {
+        assertValidation(getBaseRequest(), param, "is.not.within.expected.range");
+    }
+
     private void assertThrowsException(Class<? extends Throwable> exceptionClass, JsonObject json) {
         final JsonCommand command = createJsonCommand(json);
         assertThrows(exceptionClass, () -> 
