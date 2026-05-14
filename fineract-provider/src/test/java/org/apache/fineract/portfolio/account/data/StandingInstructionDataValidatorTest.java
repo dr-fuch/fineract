@@ -343,11 +343,8 @@ public class StandingInstructionDataValidatorTest {
             void throwErrorWithEqualAccountsAndEqualOffices() {
                 final JsonObject json = getAccountTransferRequest();
                 json.addProperty(AccountDetailConstants.toAccountIdParamName, 1);
-
-                final JsonCommand command = createJsonCommand(json);
-                assertThrowsValidationError(command, 
-                    AccountDetailConstants.toAccountIdParamName,
-                    "validation.msg.standinginstruction.toAccountId.transfer.to.same.account.not.allowed");
+                assertValidation(json, 
+                    AccountDetailConstants.toAccountIdParamName, "transfer.to.same.account.not.allowed");
             }
 
             @Test
