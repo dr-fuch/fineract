@@ -99,7 +99,8 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhitTransferTypeInvalidValue() {
-                assertRange(AccountDetailConstants.transferTypeParamName);
+                assertRange(getBaseRequest()
+                    AccountDetailConstants.transferTypeParamName);
             }
 
             @Test
@@ -114,7 +115,8 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhitPriorityInvalidValue() {
-                assertRange(StandingInstructionApiConstants.priorityParamName);
+                assertRange(getBaseRequest(),
+                    StandingInstructionApiConstants.priorityParamName);
             }
 
             @Test
@@ -124,7 +126,8 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhitInstructionTypeInvalidValue() {
-                assertRange(StandingInstructionApiConstants.instructionTypeParamName);
+                assertRange(getBaseRequest(),
+                    StandingInstructionApiConstants.instructionTypeParamName);
             }
 
             @Test
@@ -134,7 +137,8 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhitStatusTypeInvalidValue() {
-                assertRange(StandingInstructionApiConstants.statusParamName);
+                assertRange(getBaseRequest(),
+                    StandingInstructionApiConstants.statusParamName);
             }
 
             @Test
@@ -155,7 +159,8 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhitRecurrenceTypeInvalidValue() {
-                assertRange(StandingInstructionApiConstants.recurrenceTypeParamName);
+                assertRange(getBaseRequest(),
+                    StandingInstructionApiConstants.recurrenceTypeParamName);
             }
         }
         
@@ -294,14 +299,16 @@ public class StandingInstructionDataValidatorTest {
             void throwErrorWhenInstructionTypeIsNotFixed() {
                 final JsonObject json = getAccountTransferRequest();
                 json.addProperty(StandingInstructionApiConstants.instructionTypeParamName, 2);
-                assertRange(StandingInstructionApiConstants.instructionTypeParamName);
+                assertRange(json,
+                    StandingInstructionApiConstants.instructionTypeParamName);
             }
 
             @Test
             void throwErrorWhenRecurrenceTypeIsNotPeriodic() {
                 final JsonObject json = getAccountTransferRequest();
                 json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 2);
-                assertRange(StandingInstructionApiConstants.recurrenceTypeParamName);
+                assertRange(json,
+                    StandingInstructionApiConstants.recurrenceTypeParamName);
             }
 
             @Test
@@ -359,7 +366,7 @@ public class StandingInstructionDataValidatorTest {
     @Nested
     class ValidateForUpdate {
         @Test
-        void throwExceptionWhenJsonIsBlank() {
+        void throwExceptionWhenJsonIsBlankOrNull() {
             assertThrowsException(InvalidJsonException.class, null);
         }
     }
@@ -469,10 +476,6 @@ public class StandingInstructionDataValidatorTest {
     
     private void assertRange(JsonObject json, String param) {
         assertValidation(json, param, MSG_CODE_INVALID_RANGE);
-    }
-
-    private void assertRange(String param) {
-        assertValidation(getBaseRequest(), param, MSG_CODE_INVALID_RANGE);
     }
 
     private void assertBlank(JsonObject json, String param) {
