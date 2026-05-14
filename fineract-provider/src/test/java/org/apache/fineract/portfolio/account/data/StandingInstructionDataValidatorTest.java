@@ -268,7 +268,7 @@ public class StandingInstructionDataValidatorTest {
     }
 
     private void assertThrowsBlankValidationError(final String parameter) {
-        final String expectedCode = getBlankValidationError(parameter)
+        final String expectedCode = getBlankValidationError(parameter);
         final JsonObject json = getBaseRequestWithoutParam(parameter);
         final JsonCommand command = createJsonCommand(json);
 
