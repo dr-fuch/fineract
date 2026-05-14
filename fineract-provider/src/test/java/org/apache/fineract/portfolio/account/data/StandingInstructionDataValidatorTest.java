@@ -182,7 +182,8 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhitRecurrenceTypeInvalidValue() {
-                assertThrowsOutOfRangeValidationError(StandingInstructionApiConstants.recurrenceTypeParamName);
+                assertValidation(getBaseRequest(),
+                    StandingInstructionApiConstants.recurrenceTypeParamName, "is.not.within.expected.range");
             }
         }
         
