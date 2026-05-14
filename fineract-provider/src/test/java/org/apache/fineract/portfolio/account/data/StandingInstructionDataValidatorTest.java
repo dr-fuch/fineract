@@ -199,6 +199,16 @@ public class StandingInstructionDataValidatorTest {
                     StandingInstructionApiConstants.recurrenceOnMonthDayParamName);
             }
 
+            @Test
+            void throwErrorWithRecurrenceOnMonthDayInvalidValue() {
+                final JsonObject json = getPeriodicRequest();
+                json.addProperty(StandingInstructionApiConstants.recurrenceOnMonthDayParamName, "08 Mayo");
+                final JsonCommand command = createJsonCommand(json);
+                assertThrowsValidationError(command,
+                    StandingInstructionApiConstants.recurrenceOnMonthDayParamName,
+                    "recurrenceOnMonthDay.invalid.month.day.format");
+            }
+
         }
         @Nested
         class ConditionedBehavior {
