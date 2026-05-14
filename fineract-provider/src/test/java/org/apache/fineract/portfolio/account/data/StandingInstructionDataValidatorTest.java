@@ -221,6 +221,12 @@ public class StandingInstructionDataValidatorTest {
             }
 
             @Test
+            void throwErrorWhenAmountIsNotPositive() {
+                final JsonObject json = getPeriodicRequest();
+                json.json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 2);
+            }
+
+            @Test
             void throwErrorWhenInstructionTypeIsDuesAndAmountIsNotNull() {
                 final JsonObject json = getDuesRequest();
                 final JsonCommand command = createJsonCommand(json);
@@ -235,11 +241,11 @@ public class StandingInstructionDataValidatorTest {
             @Test
             void throwErrorWhenRecurrenceTypeIsAsPerDues() {
                 final JsonObject json = getPeriodicRequest();
-                json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 2);
+                json.addProperty(StandingInstructionApiConstants.amountParamName, new BigDecimal("-10.00"));
                 final JsonCommand command = createJsonCommand(json);
                 assertThrowsValidationError(command,
-                    StandingInstructionApiConstants.recurrenceTypeParamName,
-                    "validation.msg.standinginstruction.recurrenceType.as.per.dues.not.allowed.for.account.transfer");
+                    StandingInstructionApiConstants.amountParamName,
+                    "validation.msg.standinginstruction.amount..not.greater.than.zero");
             }
 
             @Test
