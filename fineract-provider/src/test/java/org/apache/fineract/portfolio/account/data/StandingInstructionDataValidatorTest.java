@@ -46,8 +46,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class StandingInstructionDataValidatorTest {    
-    private static final String BASE_ERR = "validation.msg.standinginstruction.";
+public class StandingInstructionDataValidatorTest {
+    private static final String BASE_ERROR = "validation.msg.standinginstruction.";
+    private static final String BLANK_ERROR = "cannot.be.blank";
+    private static final String RANGE_ERROR = "is.not.within.expected.range";
     
     @Mock
     private AccountTransfersDetailDataValidator accountTransfersDetailDataValidator;
@@ -448,7 +450,7 @@ public class StandingInstructionDataValidatorTest {
     }
 
     private void assertValidation(final JsonObject json, final String parameter, final String reason) {
-        final String expectedCode = BASE_ERR + parameter + "." + reason;
+        final String expectedCode = BASE_ERROR + parameter + "." + reason;
         final JsonCommand command = createJsonCommand(json);
         
         PlatformApiDataValidationException ex = assertThrows(PlatformApiDataValidationException.class, () -> {
@@ -463,22 +465,22 @@ public class StandingInstructionDataValidatorTest {
     }
     
     private void assertRange(JsonObject json, String param) {
-        assertValidation(json, param, "is.not.within.expected.range");
+        assertValidation(json, param, RANGE_ERR);
     }
 
     private void assertRange(String param) {
-        assertValidation(getBaseRequest(), param, "is.not.within.expected.range");
+        assertValidation(getBaseRequest(), param, RANGE_ERR);
     }
 
     private void assertBlank(JsonObject json, String param) {
         json.remove(param);
-        assertValidation(json, param, "cannot.be.blank");
+        assertValidation(json, param, BLANK_ERROR);
     }
 
     private void assertBlank(String param) {
         JsonObject json = getBaseRequest();
         json.remove(param);
-        assertValidation(json, param, "cannot.be.blank");
+        assertValidation(json, param, BLANK_ERROR);
     }
 
     private void assertThrowsException(Class<? extends Throwable> exceptionClass, JsonObject json) {
