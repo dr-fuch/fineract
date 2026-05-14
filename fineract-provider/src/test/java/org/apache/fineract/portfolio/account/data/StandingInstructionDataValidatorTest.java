@@ -220,8 +220,9 @@ public class StandingInstructionDataValidatorTest {
             @Test
             void throwErrorWhenRecurrenceFrequencyIsMonthlyAndRecurrenceOnMonthDayIsMissing() {
                 final JsonObject json = getPeriodicRequest();
-                assertThrowsBlankValidationError(json,
-                    StandingInstructionApiConstants.recurrenceOnMonthDayParamName);
+                json.remove(StandingInstructionApiConstants.recurrenceOnMonthDayParamName);
+                assertValidation(json, 
+                    StandingInstructionApiConstants.recurrenceOnMonthDayParamName, "cannot.be.blank");
             }
 
             @Test
