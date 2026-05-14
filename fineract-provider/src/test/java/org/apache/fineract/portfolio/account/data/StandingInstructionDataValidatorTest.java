@@ -311,10 +311,8 @@ public class StandingInstructionDataValidatorTest {
             void throwErrorWhenInstructionTypeIsDues() {
                 final JsonObject json = getPeriodicRequest();
                 json.addProperty(StandingInstructionApiConstants.instructionTypeParamName, 2);
-                final JsonCommand command = createJsonCommand(json);
-                assertThrowsValidationError(command,
-                    StandingInstructionApiConstants.instructionTypeParamName,
-                    "validation.msg.standinginstruction.instructionType.dues.not.allowed.for.account.transfer");
+                assertThrowsValidationError(json,
+                    StandingInstructionApiConstants.instructionTypeParamName, "dues.not.allowed.for.account.transfer");
             }
 
             @Test
