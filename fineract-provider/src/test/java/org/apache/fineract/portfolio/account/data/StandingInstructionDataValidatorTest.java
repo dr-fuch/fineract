@@ -280,9 +280,8 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWithEqualAccountsAndEqualOffices() {
-                final JsonObject json = getRequest("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 1, 2, 1,
-                    "ACCOUNT TRANSFER TEST", 1, 1, 1, "08 May 2026", "07 May 2027", 1,
-                    new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
+                final JsonObject json = getAccountTransferRequest();
+                json.addProperty(AccountDetailConstants.toAccountIdParamName, 1);
 
                 final JsonCommand command = createJsonCommand(json);
                 assertThrowsValidationError(command, 
@@ -294,9 +293,7 @@ public class StandingInstructionDataValidatorTest {
             void shouldNotThrowErrorWithValidAccountTransfer() {
                 final JsonObject json = getAccountTransferRequest();
                 final JsonCommand command = createJsonCommand(json);
-                assertDoesNotThrow(() -> {
-                    this.standingInstructionDataValidator.validateForCreate(command);
-                });
+                assertDoesNotThrow(() -> { standingInstructionDataValidator.validateForCreate(command); });
             }
         }
 
