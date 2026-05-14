@@ -92,10 +92,7 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhenTransferTypeIsMissing() {
-                final JsonObject json = getBaseRequest();
-                json.remove(AccountDetailConstants.transferTypeParamName);
-                assertValidation(json, 
-                    AccountDetailConstants.transferTypeParamName, "cannot.be.blank");
+                assertBlank(AccountDetailConstants.transferTypeParamName);
             }
 
             @Test
@@ -105,18 +102,12 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhenNameIsMissing() {
-                final JsonObject json = getBaseRequest();
-                json.remove(StandingInstructionApiConstants.nameParamName);
-                assertValidation(json, 
-                    StandingInstructionApiConstants.nameParamName, "cannot.be.blank");
+                assertBlank(StandingInstructionApiConstants.nameParamName);
             }
 
             @Test
             void throwErrorWhenPriorityIsMissing() {
-                final JsonObject json = getBaseRequest();
-                json.remove(StandingInstructionApiConstants.priorityParamName);
-                assertValidation(json, 
-                    StandingInstructionApiConstants.priorityParamName, "cannot.be.blank");
+                assertBlank(StandingInstructionApiConstants.priorityParamName);
             }
 
             @Test
@@ -126,10 +117,7 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhenInstructionTypeIsMissing() {
-                final JsonObject json = getBaseRequest();
-                json.remove(StandingInstructionApiConstants.instructionTypeParamName);
-                assertValidation(json, 
-                    StandingInstructionApiConstants.instructionTypeParamName, "cannot.be.blank");
+                assertBlank(StandingInstructionApiConstants.instructionTypeParamName);
             }
 
             @Test
@@ -139,10 +127,7 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhenStatusIsMissing() {
-                final JsonObject json = getBaseRequest();
-                json.remove(StandingInstructionApiConstants.statusParamName);
-                assertValidation(json, 
-                    StandingInstructionApiConstants.statusParamName, "cannot.be.blank");
+                assertBlank(StandingInstructionApiConstants.statusParamName);
             }
 
             @Test
@@ -152,10 +137,7 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhenValidFromIsMissing() {
-                final JsonObject json = getBaseRequest();
-                json.remove(StandingInstructionApiConstants.validFromParamName);
-                assertValidation(json, 
-                    StandingInstructionApiConstants.validFromParamName, "cannot.be.blank");
+                assertBlank(StandingInstructionApiConstants.validFromParamName);
             }
 
             @Test 
@@ -166,10 +148,7 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhenRecurrenceTypeIsMissing() {
-                final JsonObject json = getBaseRequest();
-                json.remove(StandingInstructionApiConstants.recurrenceTypeParamName);
-                assertValidation(json, 
-                    StandingInstructionApiConstants.recurrenceTypeParamName, "cannot.be.blank");
+                assertBlank(StandingInstructionApiConstants.recurrenceTypeParamName);
             }
 
             @Test
@@ -184,8 +163,8 @@ public class StandingInstructionDataValidatorTest {
             void throwErrorWhenRecurrenceFrequencyIsMissing() {
                 final JsonObject json = getPeriodicRequest();
                 json.remove(StandingInstructionApiConstants.recurrenceFrequencyParamName);
-                assertValidation(json, 
-                    StandingInstructionApiConstants.recurrenceFrequencyParamName, "cannot.be.blank");
+                assertBlank(json, 
+                    StandingInstructionApiConstants.recurrenceFrequencyParamName);
             }
 
             @Test
@@ -199,24 +178,24 @@ public class StandingInstructionDataValidatorTest {
             void throwErrorWhenRecurrenceIntervalIsMissing() {
                 final JsonObject json = getPeriodicRequest();
                 json.remove(StandingInstructionApiConstants.recurrenceIntervalParamName);
-                assertValidation(json, 
-                    StandingInstructionApiConstants.recurrenceIntervalParamName, "cannot.be.blank");
+                assertBlank(json, 
+                    StandingInstructionApiConstants.recurrenceIntervalParamName);
             }
 
             @Test
             void throwErrorWhenRecurrenceFrequencyIsMonthlyAndMonthDayFormatIsMissing() {
                 final JsonObject json = getPeriodicRequest();
                 json.remove(StandingInstructionApiConstants.monthDayFormatParamName);
-                assertValidation(json, 
-                    StandingInstructionApiConstants.monthDayFormatParamName, "cannot.be.blank");
+                assertBlank(json, 
+                    StandingInstructionApiConstants.monthDayFormatParamName);
             }
 
             @Test
             void throwErrorWhenRecurrenceFrequencyIsMonthlyAndRecurrenceOnMonthDayIsMissing() {
                 final JsonObject json = getPeriodicRequest();
                 json.remove(StandingInstructionApiConstants.recurrenceOnMonthDayParamName);
-                assertValidation(json, 
-                    StandingInstructionApiConstants.recurrenceOnMonthDayParamName, "cannot.be.blank");
+                assertBlank(json, 
+                    StandingInstructionApiConstants.recurrenceOnMonthDayParamName);
             }
 
             @Test
@@ -271,8 +250,8 @@ public class StandingInstructionDataValidatorTest {
             void throwErrorWhenAmountIsMissing() {
                 final JsonObject json = getPeriodicRequest();
                 json.remove(StandingInstructionApiConstants.amountParamName);
-                assertValidation(json, 
-                    StandingInstructionApiConstants.amountParamName, "cannot.be.blank");
+                assertBlank(json, 
+                    StandingInstructionApiConstants.amountParamName);
             }
 
             @Test
@@ -485,6 +464,17 @@ public class StandingInstructionDataValidatorTest {
     
     private void assertRange(String param) {
         assertValidation(getBaseRequest(), param, "is.not.within.expected.range");
+    }
+
+    private void assertBlank(JsonObject json, String param) {
+        json.remove(param);
+        assertValidation(json, param, "cannot.be.blank");
+    }
+
+    private void assertBlank(String param) {
+        JsonObject json = getBaseRequest();
+        json.remove(param);
+        assertValidation(json, param, "cannot.be.blank");
     }
 
     private void assertThrowsException(Class<? extends Throwable> exceptionClass, JsonObject json) {
