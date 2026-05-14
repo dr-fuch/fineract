@@ -153,7 +153,9 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwErrorWhitStatusTypeInvalidValue() {
-                assertThrowsOutOfRangeValidationError(StandingInstructionApiConstants.instructionTypeParamName);
+                final JsonObject json = getBaseRequest();
+                assertValidation(json, 
+                    StandingInstructionApiConstants.statusParamName, "is.not.within.expected.range");
             }
 
             @Test
