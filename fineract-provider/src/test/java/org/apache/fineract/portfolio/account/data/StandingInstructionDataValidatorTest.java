@@ -367,9 +367,11 @@ public class StandingInstructionDataValidatorTest {
     }
 
     private JsonObject getLoanRepaymentRequest() {
-        return getRequest("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 1, 1, 2,
+        final JsonObject json = getRequest("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 1, 1, 2,
             "LOAN REPAYMENT TEST", 1, 1, 1, "08 May 2026", "07 May 2027", 2,
             new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
+        json.remove(StandingInstructionApiConstants.amountParamName);
+        return json;
     }
 
     private JsonObject getAccountTransferRequest() {
