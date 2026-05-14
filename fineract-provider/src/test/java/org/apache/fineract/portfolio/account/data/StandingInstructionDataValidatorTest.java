@@ -223,7 +223,7 @@ public class StandingInstructionDataValidatorTest {
             @Test
             void throwErrorWhenAmountIsNotPositive() {
                 final JsonObject json = getPeriodicRequest();
-                json.json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 2);
+                json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 2);
             }
 
             @Test
@@ -332,6 +332,11 @@ public class StandingInstructionDataValidatorTest {
                 assertDoesNotThrow(() -> { standingInstructionDataValidator.validateForCreate(command); });
             }
         }
+    }
+
+    @Nested
+    class ValidateForUpdate {
+
     }
 
     private JsonCommand createJsonCommand(final JsonObject jsonObject) {
