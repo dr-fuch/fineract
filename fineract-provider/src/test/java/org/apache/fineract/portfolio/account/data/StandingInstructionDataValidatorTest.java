@@ -73,7 +73,8 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwExceptionWhenJsonHasAnInvalidParam() {
-                final JsonObject json = getBaseRequestWithInvalidParam();
+                final JsonObject json = getBaseRequest();
+                jsonObject.addProperty("invalidParam", "invalidValue");
                 final JsonCommand command = createJsonCommand(json);
                 assertThrowsException(UnsupportedParameterException.class, command);
             }
@@ -351,55 +352,35 @@ public class StandingInstructionDataValidatorTest {
             null, null);
     }
 
-    private JsonObject getBaseRequestWithoutParam(final String paramName) {
-        final JsonObject jsonObject = getBaseRequest();
-        jsonObject.remove(paramName);
-        return jsonObject;
-    }
-
-    private JsonObject getBaseRequestWithInvalidParam() {
-        final JsonObject jsonObject = getBaseRequest();
-        jsonObject.addProperty("invalidParam", "invalidValue");
-        return jsonObject;
-    }
-
     private JsonObject getBaseRequest() {   
         return getRequest("en", "dd MMMM yyyy", 1, 1, 1, 1, 1, 1, 1, 1, 4,
             "BASE TEST", 5, 3, 3, "08 May 2026", "07 May 2026", 3,
             new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
     }
 
-    private JsonObject getMinimalBaseRequest() {
-        final JsonObject json = getBaseRequest();
+    private JsonObject getPeriodicRequest() {
+        JsonObject json = getBaseRequest();
+        json.addProperty(StandingInstructionApiConstants.nameParamName, "PERIODIC TEST");
+        json.addProperty(AccountDetailConstants.transferTypeParamName, 1);
         json.addProperty(AccountDetailConstants.fromAccountTypeParamName, 2);
         json.addProperty(AccountDetailConstants.toAccountTypeParamName, 2);
-        json.addProperty(AccountDetailConstants.transferTypeParamName, 1);
         json.addProperty(StandingInstructionApiConstants.priorityParamName, 1);
         json.addProperty(StandingInstructionApiConstants.instructionTypeParamName, 1);
         json.addProperty(StandingInstructionApiConstants.statusParamName, 1);
-        json.addProperty(StandingInstructionApiConstants.validTillParamName, "07 May 2027");
         json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 1);
-
-        return json;
-    }
-
-    private JsonObject getPeriodicRequest() {
-        JsonObject json = getMinimalBaseRequest();
-        json.addProperty(StandingInstructionApiConstants.nameParamName, "PERIODIC TEST");
-        json.addProperty(AccountDetailConstants.toAccountTypeParamName, 2);
+        json.addProperty(StandingInstructionApiConstants.validTillParamName, "07 May 2027");
         return json;
     }
 
     private JsonObject getDuesRequest() {
-        JsonObject json = getMinimalBaseRequest();
+        JsonObject json = getPeriodicRequest();
         json.addProperty(StandingInstructionApiConstants.nameParamName, "DUES TEST");
         json.addProperty(StandingInstructionApiConstants.instructionTypeParamName, 2);
-        json.addProperty(AccountDetailConstants.toAccountTypeParamName, 2);
         return json;
     }
 
     private JsonObject getLoanRepaymentRequest() {
-        JsonObject json = getMinimalBaseRequest();
+        JsonObject json = getPeriodicRequest();
         json.addProperty(StandingInstructionApiConstants.nameParamName, "LOAN REPAYMENT TEST");
         json.addProperty(AccountDetailConstants.transferTypeParamName, 2);
         json.addProperty(AccountDetailConstants.toAccountTypeParamName, 1);
@@ -409,10 +390,8 @@ public class StandingInstructionDataValidatorTest {
     }
 
     private JsonObject getAccountTransferRequest() {
-        JsonObject json = getMinimalBaseRequest();
+        JsonObject json = getPeriodicRequest(); 
         json.addProperty(StandingInstructionApiConstants.nameParamName, "ACCOUNT TRANSFER TEST");
-        json.addProperty(AccountDetailConstants.transferTypeParamName, 1);
-        json.addProperty(AccountDetailConstants.toAccountTypeParamName, 2);
         json.addProperty(AccountDetailConstants.toAccountIdParamName, 2);
         return json;
     }
@@ -477,9 +456,9 @@ public class StandingInstructionDataValidatorTest {
 
     private void assertThrowsBlankValidationError(final String parameter) {
         final String expectedCode = getBlankValidationError(parameter);
-        final JsonObject json = getBaseRequestWithoutParam(parameter);
+        final JsonObject json = getBaseRequest(parameter);
+        jsonObject.remove(paramName);
         final JsonCommand command = createJsonCommand(json);
-
         assertThrowsValidationError(command, parameter, expectedCode);
     }
 
