@@ -221,7 +221,11 @@ public class StandingInstructionDataValidatorTest {
             @Test
             void throwErrorWhenAmountIsNotPositive() {
                 final JsonObject json = getPeriodicRequest();
-                json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 2);
+                json.addProperty(StandingInstructionApiConstants.amountParamName, new BigDecimal("-10.00"));
+                final JsonCommand command = createJsonCommand(json);
+                assertThrowsValidationError(command,
+                    StandingInstructionApiConstants.amountParamName,
+                    "validation.msg.standinginstruction.amount.not.greater.than.zero");
             }
 
             @Test
@@ -239,11 +243,11 @@ public class StandingInstructionDataValidatorTest {
             @Test
             void throwErrorWhenRecurrenceTypeIsAsPerDues() {
                 final JsonObject json = getPeriodicRequest();
-                json.addProperty(StandingInstructionApiConstants.amountParamName, new BigDecimal("-10.00"));
+                json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 2);
                 final JsonCommand command = createJsonCommand(json);
                 assertThrowsValidationError(command,
-                    StandingInstructionApiConstants.amountParamName,
-                    "validation.msg.standinginstruction.amount..not.greater.than.zero");
+                    StandingInstructionApiConstants.recurrenceTypeParamName,
+                    "validation.msg.standinginstruction.recurrenceType.as.per.dues.not.allowed.for.account.transfer");
             }
 
             @Test
@@ -367,6 +371,7 @@ public class StandingInstructionDataValidatorTest {
     private JsonObject getMinimalBaseRequest() {
         final JsonObject json = getBaseRequest();
         json.addProperty(AccountDetailConstants.fromAccountTypeParamName, 2);
+        json.addProperty(AccountDetailConstants.toAccountTypeParamName, 2);
         json.addProperty(AccountDetailConstants.transferTypeParamName, 1);
         json.addProperty(StandingInstructionApiConstants.priorityParamName, 1);
         json.addProperty(StandingInstructionApiConstants.instructionTypeParamName, 1);
@@ -406,6 +411,7 @@ public class StandingInstructionDataValidatorTest {
         json.addProperty(StandingInstructionApiConstants.nameParamName, "ACCOUNT TRANSFER TEST");
         json.addProperty(AccountDetailConstants.transferTypeParamName, 1);
         json.addProperty(AccountDetailConstants.toAccountTypeParamName, 2);
+        json.addProperty(AccountDetailConstants.toAccountIdParamName, 2);
         return json;
     }
 
