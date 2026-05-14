@@ -72,14 +72,14 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void throwExceptionWhenJsonHasAnInvalidParam() {
-                final JsonObject json = getBaseJsonObjectWithInvalidParam();
+                final JsonObject json = getBaseRequestWithInvalidParam();
                 final JsonCommand command = createJsonCommand(json);
                 assertThrowsException(UnsupportedParameterException.class, command);
             }
 
             @Test
             void shouldCallAccountTransfersDetailDataValidator() {
-                final JsonObject json = getBaseJsonObject("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 2, 2, 1,
+                final JsonObject json = getRequest("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 2, 2, 1,
                     "BASE TEST", 1, 1, 1, "08 May 2026", "07 May 2027", 1,
                     new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
                 final JsonCommand command = createJsonCommand(json);
@@ -143,7 +143,7 @@ public class StandingInstructionDataValidatorTest {
 
             @Test 
             void throwErrorWhenValidTillIsBeforeValidFrom() {
-                final JsonObject json = getBaseJsonObject();
+                final JsonObject json = getBaseRequest();
                 final JsonCommand command = createJsonCommand(json);
                 assertThrowsValidationError(command, 
                     StandingInstructionApiConstants.validTillParamName,
@@ -162,11 +162,25 @@ public class StandingInstructionDataValidatorTest {
         }
         
         @Nested
-        class AccountTransfer {
-            
+        class PeriodicRecurrenceType {
+            @Test
+            void throwErrorWhenRecurrenceFrequencyIsMissing() {
+                final String expectedCode = String.format(
+                    "validation.msg.standinginstruction.%s.cannot.be.blank", parameter);
+                final JsonObject json = getRequest("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 1, 2, 1,
+                    "ACCOUNT TRANSFER TEST", 1, 1, 1, "08 May 2026", "07 May 2027", 1,
+                    new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
+                final JsonCommand command = createJsonCommand(json);
+
+                assertThrowsValidationError(command, parameter, expectedCode);   
+            }
+        }
+        @Nested
+        class ConditionedBehavior {
+
             @Test
             void throwExceptionWithEqualAccountsAndEqualOffices() {
-                final JsonObject json = getBaseJsonObject("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 1, 2, 1,
+                final JsonObject json = getRequest("en", "dd MMMM yyyy", 1, 1, 1, 2, 1, 1, 1, 2, 1,
                     "ACCOUNT TRANSFER TEST", 1, 1, 1, "08 May 2026", "07 May 2027", 1,
                     new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
 
@@ -187,27 +201,27 @@ public class StandingInstructionDataValidatorTest {
             null, null);
     }
 
-    private JsonObject getBaseJsonObjectWithoutParam(final String paramName) {
-        final JsonObject jsonObject = getBaseJsonObject();
+    private JsonObject getBaseRequestWithoutParam(final String paramName) {
+        final JsonObject jsonObject = getBaseRequest();
         jsonObject.remove(paramName);
         return jsonObject;
     }
 
-    private JsonObject getBaseJsonObjectWithInvalidParam() {
-        final JsonObject jsonObject = getBaseJsonObject();
+    private JsonObject getBaseRequestWithInvalidParam() {
+        final JsonObject jsonObject = getBaseRequest();
         jsonObject.addProperty("invalidParam", "invalidValue");
 
         return jsonObject;
     }
 
-    private JsonObject getBaseJsonObject() {   
+    private JsonObject getBaseRequest() {   
         final JsonObject jsonObject = new JsonObject();
-        return getBaseJsonObject("en", "dd MMMM yyyy", 1, 1, 1, 1, 1, 1, 1, 1, 4,
+        return getRequest("en", "dd MMMM yyyy", 1, 1, 1, 1, 1, 1, 1, 1, 4,
             "BASE TEST", 5, 3, 3, "08 May 2026", "07 May 2026", 3,
             new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
     }
 
-    private JsonObject getBaseJsonObject(final String locale, final String dateFormat, final Integer fromOfficeId,
+    private JsonObject getRequest(final String locale, final String dateFormat, final Integer fromOfficeId,
         final Integer fromClientId, final Integer fromAccountId, final Integer fromAccountType, final Integer toOfficeId,
         final Integer toClientId, final Integer toAccountId, final Integer toAccountType, final Integer transferType,
         final String name, final Integer priority, final Integer instructionType, final Integer status,
@@ -245,7 +259,7 @@ public class StandingInstructionDataValidatorTest {
     private void assertThrowsOutOfRangeValidationError(final String parameter) {
         final String expectedCode = String.format(
             "validation.msg.standinginstruction.%s.is.not.within.expected.range", parameter);
-        final JsonObject json = getBaseJsonObject();
+        final JsonObject json = getBaseRequest();
         final JsonCommand command = createJsonCommand(json);
 
         assertThrowsValidationError(command, parameter, expectedCode);
@@ -254,7 +268,16 @@ public class StandingInstructionDataValidatorTest {
     private void assertThrowsBlankValidationError(final String parameter) {
         final String expectedCode = String.format(
             "validation.msg.standinginstruction.%s.cannot.be.blank", parameter);
-        final JsonObject json = getBaseJsonObjectWithoutParam(parameter);
+        final JsonObject json = getBaseRequestWithoutParam(parameter);
+        final JsonCommand command = createJsonCommand(json);
+
+        assertThrowsValidationError(command, parameter, expectedCode);
+    }
+
+    private void assertThrowsBlankValidationError(final JsonObject json, final String parameter) {
+        final String expectedCode = String.format(
+            "validation.msg.standinginstruction.%s.cannot.be.blank", parameter);
+        final JsonObject json = getBaseRequestWithoutParam(parameter);
         final JsonCommand command = createJsonCommand(json);
 
         assertThrowsValidationError(command, parameter, expectedCode);
