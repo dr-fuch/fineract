@@ -327,8 +327,8 @@ public class StandingInstructionDataValidatorTest {
             void throwErrorWhenRecurrenceTypeIsNotPeriodic() {
                 final JsonObject json = getAccountTransferRequest();
                 json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 2);
-                assertThrowsOutOfRangeValidationError(json,
-                    StandingInstructionApiConstants.recurrenceTypeParamName);
+                assertValidation(json,
+                    StandingInstructionApiConstants.recurrenceTypeParamName, "is.not.within.expected.range");
             }
 
             @Test
