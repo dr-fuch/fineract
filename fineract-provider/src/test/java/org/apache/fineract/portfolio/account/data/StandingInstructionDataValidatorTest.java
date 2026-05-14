@@ -47,9 +47,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 public class StandingInstructionDataValidatorTest {
-    private static final String BASE_ERROR = "validation.msg.standinginstruction.";
-    private static final String BLANK_ERROR = "cannot.be.blank";
-    private static final String RANGE_ERROR = "is.not.within.expected.range";
+    private static final String VALIDATION_PREFIX = "validation.msg.standinginstruction.";
+    private static final String SUFFIX_CANNOT_BE_BLANK = "cannot.be.blank";
+    private static final String SUFFIX_OUT_OF_RANGE = "is.not.within.expected.range";
     
     @Mock
     private AccountTransfersDetailDataValidator accountTransfersDetailDataValidator;
@@ -450,7 +450,7 @@ public class StandingInstructionDataValidatorTest {
     }
 
     private void assertValidation(final JsonObject json, final String parameter, final String reason) {
-        final String expectedCode = BASE_ERROR + parameter + "." + reason;
+        final String expectedCode = VALIDATION_PREFIX + parameter + "." + reason;
         final JsonCommand command = createJsonCommand(json);
         
         PlatformApiDataValidationException ex = assertThrows(PlatformApiDataValidationException.class, () -> {
@@ -465,22 +465,22 @@ public class StandingInstructionDataValidatorTest {
     }
     
     private void assertRange(JsonObject json, String param) {
-        assertValidation(json, param, RANGE_ERROR);
+        assertValidation(json, param, SUFFIX_OUT_OF_RANGE);
     }
 
     private void assertRange(String param) {
-        assertValidation(getBaseRequest(), param, RANGE_ERROR);
+        assertValidation(getBaseRequest(), param, SUFFIX_OUT_OF_RANGE);
     }
 
     private void assertBlank(JsonObject json, String param) {
         json.remove(param);
-        assertValidation(json, param, BLANK_ERROR);
+        assertValidation(json, param, SUFFIX_CANNOT_BE_BLANK);
     }
 
     private void assertBlank(String param) {
         JsonObject json = getBaseRequest();
         json.remove(param);
-        assertValidation(json, param, BLANK_ERROR);
+        assertValidation(json, param, SUFFIX_CANNOT_BE_BLANK);
     }
 
     private void assertThrowsException(Class<? extends Throwable> exceptionClass, JsonObject json) {
