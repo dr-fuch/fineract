@@ -408,13 +408,13 @@ public class StandingInstructionDataValidatorTest {
                 .validTill("07 May 2027");
         }
 
-        private JsonObject dues() {
+        private StandingInstructionRequestBuilder dues() {
             return StandingInstructionRequestBuilder.periodic()
                 .name("DUES TEST")
                 .instructionType(2);
         }
 
-        private JsonObject repayment() {
+        private StandingInstructionRequestBuilder repayment() {
             return StandingInstructionRequestBuilder.periodic()
                 .name("LOAN REPAYMENT TEST")
                 .transferType(2)
@@ -423,7 +423,7 @@ public class StandingInstructionDataValidatorTest {
                 .instructionType(1);
         }
         
-        private JsonObject transfer() {
+        private StandingInstructionRequestBuilder transfer() {
             return StandingInstructionRequestBuilder.periodic()
                 .name("ACCOUNT TRANSFER TEST")
                 .toAccountId(2);
