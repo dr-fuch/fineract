@@ -317,41 +317,61 @@ public class StandingInstructionDataValidatorTest {
     }
 
     private JsonObject periodicRequest() {
-        JsonObject json = baseRequest();
-        json.addProperty(StandingInstructionApiConstants.nameParamName, "PERIODIC TEST");
-        json.addProperty(AccountDetailConstants.transferTypeParamName, 1);
-        json.addProperty(AccountDetailConstants.fromAccountTypeParamName, 2);
-        json.addProperty(AccountDetailConstants.toAccountTypeParamName, 2);
-        json.addProperty(StandingInstructionApiConstants.priorityParamName, 1);
-        json.addProperty(StandingInstructionApiConstants.instructionTypeParamName, 1);
-        json.addProperty(StandingInstructionApiConstants.statusParamName, 1);
-        json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 1);
-        json.addProperty(StandingInstructionApiConstants.validTillParamName, "07 May 2027");
-        return json;
+        return StandingInstructionRequestBuilder.base()
+            .name("PERIODIC TEST")
+            .transferType(1)
+            .fromAccountType(2)
+            .toAccountType(2)
+            .priority(1)
+            .instructionType(1)
+            .status(1)
+            .recurrenceType(1)
+            .validTill("07 May 2027")
+            .build();
     }
 
     private JsonObject duesRequest() {
-        JsonObject json = periodicRequest();
-        json.addProperty(StandingInstructionApiConstants.nameParamName, "DUES TEST");
-        json.addProperty(StandingInstructionApiConstants.instructionTypeParamName, 2);
-        return json;
+        return StandingInstructionRequestBuilder.base()
+            .name("DUES TEST")
+            .transferType(1)
+            .fromAccountType(2)
+            .toAccountType(2)
+            .priority(1)
+            .instructionType(2)
+            .status(1)
+            .recurrenceType(1)
+            .validTill("07 May 2027")
+            .build();
     }
 
     private JsonObject loanRepaymentRequest() {
-        JsonObject json = periodicRequest();
-        json.addProperty(StandingInstructionApiConstants.nameParamName, "LOAN REPAYMENT TEST");
-        json.addProperty(AccountDetailConstants.transferTypeParamName, 2);
-        json.addProperty(AccountDetailConstants.toAccountTypeParamName, 1);
-        json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 2);
-        json.addProperty(StandingInstructionApiConstants.instructionTypeParamName, 1);
+        return StandingInstructionRequestBuilder.base()
+            .name("LOAN REPAYMENT TEST")
+            .transferType(2)
+            .fromAccountType(2)
+            .toAccountType(1)
+            .priority(1)
+            .instructionType(1)
+            .status(1)
+            .recurrenceType(2)
+            .validTill("07 May 2027")
+            .build();
         return json;
     }
 
     private JsonObject accountTransferRequest() {
-        JsonObject json = periodicRequest(); 
-        json.addProperty(StandingInstructionApiConstants.nameParamName, "ACCOUNT TRANSFER TEST");
-        json.addProperty(AccountDetailConstants.toAccountIdParamName, 2);
-        return json;
+        return StandingInstructionRequestBuilder.base()
+            .name("ACCOUNT TRANSFER TEST")
+            .transferType(1)
+            .fromAccountType(2)
+            .toAccountType(2)
+            .priority(1)
+            .instructionType(1)
+            .status(1)
+            .recurrenceType(1)
+            .validTill("07 May 2027")
+            .toAccountId(2)
+            .build();
     }
 
     private void assertValidation(final JsonObject json, final String parameter, final String reason) {
