@@ -387,7 +387,7 @@ public class StandingInstructionDataValidatorTest {
             this.standingInstructionDataValidator.validateForCreate(command(json)));
     }
 
-    private static class StandingInstructionRequestBuilder {
+    static class StandingInstructionRequestBuilder {
     
         private final JsonObject json = new JsonObject();
     
@@ -515,6 +515,26 @@ public class StandingInstructionDataValidatorTest {
     
         public StandingInstructionRequestBuilder toAccountIdOnly(Integer v) {
             json.addProperty(AccountDetailConstants.toAccountIdParamName, v);
+            return this;
+        }
+
+        public StandingInstructionRequestBuilder recurrenceFrequency(Integer v) {
+            json.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, v);
+            return this;
+        }
+
+        public StandingInstructionRequestBuilder recurrenceInterval(Integer v) {
+            json.addProperty(StandingInstructionApiConstants.recurrenceIntervalParamName, v);
+            return this;
+        }
+
+        public StandingInstructionRequestBuilder recurrenceOnMonthDay(Integer v) {
+            json.addProperty(StandingInstructionApiConstants.recurrenceOnMonthDayParamName, v);
+            return this;
+        }
+
+        public StandingInstructionRequestBuilder monthDayFormat(Integer v) {
+            json.addProperty(StandingInstructionApiConstants.monthDayFormatParamName, v);
             return this;
         }
     
