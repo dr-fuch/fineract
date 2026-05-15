@@ -356,7 +356,6 @@ public class StandingInstructionDataValidatorTest {
             .recurrenceType(2)
             .validTill("07 May 2027")
             .build();
-        return json;
     }
 
     private JsonObject accountTransferRequest() {
