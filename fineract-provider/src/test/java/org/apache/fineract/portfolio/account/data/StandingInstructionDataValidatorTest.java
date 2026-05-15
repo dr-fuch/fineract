@@ -317,60 +317,19 @@ public class StandingInstructionDataValidatorTest {
     }
 
     private JsonObject periodicRequest() {
-        return StandingInstructionRequestBuilder.base()
-            .name("PERIODIC TEST")
-            .transferType(1)
-            .fromAccountType(2)
-            .toAccountType(2)
-            .priority(1)
-            .instructionType(1)
-            .status(1)
-            .recurrenceType(1)
-            .validTill("07 May 2027")
-            .build();
+        return StandingInstructionRequestBuilder.periodic().build();
     }
 
     private JsonObject duesRequest() {
-        return StandingInstructionRequestBuilder.base()
-            .name("DUES TEST")
-            .transferType(1)
-            .fromAccountType(2)
-            .toAccountType(2)
-            .priority(1)
-            .instructionType(2)
-            .status(1)
-            .recurrenceType(1)
-            .validTill("07 May 2027")
-            .build();
+        return StandingInstructionRequestBuilder.dues().build()
     }
 
     private JsonObject loanRepaymentRequest() {
-        return StandingInstructionRequestBuilder.base()
-            .name("LOAN REPAYMENT TEST")
-            .transferType(2)
-            .fromAccountType(2)
-            .toAccountType(1)
-            .priority(1)
-            .instructionType(1)
-            .status(1)
-            .recurrenceType(2)
-            .validTill("07 May 2027")
-            .build();
+        return StandingInstructionRequestBuilder.repayment().build();
     }
 
     private JsonObject accountTransferRequest() {
-        return StandingInstructionRequestBuilder.base()
-            .name("ACCOUNT TRANSFER TEST")
-            .transferType(1)
-            .fromAccountType(2)
-            .toAccountType(2)
-            .priority(1)
-            .instructionType(1)
-            .status(1)
-            .recurrenceType(1)
-            .validTill("07 May 2027")
-            .toAccountId(2)
-            .build();
+        return StandingInstructionRequestBuilder.transfer().build();
     }
 
     private void assertValidation(final JsonObject json, final String parameter, final String reason) {
@@ -436,7 +395,43 @@ public class StandingInstructionDataValidatorTest {
                 .recurrenceOnMonthDay("08 May")
                 .monthDayFormat("dd MMMM");
         }
-    
+
+        public static StandingInstructionRequestBuilder periodic() {
+            return base()
+                .transferType(1)
+                .fromAccountType(2)
+                .toAccountType(2)
+                .priority(1)
+                .instructionType(1)
+                .status(1)
+                .recurrenceType(1)
+                .validTill("07 May 2027");
+        }
+
+        private JsonObject dues() {
+            return StandingInstructionRequestBuilder.periodic()
+                .name("DUES TEST")
+                .instructionType(2)
+                .build();
+        }
+
+        private JsonObject repayment() {
+            return StandingInstructionRequestBuilder.periodic()
+                .name("LOAN REPAYMENT TEST")
+                .transferType(2)
+                .toAccountType(1)
+                .recurrenceType(2)
+                .instructionType(1)
+                .build();
+        }
+        
+        private JsonObject transfer() {
+            return StandingInstructionRequestBuilder.periodic()
+                .name("ACCOUNT TRANSFER TEST")
+                .toAccountId(2)
+                .build();
+        }
+
         public StandingInstructionRequestBuilder locale(String v) {
             json.addProperty(AccountDetailConstants.localeParamName, v);
             return this;
@@ -529,11 +524,6 @@ public class StandingInstructionDataValidatorTest {
     
         public StandingInstructionRequestBuilder amount(BigDecimal v) {
             json.addProperty(StandingInstructionApiConstants.amountParamName, v);
-            return this;
-        }
-    
-        public StandingInstructionRequestBuilder toAccountIdOnly(Integer v) {
-            json.addProperty(AccountDetailConstants.toAccountIdParamName, v);
             return this;
         }
 
