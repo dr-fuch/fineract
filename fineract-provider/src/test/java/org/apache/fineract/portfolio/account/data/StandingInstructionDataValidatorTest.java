@@ -303,17 +303,13 @@ public class StandingInstructionDataValidatorTest {
         }
     }
 
-    private JsonCommand createJsonCommand(final JsonObject jsonObject) {
+    private JsonCommand command(JsonObject json) {
         final String json = jsonObject == null ? "" : jsonObject.toString();
         final JsonElement parsedCommand = fromApiJsonHelper.parse(json);
 
         return JsonCommand.from(json, parsedCommand, fromApiJsonHelper, null,
             null, null, null, null, null, null, null, null, null, null, null,
             null, null);
-    }
-
-    private JsonCommand command(JsonObject json) {
-        return createJsonCommand(json);
     }
 
     private JsonObject getRequest(final String locale, final String dateFormat, final Integer fromOfficeId,
@@ -424,8 +420,7 @@ public class StandingInstructionDataValidatorTest {
     }
 
     private void assertThrowsException(Class<? extends Throwable> exceptionClass, JsonObject json) {
-        final JsonCommand command = createJsonCommand(json);
         assertThrows(exceptionClass, () -> 
-            this.standingInstructionDataValidator.validateForCreate(command));
+            this.standingInstructionDataValidator.validateForCreate(command(json)));
     }
 }
