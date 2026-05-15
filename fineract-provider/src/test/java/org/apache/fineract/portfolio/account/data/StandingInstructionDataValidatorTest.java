@@ -388,7 +388,7 @@ public class StandingInstructionDataValidatorTest {
 
     private static Stream<Arguments> invalidExecutionDates() {
         return Stream.of(
-            Arguments.of("08 May 2026", "10 May 2026", 0, 5, null, ),
+            Arguments.of("08 May 2026", "10 May 2026", 0, 5, null),
             Arguments.of("08 May 2026", "15 May 2026", 1, 2, null),
             Arguments.of("15 May 2026", "25 May 2026", 2, 1, "10 May")
         );
