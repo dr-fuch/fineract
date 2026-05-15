@@ -71,19 +71,19 @@ public class StandingInstructionDataValidatorTest {
         @Nested
         class UnconditionedBehavior {
             @Test
-            void throwExceptionWhenJsonIsBlankOrNull(){
+            void shouldThrowExceptionWhenRequestBodyIsNull(){
                 assertThrowsException(InvalidJsonException.class, null);
             }
 
             @Test
-            void throwExceptionWhenJsonHasAnInvalidParam() {
+            void shouldThrowExceptionWhenRequestContainsUnknownParameter() {
                 final JsonObject json = getBaseRequest();
                 json.addProperty("invalidParam", "invalidValue");
                 assertThrowsException(UnsupportedParameterException.class, json);
             }
 
             @Test
-            void shouldCallAccountTransfersDetailDataValidator() {
+            void shouldValidateAccountTransferDetails() {
                 final JsonObject json = getAccountTransferRequest();
                 final JsonCommand command = createJsonCommand(json);
                 standingInstructionDataValidator.validateForCreate(command);
@@ -103,7 +103,7 @@ public class StandingInstructionDataValidatorTest {
                 StandingInstructionApiConstants.statusParamName,
                 StandingInstructionApiConstants.validFromParamName,
                 StandingInstructionApiConstants.recurrenceTypeParamName })
-            void shouldFailWhenRequiredFieldIsMissing(String parameter) {
+            void shouldFailValidationWhenRequiredParameterIsMissing(String parameter) {
                 assertBlank(getBaseRequest(), parameter);
             }
 
@@ -115,12 +115,12 @@ public class StandingInstructionDataValidatorTest {
                 StandingInstructionApiConstants.statusParamName,
                 StandingInstructionApiConstants.recurrenceTypeParamName
             })
-            void shouldFailWhenFieldHasInvalidValue(String parameter) {
+            void shouldFailValidationWhenParameterHasInvalidRangeValue(String parameter) {
                 assertRange(getBaseRequest(), parameter);
             }
 
             @Test 
-            void throwErrorWhenValidTillIsBeforeValidFrom() {
+            void shouldFailValidationWhenValidTillDateIsBeforeValidFromDate() {
                 assertValidation(getBaseRequest(), 
                     StandingInstructionApiConstants.validTillParamName, "is.less.than.date");
             }
@@ -128,12 +128,15 @@ public class StandingInstructionDataValidatorTest {
         
         @Nested
         class PeriodicRecurrenceType {
-            @Test
-            void throwErrorWhenRecurrenceFrequencyIsMissing() {
-                final JsonObject json = getPeriodicRequest();
-                json.remove(StandingInstructionApiConstants.recurrenceFrequencyParamName);
-                assertBlank(json, 
-                    StandingInstructionApiConstants.recurrenceFrequencyParamName);
+            @ParameterizedTest
+            @ValueSource(strings = {
+                StandingInstructionApiConstants.recurrenceFrequencyParamName,
+                StandingInstructionApiConstants.recurrenceIntervalParamName,
+                StandingInstructionApiConstants.monthDayFormatParamName,
+                StandingInstructionApiConstants.recurrenceOnMonthDayParamName
+            })
+            void shouldFailValidationWhenPeriodicFieldIsMissing(String parameter) {
+                assertBlank(getPeriodicRequest(), parameter);
             }
 
             @Test
@@ -141,30 +144,6 @@ public class StandingInstructionDataValidatorTest {
                 final JsonObject json = getPeriodicRequest();
                 json.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, 4);
                 assertRange(json, StandingInstructionApiConstants.recurrenceFrequencyParamName);
-            }
-
-            @Test
-            void throwErrorWhenRecurrenceIntervalIsMissing() {
-                final JsonObject json = getPeriodicRequest();
-                json.remove(StandingInstructionApiConstants.recurrenceIntervalParamName);
-                assertBlank(json, 
-                    StandingInstructionApiConstants.recurrenceIntervalParamName);
-            }
-
-            @Test
-            void throwErrorWhenRecurrenceFrequencyIsMonthlyAndMonthDayFormatIsMissing() {
-                final JsonObject json = getPeriodicRequest();
-                json.remove(StandingInstructionApiConstants.monthDayFormatParamName);
-                assertBlank(json, 
-                    StandingInstructionApiConstants.monthDayFormatParamName);
-            }
-
-            @Test
-            void throwErrorWhenRecurrenceFrequencyIsMonthlyAndRecurrenceOnMonthDayIsMissing() {
-                final JsonObject json = getPeriodicRequest();
-                json.remove(StandingInstructionApiConstants.recurrenceOnMonthDayParamName);
-                assertBlank(json, 
-                    StandingInstructionApiConstants.recurrenceOnMonthDayParamName);
             }
 
             @Test
