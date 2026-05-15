@@ -386,140 +386,141 @@ public class StandingInstructionDataValidatorTest {
         assertThrows(exceptionClass, () -> 
             this.standingInstructionDataValidator.validateForCreate(command(json)));
     }
+
+    private static class StandingInstructionRequestBuilder {
+    
+        private final JsonObject json = new JsonObject();
+    
+        public static StandingInstructionRequestBuilder base() {
+            return new StandingInstructionRequestBuilder()
+                .locale("en")
+                .dateFormat("dd MMMM yyyy")
+                .fromOfficeId(1)
+                .fromClientId(1)
+                .fromAccountId(1)
+                .fromAccountType(1)
+                .toOfficeId(1)
+                .toClientId(1)
+                .toAccountId(1)
+                .toAccountType(1)
+                .transferType(4)
+                .name("BASE TEST")
+                .priority(5)
+                .instructionType(3)
+                .status(3)
+                .validFrom("08 May 2026")
+                .validTill("07 May 2027")
+                .recurrenceType(3)
+                .amount(new BigDecimal("10.00"))
+                .recurrenceFrequency(2)
+                .recurrenceInterval(1)
+                .recurrenceOnMonthDay("08 May")
+                .monthDayFormat("dd MMMM");
+        }
+    
+        public StandingInstructionRequestBuilder locale(String v) {
+            json.addProperty(AccountDetailConstants.localeParamName, v);
+            return this;
+        }
+    
+        public StandingInstructionRequestBuilder dateFormat(String v) {
+            json.addProperty(AccountDetailConstants.dateFormatParamName, v);
+            return this;
+        }
+    
+        public StandingInstructionRequestBuilder fromOfficeId(Integer v) {
+            json.addProperty(AccountDetailConstants.fromOfficeIdParamName, v);
+            return this;
+        }
+    
+        public StandingInstructionRequestBuilder fromClientId(Integer v) {
+            json.addProperty(AccountDetailConstants.fromClientIdParamName, v);
+            return this;
+        }
+    
+        public StandingInstructionRequestBuilder fromAccountId(Integer v) {
+            json.addProperty(AccountDetailConstants.fromAccountIdParamName, v);
+            return this;
+        }
+    
+        public StandingInstructionRequestBuilder fromAccountType(Integer v) {
+            json.addProperty(AccountDetailConstants.fromAccountTypeParamName, v);
+            return this;
+        }
+    
+        public StandingInstructionRequestBuilder toOfficeId(Integer v) {
+            json.addProperty(AccountDetailConstants.toOfficeIdParamName, v);
+            return this;
+        }
+    
+        public StandingInstructionRequestBuilder toClientId(Integer v) {
+            json.addProperty(AccountDetailConstants.toClientIdParamName, v);
+            return this;
+        }
+    
+        public StandingInstructionRequestBuilder toAccountId(Integer v) {
+            json.addProperty(AccountDetailConstants.toAccountIdParamName, v);
+            return this;
+        }
+    
+        public StandingInstructionRequestBuilder toAccountType(Integer v) {
+            json.addProperty(AccountDetailConstants.toAccountTypeParamName, v);
+            return this;
+        }
+    
+        public StandingInstructionRequestBuilder transferType(Integer v) {
+            json.addProperty(AccountDetailConstants.transferTypeParamName, v);
+            return this;
+        }
+    
+        public StandingInstructionRequestBuilder name(String v) {
+            json.addProperty(StandingInstructionApiConstants.nameParamName, v);
+            return this;
+        }
+    
+        public StandingInstructionRequestBuilder priority(Integer v) {
+            json.addProperty(StandingInstructionApiConstants.priorityParamName, v);
+            return this;
+        }
+    
+        public StandingInstructionRequestBuilder instructionType(Integer v) {
+            json.addProperty(StandingInstructionApiConstants.instructionTypeParamName, v);
+            return this;
+        }
+    
+        public StandingInstructionRequestBuilder status(Integer v) {
+            json.addProperty(StandingInstructionApiConstants.statusParamName, v);
+            return this;
+        }
+    
+        public StandingInstructionRequestBuilder validFrom(String v) {
+            json.addProperty(StandingInstructionApiConstants.validFromParamName, v);
+            return this;
+        }
+    
+        public StandingInstructionRequestBuilder validTill(String v) {
+            json.addProperty(StandingInstructionApiConstants.validTillParamName, v);
+            return this;
+        }
+    
+        public StandingInstructionRequestBuilder recurrenceType(Integer v) {
+            json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, v);
+            return this;
+        }
+    
+        public StandingInstructionRequestBuilder amount(BigDecimal v) {
+            json.addProperty(StandingInstructionApiConstants.amountParamName, v);
+            return this;
+        }
+    
+        public StandingInstructionRequestBuilder toAccountIdOnly(Integer v) {
+            json.addProperty(AccountDetailConstants.toAccountIdParamName, v);
+            return this;
+        }
+    
+        public JsonObject build() {
+            return json.deepCopy();
+        }
+    }
 }
 
-private static class StandingInstructionRequestBuilder {
-
-    private final JsonObject json = new JsonObject();
-
-    public static StandingInstructionRequestBuilder base() {
-        return new StandingInstructionRequestBuilder()
-            .locale("en")
-            .dateFormat("dd MMMM yyyy")
-            .fromOfficeId(1)
-            .fromClientId(1)
-            .fromAccountId(1)
-            .fromAccountType(1)
-            .toOfficeId(1)
-            .toClientId(1)
-            .toAccountId(1)
-            .toAccountType(1)
-            .transferType(4)
-            .name("BASE TEST")
-            .priority(5)
-            .instructionType(3)
-            .status(3)
-            .validFrom("08 May 2026")
-            .validTill("07 May 2027")
-            .recurrenceType(3)
-            .amount(new BigDecimal("10.00"))
-            .recurrenceFrequency(2)
-            .recurrenceInterval(1)
-            .recurrenceOnMonthDay("08 May")
-            .monthDayFormat("dd MMMM");
-    }
-
-    public StandingInstructionRequestBuilder locale(String v) {
-        json.addProperty(AccountDetailConstants.localeParamName, v);
-        return this;
-    }
-
-    public StandingInstructionRequestBuilder dateFormat(String v) {
-        json.addProperty(AccountDetailConstants.dateFormatParamName, v);
-        return this;
-    }
-
-    public StandingInstructionRequestBuilder fromOfficeId(Integer v) {
-        json.addProperty(AccountDetailConstants.fromOfficeIdParamName, v);
-        return this;
-    }
-
-    public StandingInstructionRequestBuilder fromClientId(Integer v) {
-        json.addProperty(AccountDetailConstants.fromClientIdParamName, v);
-        return this;
-    }
-
-    public StandingInstructionRequestBuilder fromAccountId(Integer v) {
-        json.addProperty(AccountDetailConstants.fromAccountIdParamName, v);
-        return this;
-    }
-
-    public StandingInstructionRequestBuilder fromAccountType(Integer v) {
-        json.addProperty(AccountDetailConstants.fromAccountTypeParamName, v);
-        return this;
-    }
-
-    public StandingInstructionRequestBuilder toOfficeId(Integer v) {
-        json.addProperty(AccountDetailConstants.toOfficeIdParamName, v);
-        return this;
-    }
-
-    public StandingInstructionRequestBuilder toClientId(Integer v) {
-        json.addProperty(AccountDetailConstants.toClientIdParamName, v);
-        return this;
-    }
-
-    public StandingInstructionRequestBuilder toAccountId(Integer v) {
-        json.addProperty(AccountDetailConstants.toAccountIdParamName, v);
-        return this;
-    }
-
-    public StandingInstructionRequestBuilder toAccountType(Integer v) {
-        json.addProperty(AccountDetailConstants.toAccountTypeParamName, v);
-        return this;
-    }
-
-    public StandingInstructionRequestBuilder transferType(Integer v) {
-        json.addProperty(AccountDetailConstants.transferTypeParamName, v);
-        return this;
-    }
-
-    public StandingInstructionRequestBuilder name(String v) {
-        json.addProperty(StandingInstructionApiConstants.nameParamName, v);
-        return this;
-    }
-
-    public StandingInstructionRequestBuilder priority(Integer v) {
-        json.addProperty(StandingInstructionApiConstants.priorityParamName, v);
-        return this;
-    }
-
-    public StandingInstructionRequestBuilder instructionType(Integer v) {
-        json.addProperty(StandingInstructionApiConstants.instructionTypeParamName, v);
-        return this;
-    }
-
-    public StandingInstructionRequestBuilder status(Integer v) {
-        json.addProperty(StandingInstructionApiConstants.statusParamName, v);
-        return this;
-    }
-
-    public StandingInstructionRequestBuilder validFrom(String v) {
-        json.addProperty(StandingInstructionApiConstants.validFromParamName, v);
-        return this;
-    }
-
-    public StandingInstructionRequestBuilder validTill(String v) {
-        json.addProperty(StandingInstructionApiConstants.validTillParamName, v);
-        return this;
-    }
-
-    public StandingInstructionRequestBuilder recurrenceType(Integer v) {
-        json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, v);
-        return this;
-    }
-
-    public StandingInstructionRequestBuilder amount(BigDecimal v) {
-        json.addProperty(StandingInstructionApiConstants.amountParamName, v);
-        return this;
-    }
-
-    public StandingInstructionRequestBuilder toAccountIdOnly(Integer v) {
-        json.addProperty(AccountDetailConstants.toAccountIdParamName, v);
-        return this;
-    }
-
-    public JsonObject build() {
-        return json.deepCopy();
-    }
-}
