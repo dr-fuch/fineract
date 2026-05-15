@@ -321,7 +321,7 @@ public class StandingInstructionDataValidatorTest {
     }
 
     private JsonObject duesRequest() {
-        return StandingInstructionRequestBuilder.dues().build()
+        return StandingInstructionRequestBuilder.dues().build();
     }
 
     private JsonObject loanRepaymentRequest() {
