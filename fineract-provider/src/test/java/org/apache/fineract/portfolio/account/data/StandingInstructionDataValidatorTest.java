@@ -92,10 +92,17 @@ public class StandingInstructionDataValidatorTest {
                         any(DataValidatorBuilder.class));
             }
 
-            @Test
-            void throwErrorWhenTransferTypeIsMissing() {
-                assertBlank(getBaseRequest(),
-                    AccountDetailConstants.transferTypeParamName);
+            @ParameterizedTest
+            @ValueSource(string = {
+                AccountDetailConstants.transferTypeParamName,
+                StandingInstructionApiConstants.nameParamName,
+                StandingInstructionApiConstants.priorityParamName,
+                StandingInstructionApiConstants.instructionTypeParamName,
+                StandingInstructionApiConstants.statusParamName,
+                StandingInstructionApiConstants.validFromParamName,
+                StandingInstructionApiConstants.recurrenceTypeParamName })
+            void shouldFailWhenRequiredFieldIsMissing(String parameter) {
+                assertBlank(getBaseRequest(), parameter);
             }
 
             @Test
@@ -105,27 +112,9 @@ public class StandingInstructionDataValidatorTest {
             }
 
             @Test
-            void throwErrorWhenNameIsMissing() {
-                assertBlank(getBaseRequest(),
-                    StandingInstructionApiConstants.nameParamName);
-            }
-
-            @Test
-            void throwErrorWhenPriorityIsMissing() {
-                assertBlank(getBaseRequest(),
-                    StandingInstructionApiConstants.priorityParamName);
-            }
-
-            @Test
             void throwErrorWhitPriorityInvalidValue() {
                 assertRange(getBaseRequest(),
                     StandingInstructionApiConstants.priorityParamName);
-            }
-
-            @Test
-            void throwErrorWhenInstructionTypeIsMissing() {
-                assertBlank(getBaseRequest(),
-                    StandingInstructionApiConstants.instructionTypeParamName);
             }
 
             @Test
@@ -135,33 +124,15 @@ public class StandingInstructionDataValidatorTest {
             }
 
             @Test
-            void throwErrorWhenStatusIsMissing() {
-                assertBlank(getBaseRequest(),
-                    StandingInstructionApiConstants.statusParamName);
-            }
-
-            @Test
             void throwErrorWhitStatusTypeInvalidValue() {
                 assertRange(getBaseRequest(),
                     StandingInstructionApiConstants.statusParamName);
-            }
-
-            @Test
-            void throwErrorWhenValidFromIsMissing() {
-                assertBlank(getBaseRequest(),
-                    StandingInstructionApiConstants.validFromParamName);
             }
 
             @Test 
             void throwErrorWhenValidTillIsBeforeValidFrom() {
                 assertValidation(getBaseRequest(), 
                     StandingInstructionApiConstants.validTillParamName, "is.less.than.date");
-            }
-
-            @Test
-            void throwErrorWhenRecurrenceTypeIsMissing() {
-                assertBlank(getBaseRequest(),
-                    StandingInstructionApiConstants.recurrenceTypeParamName);
             }
 
             @Test
