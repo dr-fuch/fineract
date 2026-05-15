@@ -387,7 +387,7 @@ public class StandingInstructionDataValidatorTest {
             this.standingInstructionDataValidator.validateForCreate(command(json)));
     }
 
-    static class StandingInstructionRequestBuilder {
+    private static class StandingInstructionRequestBuilder {
     
         private final JsonObject json = new JsonObject();
     
