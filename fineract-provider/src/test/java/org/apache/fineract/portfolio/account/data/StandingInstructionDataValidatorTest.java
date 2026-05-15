@@ -528,12 +528,12 @@ public class StandingInstructionDataValidatorTest {
             return this;
         }
 
-        public StandingInstructionRequestBuilder recurrenceOnMonthDay(Integer v) {
+        public StandingInstructionRequestBuilder recurrenceOnMonthDay(String v) {
             json.addProperty(StandingInstructionApiConstants.recurrenceOnMonthDayParamName, v);
             return this;
         }
 
-        public StandingInstructionRequestBuilder monthDayFormat(Integer v) {
+        public StandingInstructionRequestBuilder monthDayFormat(String v) {
             json.addProperty(StandingInstructionApiConstants.monthDayFormatParamName, v);
             return this;
         }
@@ -543,4 +543,3 @@ public class StandingInstructionDataValidatorTest {
         }
     }
 }
-
