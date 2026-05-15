@@ -95,7 +95,7 @@ public class StandingInstructionDataValidatorTest {
             }
 
             @ParameterizedTest
-            @ValueSource(string = {
+            @ValueSource(strings = {
                 AccountDetailConstants.transferTypeParamName,
                 StandingInstructionApiConstants.nameParamName,
                 StandingInstructionApiConstants.priorityParamName,
@@ -107,41 +107,22 @@ public class StandingInstructionDataValidatorTest {
                 assertBlank(getBaseRequest(), parameter);
             }
 
-
-            @Test
-            void throwErrorWhitTransferTypeInvalidValue() {
-                assertRange(getBaseRequest(),
-                    AccountDetailConstants.transferTypeParamName);
-            }
-
-            @Test
-            void throwErrorWhitPriorityInvalidValue() {
-                assertRange(getBaseRequest(),
-                    StandingInstructionApiConstants.priorityParamName);
-            }
-
-            @Test
-            void throwErrorWhitInstructionTypeInvalidValue() {
-                assertRange(getBaseRequest(),
-                    StandingInstructionApiConstants.instructionTypeParamName);
-            }
-
-            @Test
-            void throwErrorWhitStatusTypeInvalidValue() {
-                assertRange(getBaseRequest(),
-                    StandingInstructionApiConstants.statusParamName);
+            @ParameterizedTest
+            @ValueSource(strings = {
+                AccountDetailConstants.transferTypeParamName,
+                StandingInstructionApiConstants.priorityParamName,
+                StandingInstructionApiConstants.instructionTypeParamName,
+                StandingInstructionApiConstants.statusParamName,
+                StandingInstructionApiConstants.recurrenceTypeParamName
+            })
+            void shouldFailWhenFieldHasInvalidValue(String parameter) {
+                assertRange(getBaseRequest(), parameter);
             }
 
             @Test 
             void throwErrorWhenValidTillIsBeforeValidFrom() {
                 assertValidation(getBaseRequest(), 
                     StandingInstructionApiConstants.validTillParamName, "is.less.than.date");
-            }
-
-            @Test
-            void throwErrorWhitRecurrenceTypeInvalidValue() {
-                assertRange(getBaseRequest(),
-                    StandingInstructionApiConstants.recurrenceTypeParamName);
             }
         }
         
