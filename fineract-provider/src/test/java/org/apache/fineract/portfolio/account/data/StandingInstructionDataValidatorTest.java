@@ -1,4 +1,4 @@
-/**
+
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information
@@ -28,6 +28,7 @@ import static org.mockito.Mockito.times;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import java.math.BigDecimal;
+import java.util.stream.Stream;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.data.DataValidatorBuilder;
 import org.apache.fineract.infrastructure.core.exception.InvalidJsonException;
@@ -43,9 +44,10 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.Mock;
 
 @ExtendWith(MockitoExtension.class)
 public class StandingInstructionDataValidatorTest {
@@ -154,42 +156,26 @@ public class StandingInstructionDataValidatorTest {
                     StandingInstructionApiConstants.recurrenceOnMonthDayParamName, "invalid.month.day.format");
             }
 
-
-            @Test
-            void throwErrorWhenValidTillIsBeforeFirstDailyExecution() {
+            @ParameterizedTest
+            @MethodSource("invalidExecutionDates")
+            void shouldFailValidationWhenValidTillIsBeforeFirstExecutionDate(String validFrom, String validTill,
+                Integer recurrenceFrequency, Integer recurrenceInterval, String recurrenceOnMonthDay) {
+                
                 final JsonObject json = getPeriodicRequest();
-                json.addProperty(StandingInstructionApiConstants.validFromParamName, "08 May 2026");
-                json.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, 1); 
-                json.addProperty(StandingInstructionApiConstants.recurrenceIntervalParamName, 5);
-                json.addProperty(StandingInstructionApiConstants.validTillParamName, "10 May 2026");
-                assertValidation(json, 
-                    StandingInstructionApiConstants.validTillParamName, "must.not.be.before.first.execution.date");
-            }
-
-            @Test
-            void throwErrorWhenValidTillIsBeforeFirstWeeklyExecution() {
-                final JsonObject json = getPeriodicRequest();
-                json.addProperty(StandingInstructionApiConstants.validFromParamName, "08 May 2026");
-                json.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, 2);
-                json.addProperty(StandingInstructionApiConstants.recurrenceIntervalParamName, 2);
-                json.addProperty(StandingInstructionApiConstants.validTillParamName, "15 May 2026");
-                assertValidation(json, 
-                    StandingInstructionApiConstants.validTillParamName, "must.not.be.before.first.execution.date");
-            }
-
-            @Test
-            void throwErrorWhenValidTillIsBeforeFirstMonthlyExecutionWithMonthDay() {
-                final JsonObject json = getPeriodicRequest();
-                json.addProperty(StandingInstructionApiConstants.validFromParamName, "15 May 2026");
-                json.addProperty(StandingInstructionApiConstants.recurrenceOnMonthDayParamName, "10 May");
-                json.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, 3);
-                json.addProperty(StandingInstructionApiConstants.recurrenceIntervalParamName, 1);
-                json.addProperty(StandingInstructionApiConstants.validTillParamName, "25 May 2026");
+                
+                json.addProperty(StandingInstructionApiConstants.validFromParamName, validFrom);
+                json.addProperty(StandingInstructionApiConstants.validTillParamName, validTill);
+                json.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, recurrenceFrequency);                
+                json.addProperty(StandingInstructionApiConstants.recurrenceIntervalParamName, recurrenceInterval);
+                
+                if (recurrenceOnMonthDay != null) {
+                    json.addProperty(StandingInstructionApiConstants.recurrenceOnMonthDayParamName, recurrenceOnMonthDay);
+                }
             
-                assertValidation(json, 
-                    StandingInstructionApiConstants.validTillParamName, "must.not.be.before.first.execution.date");
+                assertValidation(json,
+                    StandingInstructionApiConstants.validTillParamName,
+                    "must.not.be.before.first.execution.date");
             }
-
         }
 
         @Nested
@@ -400,6 +386,14 @@ public class StandingInstructionDataValidatorTest {
         return json;
     }
 
+    private static Stream<Arguments> invalidExecutionDates() {
+        return Stream.of(
+            Arguments.of("08 May 2026", "10 May 2026", 0, 5, null, ),
+            Arguments.of("08 May 2026", "15 May 2026", 1, 2, null),
+            Arguments.of("15 May 2026", "25 May 2026", 2, 1, "10 May")
+        );
+    }
+    
     private void assertValidation(final JsonObject json, final String parameter, final String reason) {
         final String expectedCode = STANDING_INSTRUCTION_MSG_BASE + parameter + "." + reason;
         final JsonCommand command = createJsonCommand(json);
