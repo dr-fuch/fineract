@@ -409,7 +409,7 @@ public class StandingInstructionDataValidatorTest {
                 .instructionType(3)
                 .status(3)
                 .validFrom("08 May 2026")
-                .validTill("07 May 2027")
+                .validTill("07 May 2026")
                 .recurrenceType(3)
                 .amount(new BigDecimal("10.00"))
                 .recurrenceFrequency(2)
