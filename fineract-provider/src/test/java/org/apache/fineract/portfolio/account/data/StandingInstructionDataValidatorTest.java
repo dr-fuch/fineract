@@ -264,7 +264,7 @@ public class StandingInstructionDataValidatorTest {
             }
 
             @Test
-            void shouldNotFailWithValidAccountTransfer() {
+            void shouldPassWithValidAccountTransfer() {
                 assertValidationSuccess(getAccountTransferRequest());
             }
         }
@@ -288,7 +288,7 @@ public class StandingInstructionDataValidatorTest {
             }
 
             @Test
-            void shouldNotFailWithValidLoanRepayment() {
+            void shouldPassWithValidLoanRepayment() {
                 final JsonObject json = getLoanRepaymentRequest();
                 json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 1);
                 
