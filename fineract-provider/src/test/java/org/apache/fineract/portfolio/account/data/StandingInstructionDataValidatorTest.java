@@ -88,8 +88,7 @@ public class StandingInstructionDataValidatorTest {
             @Test
             void shouldValidateAccountTransferDetails() {
                 final JsonObject json = getAccountTransferRequest();
-                final JsonCommand command = createJsonCommand(json);
-                standingInstructionDataValidator.validateForCreate(command);
+                standingInstructionDataValidator.validateForCreate(command(json));
 
                 verify(accountTransfersDetailDataValidator, times(1))
                     .validate(
@@ -273,8 +272,7 @@ public class StandingInstructionDataValidatorTest {
         class LoanRepayment {
             @Test
             void shouldFailWhenInstructionTypeIsFixedAndRecurrenceTypeIsAsPerDues() {
-                final JsonObject json = getLoanRepaymentRequest();
-                assertValidation(json,
+                assertValidation(getLoanRepaymentRequest(),
                     StandingInstructionApiConstants.recurrenceTypeParamName,
                     "as.per.dues.not.allowed.with.fixed.amount");
             }
@@ -312,6 +310,10 @@ public class StandingInstructionDataValidatorTest {
         return JsonCommand.from(json, parsedCommand, fromApiJsonHelper, null,
             null, null, null, null, null, null, null, null, null, null, null,
             null, null);
+    }
+
+    private JsonCommand command(JsonObject json) {
+        return createJsonCommand(json);
     }
 
     private JsonObject getRequest(final String locale, final String dateFormat, final Integer fromOfficeId,
@@ -395,10 +397,9 @@ public class StandingInstructionDataValidatorTest {
 
     private void assertValidation(final JsonObject json, final String parameter, final String reason) {
         final String expectedCode = STANDING_INSTRUCTION_MSG_BASE + parameter + "." + reason;
-        final JsonCommand command = createJsonCommand(json);
         
         PlatformApiDataValidationException ex = assertThrows(PlatformApiDataValidationException.class, () -> {
-            this.standingInstructionDataValidator.validateForCreate(command);
+            this.standingInstructionDataValidator.validateForCreate(command(json));
         });
 
         boolean hasError = ex.getErrors().stream().anyMatch(error -> 
@@ -409,11 +410,10 @@ public class StandingInstructionDataValidatorTest {
     }
     
     private void assertValidationSuccess(JsonObject json) {
-        final JsonCommand command = createJsonCommand(json);
-
         assertDoesNotThrow(() ->
-            standingInstructionDataValidator.validateForCreate(command));
+            standingInstructionDataValidator.validateForCreate(command(json)));
     }
+
     private void assertRange(JsonObject json, String param) {
         assertValidation(json, param, MSG_CODE_INVALID_RANGE);
     }
