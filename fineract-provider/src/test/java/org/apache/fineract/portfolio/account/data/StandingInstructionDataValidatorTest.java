@@ -411,8 +411,7 @@ public class StandingInstructionDataValidatorTest {
         private JsonObject dues() {
             return StandingInstructionRequestBuilder.periodic()
                 .name("DUES TEST")
-                .instructionType(2)
-                .build();
+                .instructionType(2);
         }
 
         private JsonObject repayment() {
@@ -421,15 +420,13 @@ public class StandingInstructionDataValidatorTest {
                 .transferType(2)
                 .toAccountType(1)
                 .recurrenceType(2)
-                .instructionType(1)
-                .build();
+                .instructionType(1);
         }
         
         private JsonObject transfer() {
             return StandingInstructionRequestBuilder.periodic()
                 .name("ACCOUNT TRANSFER TEST")
-                .toAccountId(2)
-                .build();
+                .toAccountId(2);
         }
 
         public StandingInstructionRequestBuilder locale(String v) {
