@@ -451,7 +451,7 @@ public class StandingInstructionDataValidatorTest {
     }
 
     private void assertThrowsException(Class<? extends Throwable> exceptionClass, JsonObject json) {
-        assertThrows(exceptionClass, () -> validate(json)));
+        assertThrows(exceptionClass, () -> validate(json));
     }
 
     private void assertValidation(final JsonObject json, final String parameter, final String reason) {
