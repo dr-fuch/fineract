@@ -92,7 +92,7 @@ public class StandingInstructionDataValidatorTest {
             boolean[] modes = {false, true}; 
 
             for (boolean mode : modes) {
-                this.isUpdateMode = mode;
+                isUpdateMode = mode;
                 assertThrowsException(InvalidJsonException.class, null);
             }
         }
@@ -102,7 +102,7 @@ public class StandingInstructionDataValidatorTest {
     class WhenCreatingStandingInstruction {
         @BeforeEach
         public void setUpCreateMode() {
-            this.isUpdateMode = false;
+            isUpdateMode = false;
         }
 
         @Nested
@@ -389,7 +389,7 @@ public class StandingInstructionDataValidatorTest {
     class WhenUpdatingStandingInstruction {
         @BeforeEach
         public void setUpUpdateMode() {
-            this.isUpdateMode = true;
+            isUpdateMode = true;
         }
     }
 
