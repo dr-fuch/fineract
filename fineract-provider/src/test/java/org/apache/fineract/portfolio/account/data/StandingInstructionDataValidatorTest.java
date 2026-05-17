@@ -345,10 +345,21 @@ public class StandingInstructionDataValidatorTest {
                 final JsonObject json = loanRepaymentRequest();
                 json.addProperty(StandingInstructionApiConstants.instructionTypeParamName, 1);
                 json.addProperty(StandingInstructionApiConstants.amountParamName, BigDecimal.TEN);
+                json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 1);
                 json.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, 2);
                 json.addProperty(StandingInstructionApiConstants.recurrenceIntervalParamName, 1);
                 json.addProperty(StandingInstructionApiConstants.recurrenceOnMonthDayParamName, "15 May");
                 json.addProperty(StandingInstructionApiConstants.monthDayFormatParamName, "dd MMMM");
+                
+                assertValidationSuccess(json);
+            }
+
+            @Test
+            void shouldPassWithPeriodicRecurrenceType() {
+                final JsonObject json = loanRepaymentRequest();
+                json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 1);
+                json.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, 1);
+                json.addProperty(StandingInstructionApiConstants.recurrenceIntervalParamName, 20);
                 
                 assertValidationSuccess(json);
             }
