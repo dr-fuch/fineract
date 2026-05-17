@@ -63,6 +63,8 @@ public class StandingInstructionDataValidatorTest {
     private static final String RECURRENCE_AS_PER_DUES_NOT_ALLOWED_FOR_SAVINGS_ERROR_CODE = "as.per.dues.not.allowed.for.account.transfer";
     private static final String INSTRUCTION_TYPE_DUES_NOT_ALLOWED_FOR_ACCOUNT_TRANSFER_ERROR_CODE = "dues.not.allowed.for.account.transfer";
     private static final String ACCOUNT_TRANSFER_NOT_ALLOWED_FOR_LOAN_ERROR_CODE = "not.account.transfer";
+    private static final String CANNOT_TRANSFER_TO_SAME_ACCOUNT_ERROR_CODE = "transfer.to.same.account.not.allowed";
+    
     
     private static final String invalidParamName = "invalidParam";
     private static final String invalidValue = "invalidValue";
@@ -247,6 +249,15 @@ public class StandingInstructionDataValidatorTest {
         @Nested
         class AccountTransfer {
             @Test
+            void shouldFailWithEqualAccountsAndEqualOffices() {
+                final JsonObject json = accountTransferRequest();
+                json.addProperty(AccountDetailConstants.toAccountIdParamName, 1);
+                
+                assertValidation(json, 
+                    AccountDetailConstants.toAccountIdParamName, CANNOT_TRANSFER_TO_SAME_ACCOUNT_ERROR_CODE);
+            }
+
+            @Test
             void shouldFailWhenInstructionTypeIsDues() {
                 final JsonObject json = accountTransferRequest();
                 json.addProperty(StandingInstructionApiConstants.instructionTypeParamName, 2);
@@ -274,14 +285,6 @@ public class StandingInstructionDataValidatorTest {
                 assertValidation(json,
                     AccountDetailConstants.transferTypeParamName,
                     ACCOUNT_TRANSFER_NOT_ALLOWED_FOR_LOAN_ERROR_CODE);
-            }
-
-            @Test
-            void shouldFailWithEqualAccountsAndEqualOffices() {
-                final JsonObject json = getAccountTransferRequest();
-                json.addProperty(AccountDetailConstants.toAccountIdParamName, 1);
-                assertValidation(json, 
-                    AccountDetailConstants.toAccountIdParamName, "transfer.to.same.account.not.allowed");
             }
 
             @Test
