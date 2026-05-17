@@ -76,7 +76,7 @@ public class StandingInstructionDataValidatorTest {
     class WhenCreatingStandingInstruction {
 
         @Nested
-        class BaseValidation {
+        class BaseValidationRules {
             @Test
             void shouldFailWhenRequestBodyIsNull(){
                 assertThrowsException(InvalidJsonException.class, null);
@@ -152,16 +152,14 @@ public class StandingInstructionDataValidatorTest {
         }
         
         @Nested
-        class PeriodicRecurrenceType {
+        class PeriodicRecurrenceRules {
             @ParameterizedTest
-            @ValueSource(strings = {
-                StandingInstructionApiConstants.recurrenceFrequencyParamName,
-                StandingInstructionApiConstants.recurrenceIntervalParamName,
-                StandingInstructionApiConstants.monthDayFormatParamName,
-                StandingInstructionApiConstants.recurrenceOnMonthDayParamName
-            })
+            @MethodSource("requiredParameters")
             void shouldFailWhenPeriodicFieldIsMissing(String parameter) {
-                assertBlank(getPeriodicRequest(), parameter);
+                final JsonObject json = accountTransferRequest();
+                json.remove(parameter);
+
+                assertBlank(json, parameter);
             }
 
             @Test
@@ -198,6 +196,15 @@ public class StandingInstructionDataValidatorTest {
                 assertValidation(json,
                     StandingInstructionApiConstants.validTillParamName,
                     "must.not.be.before.first.execution.date");
+            }
+
+            private static Stream<String> requiredParameters() {
+                return Stream.of(
+                    StandingInstructionApiConstants.recurrenceFrequencyParamName,
+                    StandingInstructionApiConstants.recurrenceIntervalParamName,
+                    StandingInstructionApiConstants.monthDayFormatParamName,
+                    StandingInstructionApiConstants.recurrenceOnMonthDayParamName
+                );
             }
 
             private static Stream<Arguments> invalidExecutionDates() {
@@ -355,8 +362,10 @@ public class StandingInstructionDataValidatorTest {
         json.addProperty(StandingInstructionApiConstants.validTillParamName, "16 May 2027");
         json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 1);
         json.addProperty(StandingInstructionApiConstants.amountParamName, BigDecimal.TEN);
-        json.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, 0);
+        json.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, 2);
         json.addProperty(StandingInstructionApiConstants.recurrenceIntervalParamName, 1);
+        json.addProperty(StandingInstructionApiConstants.recurrenceOnMonthDayParamName, "15 May");
+        json.addProperty(StandingInstructionApiConstants.monthDayFormatParamName, "dd MMMM");
 
         return json;
     }
