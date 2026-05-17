@@ -101,7 +101,7 @@ public class StandingInstructionDataValidatorTest {
             }
 
             @ParameterizedTest
-            @MethodSourceSource("requiredBaseParameters")
+            @MethodSource("requiredBaseParameters")
             void shouldFailWhenRequiredParameterIsMissing(String parameter) {
                 final JsonObject json = accountTransferRequest();
                 json.remove(parameter);
