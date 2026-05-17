@@ -388,7 +388,7 @@ public class StandingInstructionDataValidatorTest {
 
     private JsonCommand command(JsonObject json) {
         final String j = json == null ? "" : json.toString();
-        final JsonElement element = fromApiJsonHelper.parse(json);
+        final JsonElement element = fromApiJsonHelper.parse(j);
 
         return JsonCommand.from(j, element, fromApiJsonHelper, null,
             null, null, null, null, null, null, null, null, null, null, null,
