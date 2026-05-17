@@ -239,15 +239,6 @@ public class StandingInstructionDataValidatorTest {
                 assertValidation(json,
                     StandingInstructionApiConstants.amountParamName, MUST_BE_GREATER_THAN_ZERO_ERROR_CODE);
             }
-
-            @Test
-            void shouldFailWhenInstructionTypeIsDuesAndAmountIsNotNull() {
-                final JsonObject json = loanRepaymentRequest();
-                json.addProperty(StandingInstructionApiConstants.amountParamName, BigDecimal.TEN);
-
-                assertValidation(json,
-                    StandingInstructionApiConstants.amountParamName, AMOUNT_NOT_ALLOWED_FOR_DUES_ERROR_CODE);
-            }
         }
 
         @Nested
@@ -309,6 +300,15 @@ public class StandingInstructionDataValidatorTest {
 
         @Nested
         class LoanRepayment {
+            @Test
+            void shouldFailWhenInstructionTypeIsDuesAndAmountIsNotNull() {
+                final JsonObject json = loanRepaymentRequest();
+                json.addProperty(StandingInstructionApiConstants.amountParamName, BigDecimal.TEN);
+
+                assertValidation(json,
+                    StandingInstructionApiConstants.amountParamName, AMOUNT_NOT_ALLOWED_FOR_DUES_ERROR_CODE);
+            }
+
             @Test
             void shouldFailWhenInstructionTypeIsFixedAndRecurrenceTypeIsAsPerDues() {
                 assertValidation(getLoanRepaymentRequest(),
@@ -395,7 +395,7 @@ public class StandingInstructionDataValidatorTest {
         json.addProperty(AccountDetailConstants.transferTypeParamName, 2);
         json.addProperty(StandingInstructionApiConstants.nameParamName, "BASIC LOAN REPAYMENT");
         json.addProperty(StandingInstructionApiConstants.priorityParamName, 1);
-        json.addProperty(StandingInstructionApiConstants.instructionTypeParamName, 1);
+        json.addProperty(StandingInstructionApiConstants.instructionTypeParamName, 2);
         json.addProperty(StandingInstructionApiConstants.statusParamName, 1);
         json.addProperty(StandingInstructionApiConstants.validFromParamName, "16 May 2026");
         json.addProperty(StandingInstructionApiConstants.validTillParamName, "16 May 2027");
