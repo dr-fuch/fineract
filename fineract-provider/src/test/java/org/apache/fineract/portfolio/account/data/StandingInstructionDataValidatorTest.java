@@ -339,7 +339,7 @@ public class StandingInstructionDataValidatorTest {
         json.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, 0);
         json.addProperty(StandingInstructionApiConstants.recurrenceIntervalParamName, 1);
 
-        return object;
+        return json;
     }
 
     private JsonObject getRequest(final String locale, final String dateFormat, final Integer fromOfficeId,
