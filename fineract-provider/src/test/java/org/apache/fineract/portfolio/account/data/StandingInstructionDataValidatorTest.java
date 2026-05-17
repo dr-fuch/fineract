@@ -87,14 +87,30 @@ public class StandingInstructionDataValidatorTest {
 
     @Nested
     class Common {
-        @Test
-        void shouldFailWhenRequestBodyIsNull() {
-            boolean[] modes = {false, true}; 
+        @ParameterizedTest
+        @MethodSource("modes")
+        void shouldFailWhenRequestBodyIsNull(boolean mode) {
+            isUpdateMode = mode;
+            assertThrowsException(InvalidJsonException.class, null);
+        }
 
-            for (boolean mode : modes) {
-                isUpdateMode = mode;
-                assertThrowsException(InvalidJsonException.class, null);
-            }
+        @ParameterizedTest
+        @MethodSource("requests")
+        void shouldFailWhenRequestContainsUnknownParameter(boolean mode, JsonObject json) {
+            isUpdateMode = mode;
+            json.addProperty(invalidParamName, invalidValue);
+            assertThrowsException(UnsupportedParameterException.class, json);
+        }
+
+        private static Stream<boolean> modes() {
+            return Stream.of(false, true);
+        }
+
+        private static Stream<Arguments> requests() {
+            return Stream.of(
+                    Arguments.of(false, createAccountTransferRequest()),
+                    Arguments.of(true, commonValuesInUpdateRequest())
+            );
         }
     }
 
@@ -107,14 +123,6 @@ public class StandingInstructionDataValidatorTest {
 
         @Nested
         class BaseRules {
-            @Test
-            void shouldFailWhenRequestContainsUnknownParameter() {
-                final JsonObject json = createAccountTransferRequest();
-                json.addProperty(invalidParamName, invalidValue);
-
-                assertThrowsException(UnsupportedParameterException.class, json);
-            }
-
             @Test
             void shouldValidateAccountTransferDetails() {
                 final JsonObject json = createAccountTransferRequest();
@@ -445,6 +453,14 @@ public class StandingInstructionDataValidatorTest {
         json.addProperty(StandingInstructionApiConstants.nameParamName, "BASIC LOAN REPAYMENT");
         json.addProperty(StandingInstructionApiConstants.instructionTypeParamName, 2);
         json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 2);
+
+        return json;
+    }
+
+    private JsonObject commonValuesInUpdateRequest() {
+        JsonObject json = new JsonObject();
+        json.addProperty(AccountDetailConstants.localeParamName, "en");
+        json.addProperty(AccountDetailConstants.dateFormatParamName, "dd MMMM yyyy");
 
         return json;
     }
