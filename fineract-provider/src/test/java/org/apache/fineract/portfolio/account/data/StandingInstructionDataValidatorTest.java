@@ -65,6 +65,7 @@ public class StandingInstructionDataValidatorTest {
     private static final String RECURRENCE_AS_PER_DUES_NOT_ALLOWED_FOR_SAVINGS_ERROR_CODE = "as.per.dues.not.allowed.for.account.transfer";
     private static final String ACCOUNT_TRANSFER_NOT_ALLOWED_FOR_LOAN_ERROR_CODE = "account.transfer.is.not.allowed.for.loan.accounts";
     private static final String RECURRENCE_AS_PER_DUES_NOT_ALLOWED_WITH_FIXED_INSTRUCTION_ERROR_CODE = "as.per.dues.not.allowed.with.fixed.amount";
+    private static final String NOT_A_VALID_LOAN_REPAYMENT_ERROR_CODE = "is.not.a.valid.loan.repayment";
     
     
     private static final String invalidParamName = "invalidParam";
@@ -314,7 +315,7 @@ public class StandingInstructionDataValidatorTest {
             @Test
             void shouldFailWhenInstructionTypeIsFixedAndRecurrenceTypeIsAsPerDues() {
                 final JsonObject json = loanRepaymentRequest();
-                json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 1);
+                json.addProperty(StandingInstructionApiConstants.instructionTypeParamName, 1);
 
                 assertValidation(json,
                     StandingInstructionApiConstants.recurrenceTypeParamName,
@@ -332,10 +333,11 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void shouldFailWhenIsNotALoanRepayment() {
-                final JsonObject json = getLoanRepaymentRequest();
+                final JsonObject json = loanRepaymentRequest();
                 json.addProperty(AccountDetailConstants.toAccountTypeParamName, 2);
+
                 assertValidation(json,
-                    AccountDetailConstants.transferTypeParamName, "not.loan.repayment");
+                    AccountDetailConstants.transferTypeParamName, NOT_A_VALID_LOAN_REPAYMENT_ERROR_CODE);
             }
 
             @Test

@@ -221,7 +221,7 @@ public class StandingInstructionDataValidator {
                     errorCode = "account.transfer.is.not.allowed.for.loan.accounts";
                 } else if (accountTransferType.isLoanRepayment() && (PortfolioAccountType.LOAN.equals(fromPortfolioAccountType)
                         || PortfolioAccountType.SAVINGS.equals(toPortfolioAccountType))) {
-                    errorCode = "not.loan.repayment";
+                    errorCode = "is.not.a.valid.loan.repayment";
                 }
 
                 if (errorCode != null) {
