@@ -183,7 +183,7 @@ public class StandingInstructionDataValidatorTest {
 
             @ParameterizedTest
             @MethodSource("invalidExecutionDates")
-            void shouldFailWhenValidTillDateIsBeforeFirstExecutionDate(String validTill, Integer recurrenceFrequency,
+            void shouldFailWhenValidTillIsBeforeFirstExecution(String validTill, Integer recurrenceFrequency,
                 Integer recurrenceInterval, String recurrenceOnMonthDay) {
                 final JsonObject json = accountTransferRequest();
             
@@ -213,7 +213,7 @@ public class StandingInstructionDataValidatorTest {
                 return Stream.of(
                     Arguments.of("20 May 2026", 0, 5, null),
                     Arguments.of("29 May 2026", 1, 2, null),
-                    Arguments.of("09 May 2026", 2, 1, "10 May")
+                    Arguments.of("17 May 2026", 2, 1, "18 May")
                 );
             }
 
