@@ -191,8 +191,7 @@ public class StandingInstructionDataValidatorTest {
         class Amount {
             @Test
             void shouldFailWhenAmountIsMissing() {
-                final JsonObject json = getPeriodicRequest();
-                assertBlank(json, 
+                assertBlank(getPeriodicRequest(), 
                     StandingInstructionApiConstants.amountParamName);
             }
 
@@ -305,13 +304,39 @@ public class StandingInstructionDataValidatorTest {
 
     private JsonCommand command(JsonObject jsonObject) {
         final String json = jsonObject == null ? "" : jsonObject.toString();
-        final JsonElement parsedCommand = fromApiJsonHelper.parse(json);
+        final JsonElement element = fromApiJsonHelper.parse(json);
 
-        return JsonCommand.from(json, parsedCommand, fromApiJsonHelper, null,
+        return JsonCommand.from(json, element, fromApiJsonHelper, null,
             null, null, null, null, null, null, null, null, null, null, null,
             null, null);
     }
 
+    private JsonObject accountTransferRequest() {
+        return Json.createObjectBuilder()
+            .add(AccountDetailConstants.localeParamName, "en")
+            .add(AccountDetailConstants.dateFormatParamName, "dd MMMM yyyy")
+            .add(AccountDetailConstants.fromOfficeIdParamName, 1)
+            .add(AccountDetailConstants.fromClientIdParamName, 1)
+            .add(AccountDetailConstants.fromAccountIdParamName, 1)
+            .add(AccountDetailConstants.fromAccountTypeParamName, 2)
+            .add(AccountDetailConstants.toOfficeIdParamName, 1)
+            .add(AccountDetailConstants.toClientIdParamName, 1)
+            .add(AccountDetailConstants.toAccountIdParamName, 2)
+            .add(AccountDetailConstants.toAccountTypeParamName, 2)
+            .add(AccountDetailConstants.transferTypeParamName, 1)
+            .add(StandingInstructionApiConstants.nameParamName, "BASIC ACCOUNT TRANSFER")
+            .add(StandingInstructionApiConstants.priorityParamName, 1)
+            .add(StandingInstructionApiConstants.instructionTypeParamName, 1)
+            .add(StandingInstructionApiConstants.statusParamName, 1)
+            .add(StandingInstructionApiConstants.validFromParamName, "16 May 2026")
+            .add(StandingInstructionApiConstants.validTillParamName, "16 May 2027")
+            .add(StandingInstructionApiConstants.recurrenceTypeParamName, 1)
+            .add(StandingInstructionApiConstants.amountParamName, BigDecimal.TEN)
+            .add(StandingInstructionApiConstants.recurrenceFrequencyParamName, 0)
+            .add(StandingInstructionApiConstants.recurrenceIntervalParamName, 1)
+            .build();
+    }
+    
     private JsonObject getRequest(final String locale, final String dateFormat, final Integer fromOfficeId,
         final Integer fromClientId, final Integer fromAccountId, final Integer fromAccountType, final Integer toOfficeId,
         final Integer toClientId, final Integer toAccountId, final Integer toAccountType, final Integer transferType,
@@ -348,7 +373,9 @@ public class StandingInstructionDataValidatorTest {
     }
 
     private JsonObject getBaseRequest() {   
-        return getRequest("en", "dd MMMM yyyy", 1, 1, 1, 1, 1, 1, 1, 1, 4,
+        return getRequest(
+            "en", 
+            "dd MMMM yyyy", 1, 1, 1, 1, 1, 1, 1, 1, 4,
             "BASE TEST", 5, 3, 3, "08 May 2026", "07 May 2026", 3,
             new BigDecimal(10.00), 2, 1, "08 May", "dd MMMM");
     }
