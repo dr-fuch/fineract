@@ -58,6 +58,7 @@ public class StandingInstructionDataValidatorTest {
     private static final String DATE_IS_BEFORE_ERROR_CODE = "is.less.than.date";
     private static final String INVALID_MONTH_DAY_FORMAT_ERROR_CODE = "invalid.month.day.format";
     private static final String BEFORE_FIRST_EXECUTION_DATE_ERROR_CODE = "must.not.be.before.first.execution.date";
+    private static final String MUST_BE_GREATER_THAN_ZERO_ERROR_CODE = "not.greater.than.zero";
     
     private static final String invalidParamName = "invalidParam";
     private static final String invalidValue = "invalidValue";
@@ -231,10 +232,11 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void shouldFailWhenAmountValueIsNotPositive() {
-                final JsonObject json = getPeriodicRequest();
-                json.addProperty(StandingInstructionApiConstants.amountParamName, new BigDecimal("-10.00"));
+                final JsonObject json = accountTransferRequest();
+                json.addProperty(StandingInstructionApiConstants.amountParamName, BigDecimal.valueOf(-10.00));
+                
                 assertValidation(json,
-                    StandingInstructionApiConstants.amountParamName, "not.greater.than.zero");
+                    StandingInstructionApiConstants.amountParamName, MUST_BE_GREATER_THAN_ZERO_ERROR_CODE);
             }
 
             @Test
