@@ -57,6 +57,7 @@ public class StandingInstructionDataValidatorTest {
     private static final String OUT_OF_RANGE_ERROR_CODE = "is.not.within.expected.range";
     private static final String DATE_IS_BEFORE_ERROR_CODE = "is.less.than.date";
     private static final String INVALID_MONTH_DAY_FORMAT_ERROR_CODE = "invalid.month.day.format";
+    private static final String BEFORE_FIRST_EXECUTION_DATE_ERROR_CODE = "must.not.be.before.first.execution.date";
     
     private static final String invalidParamName = "invalidParam";
     private static final String invalidValue = "invalidValue";
@@ -182,23 +183,21 @@ public class StandingInstructionDataValidatorTest {
 
             @ParameterizedTest
             @MethodSource("invalidExecutionDates")
-            void shouldFailWhenValidTillDateIsBeforeFirstExecutionDate(String validFrom, String validTill,
-                Integer recurrenceFrequency, Integer recurrenceInterval, String recurrenceOnMonthDay) {
-                
-                final JsonObject json = getPeriodicRequest();
-                
-                json.addProperty(StandingInstructionApiConstants.validFromParamName, validFrom);
+            void shouldFailWhenValidTillDateIsBeforeFirstExecutionDate(String validTill, Integer recurrenceFrequency,
+                Integer recurrenceInterval, String recurrenceOnMonthDay) {
+                final JsonObject json = accountTransferRequest();
+            
                 json.addProperty(StandingInstructionApiConstants.validTillParamName, validTill);
                 json.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, recurrenceFrequency);                
                 json.addProperty(StandingInstructionApiConstants.recurrenceIntervalParamName, recurrenceInterval);
                 
                 if (recurrenceOnMonthDay != null) {
-                    json.addProperty(StandingInstructionApiConstants.recurrenceOnMonthDayParamName, recurrenceOnMonthDay);
+                    json.addProperty(StandingInstructionApiConstants.recurrenceOnMonthDayParamName,
+                        recurrenceOnMonthDay);
                 }
             
-                assertValidation(json,
-                    StandingInstructionApiConstants.validTillParamName,
-                    "must.not.be.before.first.execution.date");
+                assertValidation(json, StandingInstructionApiConstants.validTillParamName, 
+                    BEFORE_FIRST_EXECUTION_DATE_ERROR_CODE);
             }
 
             private static Stream<String> requiredParameters() {
@@ -212,9 +211,9 @@ public class StandingInstructionDataValidatorTest {
 
             private static Stream<Arguments> invalidExecutionDates() {
                 return Stream.of(
-                    Arguments.of("08 May 2026", "10 May 2026", 0, 5, null),
-                    Arguments.of("08 May 2026", "15 May 2026", 1, 2, null),
-                    Arguments.of("15 May 2026", "25 May 2026", 2, 1, "10 May")
+                    Arguments.of("20 May 2026", 0, 5, null),
+                    Arguments.of("29 May 2026", 1, 2, null),
+                    Arguments.of("09 May 2026", 2, 1, "10 May")
                 );
             }
 
