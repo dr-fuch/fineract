@@ -91,7 +91,7 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void shouldValidateAccountTransferDetails() {
-                final JsonObject json = getAccountTransferRequest();
+                final JsonObject json = accountTransferRequest();
                 standingInstructionDataValidator.validateForCreate(command(json));
 
                 verify(accountTransfersDetailDataValidator, times(1))
