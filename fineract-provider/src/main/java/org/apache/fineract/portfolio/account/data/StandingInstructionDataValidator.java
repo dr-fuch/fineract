@@ -191,13 +191,13 @@ public class StandingInstructionDataValidator {
         if (transferType != null && instructionType != null && recurrenceType != null) {
             AccountTransferType accountTransferType = AccountTransferType.fromInt(transferType);
             if (accountTransferType.isAccountTransfer()) {
-                if (isAsPerDuesRecurrenceType) {
-                    baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceTypeParamName)
-                        .failWithCode("as.per.dues.not.allowed.for.account.transfer");
-                }
                 if (isDuesInstructionType) {
                     baseDataValidator.reset().parameter(StandingInstructionApiConstants.instructionTypeParamName)
                         .failWithCode("dues.not.allowed.for.account.transfer");
+                }
+                if (isAsPerDuesRecurrenceType) {
+                    baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceTypeParamName)
+                        .failWithCode("as.per.dues.not.allowed.for.account.transfer");
                 }
             }
         
@@ -206,11 +206,13 @@ public class StandingInstructionDataValidator {
                     .failWithCode("as.per.dues.not.allowed.with.fixed.amount");
             }
         }
-
+        
+        
         String errorCode = null;
         if (transferType != null) {
             AccountTransferType accountTransferType = AccountTransferType.fromInt(transferType);
             final Integer fromAccountType = this.fromApiJsonHelper.extractIntegerSansLocaleNamed(AccountDetailConstants.fromAccountTypeParamName, element);
+            final Integer toAccountType = this.fromApiJsonHelper.extractIntegerSansLocaleNamed(AccountDetailConstants.toAccountTypeParamName, element);
             if (fromAccountType != null && toAccountType != null) {
                 PortfolioAccountType fromPortfolioAccountType = PortfolioAccountType.fromInt(fromAccountType);
                 PortfolioAccountType toPortfolioAccountType = PortfolioAccountType.fromInt(toAccountType);
