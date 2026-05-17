@@ -56,6 +56,9 @@ public class StandingInstructionDataValidatorTest {
     private static final String MSG_CODE_CANNOT_BE_BLANK = "cannot.be.blank";
     private static final String MSG_CODE_INVALID_RANGE = "is.not.within.expected.range";
     
+    private static final String invalidParamName = "invalidParam";
+    private static final String invalidValue = "invalidValue";
+    
     @Mock
     private AccountTransfersDetailDataValidator accountTransfersDetailDataValidator;
     
@@ -80,8 +83,9 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void shouldFailWhenRequestContainsUnknownParameter() {
-                final JsonObject json = getBaseRequest();
-                json.addProperty("invalidParam", "invalidValue");
+                final JsonObject json = accountTransferRequest();
+                json.addProperty(invalidParamName, invalidValue);
+
                 assertThrowsException(UnsupportedParameterException.class, json);
             }
 
@@ -312,31 +316,32 @@ public class StandingInstructionDataValidatorTest {
     }
 
     private JsonObject accountTransferRequest() {
-        return Json.createObjectBuilder()
-            .add(AccountDetailConstants.localeParamName, "en")
-            .add(AccountDetailConstants.dateFormatParamName, "dd MMMM yyyy")
-            .add(AccountDetailConstants.fromOfficeIdParamName, 1)
-            .add(AccountDetailConstants.fromClientIdParamName, 1)
-            .add(AccountDetailConstants.fromAccountIdParamName, 1)
-            .add(AccountDetailConstants.fromAccountTypeParamName, 2)
-            .add(AccountDetailConstants.toOfficeIdParamName, 1)
-            .add(AccountDetailConstants.toClientIdParamName, 1)
-            .add(AccountDetailConstants.toAccountIdParamName, 2)
-            .add(AccountDetailConstants.toAccountTypeParamName, 2)
-            .add(AccountDetailConstants.transferTypeParamName, 1)
-            .add(StandingInstructionApiConstants.nameParamName, "BASIC ACCOUNT TRANSFER")
-            .add(StandingInstructionApiConstants.priorityParamName, 1)
-            .add(StandingInstructionApiConstants.instructionTypeParamName, 1)
-            .add(StandingInstructionApiConstants.statusParamName, 1)
-            .add(StandingInstructionApiConstants.validFromParamName, "16 May 2026")
-            .add(StandingInstructionApiConstants.validTillParamName, "16 May 2027")
-            .add(StandingInstructionApiConstants.recurrenceTypeParamName, 1)
-            .add(StandingInstructionApiConstants.amountParamName, BigDecimal.TEN)
-            .add(StandingInstructionApiConstants.recurrenceFrequencyParamName, 0)
-            .add(StandingInstructionApiConstants.recurrenceIntervalParamName, 1)
-            .build();
+        JsonObject json = new JsonObject();
+        json.addProperty(AccountDetailConstants.localeParamName, "en")
+        json.addProperty(AccountDetailConstants.dateFormatParamName, "dd MMMM yyyy")
+        json.addProperty(AccountDetailConstants.fromOfficeIdParamName, 1)
+        json.addProperty(AccountDetailConstants.fromClientIdParamName, 1)
+        json.addProperty(AccountDetailConstants.fromAccountIdParamName, 1)
+        json.addProperty(AccountDetailConstants.fromAccountTypeParamName, 2)
+        json.addProperty(AccountDetailConstants.toOfficeIdParamName, 1)
+        json.addProperty(AccountDetailConstants.toClientIdParamName, 1)
+        json.addProperty(AccountDetailConstants.toAccountIdParamName, 2)
+        json.addProperty(AccountDetailConstants.toAccountTypeParamName, 2)
+        json.addProperty(AccountDetailConstants.transferTypeParamName, 1)
+        json.addProperty(StandingInstructionApiConstants.nameParamName, "BASIC ACCOUNT TRANSFER")
+        json.addProperty(StandingInstructionApiConstants.priorityParamName, 1)
+        json.addProperty(StandingInstructionApiConstants.instructionTypeParamName, 1)
+        json.addProperty(StandingInstructionApiConstants.statusParamName, 1)
+        json.addProperty(StandingInstructionApiConstants.validFromParamName, "16 May 2026")
+        json.addProperty(StandingInstructionApiConstants.validTillParamName, "16 May 2027")
+        json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 1)
+        json.addProperty(StandingInstructionApiConstants.amountParamName, BigDecimal.TEN)
+        json.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, 0)
+        json.addProperty(StandingInstructionApiConstants.recurrenceIntervalParamName, 1)
+
+        return object;
     }
-    
+
     private JsonObject getRequest(final String locale, final String dateFormat, final Integer fromOfficeId,
         final Integer fromClientId, final Integer fromAccountId, final Integer fromAccountType, final Integer toOfficeId,
         final Integer toClientId, final Integer toAccountId, final Integer toAccountType, final Integer transferType,
