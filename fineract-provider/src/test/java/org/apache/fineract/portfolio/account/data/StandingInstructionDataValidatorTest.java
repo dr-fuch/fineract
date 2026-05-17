@@ -76,6 +76,8 @@ public class StandingInstructionDataValidatorTest {
     
     private final static FromJsonHelper fromApiJsonHelper = new FromJsonHelper();
     private StandingInstructionDataValidator standingInstructionDataValidator;
+    
+    private boolean isUpdateValidation = false;
 
     @BeforeEach
     public void setUp() {
@@ -373,6 +375,8 @@ public class StandingInstructionDataValidatorTest {
 
     @Nested
     class WhenUpdatingStandingInstruction {
+        isUpdateValidation = true;
+
         @Test
         void throwExceptionWhenJsonIsBlankOrNull() {
             assertThrowsException(InvalidJsonException.class, null);
@@ -435,17 +439,22 @@ public class StandingInstructionDataValidatorTest {
         return json;
     }
 
+    private void validate() {
+        if(isUpdateValidation) {
+            this.standingInstructionDataValidator.validateForUpdate(command(json));
+        } else {
+            this.standingInstructionDataValidator.validateForCreate(command(json));
+        }
+    }
+
     private void assertThrowsException(Class<? extends Throwable> exceptionClass, JsonObject json) {
-        assertThrows(exceptionClass, () -> 
-            this.standingInstructionDataValidator.validateForCreate(command(json)));
+        assertThrows(exceptionClass, () -> validate(json)));
     }
 
     private void assertValidation(final JsonObject json, final String parameter, final String reason) {
         final String expectedCode = STANDING_INSTRUCTION_RESOURCE_NAME_PREFIX + parameter + "." + reason;
         
-        PlatformApiDataValidationException ex = assertThrows(PlatformApiDataValidationException.class, () -> {
-            this.standingInstructionDataValidator.validateForCreate(command(json));
-        });
+        PlatformApiDataValidationException ex = assertThrows(PlatformApiDataValidationException.class, () -> validate(json));
 
         boolean hasError = ex.getErrors().stream().anyMatch(error -> 
             parameter.equals(error.getParameterName()) &&
@@ -463,7 +472,6 @@ public class StandingInstructionDataValidatorTest {
     }
 
     private void assertValidationSuccess(JsonObject json) {
-        assertDoesNotThrow(() ->
-            standingInstructionDataValidator.validateForCreate(command(json)));
+        assertDoesNotThrow(() -> validate(json));
     }
 }
