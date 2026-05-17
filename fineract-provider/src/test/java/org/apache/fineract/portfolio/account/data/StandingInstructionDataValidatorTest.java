@@ -164,8 +164,9 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void shouldFailWhenRecurrenceFrequencyHasInvalidValue() {
-                final JsonObject json = getPeriodicRequest();
+                final JsonObject json = accountTransferRequest();
                 json.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, 4);
+                
                 assertRange(json, StandingInstructionApiConstants.recurrenceFrequencyParamName);
             }
 
