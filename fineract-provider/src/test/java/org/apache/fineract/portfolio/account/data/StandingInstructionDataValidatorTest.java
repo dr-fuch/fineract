@@ -298,6 +298,14 @@ public class StandingInstructionDataValidatorTest {
 
                 assertValidationSuccess(json);
             }
+
+            @Test
+            void shouldPassWithValidYearlyPeriodicAccountTransfer() {
+                final JsonObject json = accountTransferRequest(); 
+                json.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, 3);
+
+                assertValidationSuccess(json);
+            }
         }
 
         @Nested
@@ -463,13 +471,6 @@ public class StandingInstructionDataValidatorTest {
         return json;
     }
 
-    private JsonObject getDuesRequest() {
-        JsonObject json = getPeriodicRequest();
-        json.addProperty(StandingInstructionApiConstants.nameParamName, "DUES TEST");
-        json.addProperty(StandingInstructionApiConstants.instructionTypeParamName, 2);
-        return json;
-    }
-
     private JsonObject getLoanRepaymentRequest() {
         JsonObject json = getPeriodicRequest();
         json.addProperty(StandingInstructionApiConstants.nameParamName, "LOAN REPAYMENT TEST");
@@ -477,13 +478,6 @@ public class StandingInstructionDataValidatorTest {
         json.addProperty(AccountDetailConstants.toAccountTypeParamName, 1);
         json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 2);
         json.addProperty(StandingInstructionApiConstants.instructionTypeParamName, 1);
-        return json;
-    }
-
-    private JsonObject getAccountTransferRequest() {
-        JsonObject json = getPeriodicRequest(); 
-        json.addProperty(StandingInstructionApiConstants.nameParamName, "ACCOUNT TRANSFER TEST");
-        json.addProperty(AccountDetailConstants.toAccountIdParamName, 2);
         return json;
     }
 
