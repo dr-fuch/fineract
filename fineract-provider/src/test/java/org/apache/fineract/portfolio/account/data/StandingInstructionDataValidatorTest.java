@@ -96,21 +96,24 @@ public class StandingInstructionDataValidatorTest {
 
         @ParameterizedTest
         @MethodSource("requests")
-        void shouldFailWhenRequestContainsUnknownParameter(boolean mode, JsonObject json) {
+        void shouldFailWhenRequestContainsUnknownParameter(boolean mode) {
             isUpdateMode = mode;
+
+            final JsonObject json;
+            if(mode) {
+                json = commonValuesInUpdateRequest();
+            } else {
+                json = createAccountTransferRequest();
+            }
             json.addProperty(invalidParamName, invalidValue);
+
             assertThrowsException(UnsupportedParameterException.class, json);
         }
 
-        private static Stream<boolean> modes() {
-            return Stream.of(false, true);
-        }
-
-        private static Stream<Arguments> requests() {
+        private static Stream<Arguments> modes() {
             return Stream.of(
-                    Arguments.of(false, createAccountTransferRequest()),
-                    Arguments.of(true, commonValuesInUpdateRequest())
-            );
+                Arguments.of(false),
+                Arguments.of(true));
         }
     }
 
@@ -499,9 +502,5 @@ public class StandingInstructionDataValidatorTest {
 
     private void assertValidationSuccess(JsonObject json) {
         assertDoesNotThrow(() -> validate(json));
-    }
-
-    enum ValidationMode {
-        CREATE, UPDATE
     }
 }
