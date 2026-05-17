@@ -207,12 +207,6 @@ public class StandingInstructionDataValidator {
             }
         }
 
-        final Integer toAccountType = this.fromApiJsonHelper.extractIntegerSansLocaleNamed(AccountDetailConstants.toAccountTypeParamName, element);
-        if (toAccountType != null && PortfolioAccountType.SAVINGS.equals(PortfolioAccountType.fromInt(toAccountType))) {
-            baseDataValidator.reset().parameter(StandingInstructionApiConstants.instructionTypeParamName).value(instructionType).notNull().inMinMaxRange(1, 1);
-            baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceTypeParamName).value(recurrenceType).notNull().inMinMaxRange(1, 1);
-        }
-
         String errorCode = null;
         if (transferType != null) {
             AccountTransferType accountTransferType = AccountTransferType.fromInt(transferType);

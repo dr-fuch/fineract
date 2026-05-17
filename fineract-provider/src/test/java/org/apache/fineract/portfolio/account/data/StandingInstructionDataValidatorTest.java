@@ -62,6 +62,7 @@ public class StandingInstructionDataValidatorTest {
     private static final String AMOUNT_NOT_ALLOWED_FOR_DUES_ERROR_CODE = "not.allowed.for.dues.instruction";
     private static final String RECURRENCE_AS_PER_DUES_NOT_ALLOWED_FOR_SAVINGS_ERROR_CODE = "as.per.dues.not.allowed.for.account.transfer";
     private static final String INSTRUCTION_TYPE_DUES_NOT_ALLOWED_FOR_ACCOUNT_TRANSFER_ERROR_CODE = "dues.not.allowed.for.account.transfer";
+    private static final String ACCOUNT_TRANSFER_NOT_ALLOWED_FOR_LOAN_ERROR_CODE = "not.account.transfer";
     
     private static final String invalidParamName = "invalidParam";
     private static final String invalidValue = "invalidValue";
@@ -266,27 +267,13 @@ public class StandingInstructionDataValidatorTest {
             }
 
             @Test
-            void shouldFailWhenInstructionTypeIsNotFixed() {
-                final JsonObject json = getAccountTransferRequest();
-                json.addProperty(StandingInstructionApiConstants.instructionTypeParamName, 2);
-                assertRange(json,
-                    StandingInstructionApiConstants.instructionTypeParamName);
-            }
-
-            @Test
-            void shouldFailWhenRecurrenceTypeIsNotPeriodic() {
-                final JsonObject json = getAccountTransferRequest();
-                json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 2);
-                assertRange(json,
-                    StandingInstructionApiConstants.recurrenceTypeParamName);
-            }
-
-            @Test
-            void shouldFailWhenIsNotAnAccountTransfer() {
-                final JsonObject json = getAccountTransferRequest();
+            void shouldFailWhenAccountTransferInvolvesLoanAccount() {
+                final JsonObject json = accountTransferRequest();
                 json.addProperty(AccountDetailConstants.fromAccountTypeParamName, 1);
+
                 assertValidation(json,
-                    AccountDetailConstants.transferTypeParamName, "not.account.transfer");
+                    AccountDetailConstants.transferTypeParamName,
+                    ACCOUNT_TRANSFER_NOT_ALLOWED_FOR_LOAN_ERROR_CODE);
             }
 
             @Test
