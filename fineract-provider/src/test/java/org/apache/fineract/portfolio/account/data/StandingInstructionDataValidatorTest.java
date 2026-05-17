@@ -95,7 +95,7 @@ public class StandingInstructionDataValidatorTest {
         }
 
         @ParameterizedTest
-        @MethodSource("requests")
+        @MethodSource("modes")
         void shouldFailWhenRequestContainsUnknownParameter(boolean mode) {
             isUpdateMode = mode;
 
