@@ -288,8 +288,15 @@ public class StandingInstructionDataValidatorTest {
             }
 
             @Test
-            void shouldPassWithValidAccountTransfer() {
-                assertValidationSuccess(getAccountTransferRequest());
+            void shouldPassWithValidDailyPeriodicAccountTransfer() {
+                final JsonObject json = accountTransferRequest();
+                
+                json.remove(StandingInstructionApiConstants.recurrenceOnMonthDayParamName);                
+                json.remove(StandingInstructionApiConstants.monthDayFormatParamName);
+                
+                json.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, 0);
+
+                assertValidationSuccess(json);
             }
         }
 
