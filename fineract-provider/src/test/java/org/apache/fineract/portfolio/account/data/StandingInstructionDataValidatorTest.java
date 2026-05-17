@@ -56,6 +56,7 @@ public class StandingInstructionDataValidatorTest {
     private static final String CANNOT_BE_BLANK_ERROR_CODE = "cannot.be.blank";
     private static final String OUT_OF_RANGE_ERROR_CODE = "is.not.within.expected.range";
     private static final String DATE_IS_BEFORE_ERROR_CODE = "is.less.than.date";
+    private static final String INVALID_MONTH_DAY_FORMAT_ERROR_CODE = "invalid.month.day.format";
     
     private static final String invalidParamName = "invalidParam";
     private static final String invalidValue = "invalidValue";
@@ -166,16 +167,17 @@ public class StandingInstructionDataValidatorTest {
             void shouldFailWhenRecurrenceFrequencyHasInvalidValue() {
                 final JsonObject json = accountTransferRequest();
                 json.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, 4);
-                
+
                 assertRange(json, StandingInstructionApiConstants.recurrenceFrequencyParamName);
             }
 
             @Test
             void shouldFailWhenRecurrenceOnMonthDayHasInvalidValue() {
-                final JsonObject json = getPeriodicRequest();
+                final JsonObject json = accountTransferRequest();
                 json.addProperty(StandingInstructionApiConstants.recurrenceOnMonthDayParamName, "08 Mayo");
+
                 assertValidation(json,
-                    StandingInstructionApiConstants.recurrenceOnMonthDayParamName, "invalid.month.day.format");
+                    StandingInstructionApiConstants.recurrenceOnMonthDayParamName, INVALID_MONTH_DAY_FORMAT_ERROR_CODE);
             }
 
             @ParameterizedTest
