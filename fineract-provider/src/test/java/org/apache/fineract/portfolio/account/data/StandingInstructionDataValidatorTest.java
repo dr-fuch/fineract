@@ -140,7 +140,7 @@ public class StandingInstructionDataValidatorTest {
                 );
             }
             
-            private static Stream<String> parametersWithInvalidValues() {
+            private static Stream<Arguments> parametersWithInvalidValues() {
                 return Stream.of(
                     Arguments.of(AccountDetailConstants.transferTypeParamName, 4),
                     Arguments.of(StandingInstructionApiConstants.priorityParamName, 5),
