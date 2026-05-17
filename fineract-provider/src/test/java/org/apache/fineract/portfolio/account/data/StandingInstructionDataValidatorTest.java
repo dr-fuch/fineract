@@ -88,7 +88,7 @@ public class StandingInstructionDataValidatorTest {
     @Nested
     class Common {
         @Test
-        void shouldFailWhenRequestBodyIsNull(ValidationMode mode) {
+        void shouldFailWhenRequestBodyIsNull() {
             boolean[] modes = {false, true}; 
 
             for (boolean mode : modes) {
