@@ -110,15 +110,12 @@ public class StandingInstructionDataValidatorTest {
             }
 
             @ParameterizedTest
-            @ValueSource(strings = {
-                AccountDetailConstants.transferTypeParamName,
-                StandingInstructionApiConstants.priorityParamName,
-                StandingInstructionApiConstants.instructionTypeParamName,
-                StandingInstructionApiConstants.statusParamName,
-                StandingInstructionApiConstants.recurrenceTypeParamName
-            })
-            void shouldFailWhenParameterHasInvalidValue(String parameter) {
-                assertRange(getBaseRequest(), parameter);
+            @MethodSource("parametersWithInvalidValues")
+            void shouldFailWhenParameterHasInvalidValue(String parameter, Integer invalidValue) {
+                final JsonObject json = accountTransferRequest();
+                json.addProperty(parameter, invalidValue);
+
+                assertRange(json, parameter);
             }
 
             @Test 
@@ -136,6 +133,16 @@ public class StandingInstructionDataValidatorTest {
                     StandingInstructionApiConstants.statusParamName,
                     StandingInstructionApiConstants.validFromParamName,
                     StandingInstructionApiConstants.recurrenceTypeParamName
+                );
+            }
+            
+            private static Stream<String> parametersWithInvalidValues() {
+                return Stream.of(
+                    Arguments.of(AccountDetailConstants.transferTypeParamName, 4)
+                    Arguments.of(StandingInstructionApiConstants.priorityParamName, 5)
+                    Arguments.of(StandingInstructionApiConstants.instructionTypeParamName, 3)
+                    Arguments.of(StandingInstructionApiConstants.statusParamName, 3)
+                    Arguments.of(StandingInstructionApiConstants.recurrenceTypeParamName, 3)
                 );
             }
         }
@@ -431,6 +438,11 @@ public class StandingInstructionDataValidatorTest {
         return json;
     }
 
+    private void assertThrowsException(Class<? extends Throwable> exceptionClass, JsonObject json) {
+        assertThrows(exceptionClass, () -> 
+            this.standingInstructionDataValidator.validateForCreate(command(json)));
+    }
+
     private void assertValidation(final JsonObject json, final String parameter, final String reason) {
         final String expectedCode = STANDING_INSTRUCTION_RESOURCE_NAME_PREFIX + parameter + "." + reason;
         
@@ -444,23 +456,17 @@ public class StandingInstructionDataValidatorTest {
 
         assertTrue(hasError);
     }
-    
+
+    private void assertBlank(final JsonObject json, final String parameter) {
+        assertValidation(json, parameter, CANNOT_BE_BLANK_ERROR_CODE);
+    }
+
+    private void assertRange(final JsonObject json, final String parameter) {
+        assertValidation(json, parameter, OUT_OF_RANGE_ERROR_CODE);
+    }
+
     private void assertValidationSuccess(JsonObject json) {
         assertDoesNotThrow(() ->
             standingInstructionDataValidator.validateForCreate(command(json)));
-    }
-
-    private void assertRange(JsonObject json, String param) {
-        assertValidation(json, param, OUT_OF_RANGE_ERROR_CODE);
-    }
-
-    private void assertBlank(JsonObject json, String param) {
-        json.remove(param);
-        assertValidation(json, param, CANNOT_BE_BLANK_ERROR_CODE);
-    }
-
-    private void assertThrowsException(Class<? extends Throwable> exceptionClass, JsonObject json) {
-        assertThrows(exceptionClass, () -> 
-            this.standingInstructionDataValidator.validateForCreate(command(json)));
     }
 }
