@@ -78,7 +78,7 @@ public class StandingInstructionDataValidatorTest {
     class WhenCreatingStandingInstruction {
 
         @Nested
-        class BaseValidationRules {
+        class BaseRules {
             @Test
             void shouldFailWhenRequestBodyIsNull(){
                 assertThrowsException(InvalidJsonException.class, null);
@@ -220,11 +220,13 @@ public class StandingInstructionDataValidatorTest {
         }
 
         @Nested
-        class Amount {
+        class AmountRules {
             @Test
             void shouldFailWhenAmountIsMissing() {
-                assertBlank(getPeriodicRequest(), 
-                    StandingInstructionApiConstants.amountParamName);
+                final JsonObject json = accountTransferRequest();
+                json.remove(StandingInstructionApiConstants.amountParamName);
+
+                assertBlank(json, StandingInstructionApiConstants.amountParamName);
             }
 
             @Test
