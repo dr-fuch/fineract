@@ -77,7 +77,7 @@ public class StandingInstructionDataValidatorTest {
     private final static FromJsonHelper fromApiJsonHelper = new FromJsonHelper();
     private StandingInstructionDataValidator standingInstructionDataValidator;
     
-    private ValidationMode currentMode;
+    private boolean isUpdateMode;
 
     @BeforeEach
     public void setUp() {
@@ -86,12 +86,15 @@ public class StandingInstructionDataValidatorTest {
     }
 
     @Nested
-    class CommonRules {
-        @ParameterizedTest
-        @EnumSource(ValidationMode.class)
+    class Common {
+        @Test
         void shouldFailWhenRequestBodyIsNull(ValidationMode mode) {
-            this.currentMode = mode;
-            assertThrowsException(InvalidJsonException.class, null);
+            boolean[] modes = {false, true}; 
+
+            for (boolean mode : modes) {
+                this.isUpdateMode = mode;
+                assertThrowsException(InvalidJsonException.class, null);
+            }
         }
     }
 
@@ -99,7 +102,7 @@ public class StandingInstructionDataValidatorTest {
     class WhenCreatingStandingInstruction {
         @BeforeEach
         public void setUpCreateMode() {
-            this.currentMode = ValidationMode.UPDATE;
+            this.isUpdateMode = false;
         }
 
         @Nested
@@ -386,7 +389,7 @@ public class StandingInstructionDataValidatorTest {
     class WhenUpdatingStandingInstruction {
         @BeforeEach
         public void setUpUpdateMode() {
-            this.currentMode = ValidationMode.UPDATE;
+            this.isUpdateMode = true;
         }
     }
 
@@ -447,7 +450,7 @@ public class StandingInstructionDataValidatorTest {
     }
 
     private void validate(final JsonObject json) {
-        if(this.currentMode == ValidationMode.UPDATE) {
+        if(this.isUpdateMode) {
             this.standingInstructionDataValidator.validateForUpdate(command(json));
         } else {
             this.standingInstructionDataValidator.validateForCreate(command(json));
