@@ -60,6 +60,7 @@ public class StandingInstructionDataValidatorTest {
     private static final String BEFORE_FIRST_EXECUTION_DATE_ERROR_CODE = "must.not.be.before.first.execution.date";
     private static final String MUST_BE_GREATER_THAN_ZERO_ERROR_CODE = "not.greater.than.zero";
     private static final String AMOUNT_NOT_ALLOWED_FOR_DUES_ERROR_CODE = "not.allowed.for.dues.instruction";
+    private static final String RECURRENCE_AS_PER_DUES_NOT_ALLOWED_FOR_SAVINGS_ERROR_CODE = "as.per.dues.not.allowed.for.account.transfer";
     
     private static final String invalidParamName = "invalidParam";
     private static final String invalidValue = "invalidValue";
@@ -245,11 +246,11 @@ public class StandingInstructionDataValidatorTest {
         class AccountTransfer {
             @Test
             void shouldFailWhenRecurrenceTypeIsAsPerDues() {
-                final JsonObject json = getPeriodicRequest();
+                final JsonObject json = accountTransferRequest();
                 json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 2);
                 assertValidation(json,
                     StandingInstructionApiConstants.recurrenceTypeParamName,
-                    "as.per.dues.not.allowed.for.account.transfer");
+                    RECURRENCE_AS_PER_DUES_NOT_ALLOWED_FOR_SAVINGS_ERROR_CODE);
             }
 
             @Test
