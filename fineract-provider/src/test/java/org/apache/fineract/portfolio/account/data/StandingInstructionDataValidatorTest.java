@@ -59,6 +59,7 @@ public class StandingInstructionDataValidatorTest {
     private static final String INVALID_MONTH_DAY_FORMAT_ERROR_CODE = "invalid.month.day.format";
     private static final String BEFORE_FIRST_EXECUTION_DATE_ERROR_CODE = "must.not.be.before.first.execution.date";
     private static final String MUST_BE_GREATER_THAN_ZERO_ERROR_CODE = "not.greater.than.zero";
+    private static final String AMOUNT_NOT_ALLOWED_FOR_DUES_ERROR_CODE = "not.allowed.for.dues.instruction";
     
     private static final String invalidParamName = "invalidParam";
     private static final String invalidValue = "invalidValue";
@@ -241,8 +242,11 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void shouldFailWhenInstructionTypeIsDuesAndAmountIsNotNull() {
-                assertValidation(getDuesRequest(),
-                    StandingInstructionApiConstants.amountParamName, "not.allowed.for.dues.instruction");
+                final JsonObject json = loanRepaymentRequest();
+                json.addProperty(StandingInstructionApiConstants.amountParamName, BigDecimal.TEN);
+
+                assertValidation(json,
+                    StandingInstructionApiConstants.amountParamName, AMOUNT_NOT_ALLOWED_FOR_DUES_ERROR_CODE);
             }
         }
 
@@ -372,6 +376,30 @@ public class StandingInstructionDataValidatorTest {
         json.addProperty(StandingInstructionApiConstants.recurrenceIntervalParamName, 1);
         json.addProperty(StandingInstructionApiConstants.recurrenceOnMonthDayParamName, "15 May");
         json.addProperty(StandingInstructionApiConstants.monthDayFormatParamName, "dd MMMM");
+
+        return json;
+    }
+
+    private JsonObject loanRepaymentRequest() {
+        JsonObject json = new JsonObject();
+        json.addProperty(AccountDetailConstants.localeParamName, "en");
+        json.addProperty(AccountDetailConstants.dateFormatParamName, "dd MMMM yyyy");
+        json.addProperty(AccountDetailConstants.fromOfficeIdParamName, 1);
+        json.addProperty(AccountDetailConstants.fromClientIdParamName, 1);
+        json.addProperty(AccountDetailConstants.fromAccountIdParamName, 1);
+        json.addProperty(AccountDetailConstants.fromAccountTypeParamName, 2);
+        json.addProperty(AccountDetailConstants.toOfficeIdParamName, 1);
+        json.addProperty(AccountDetailConstants.toClientIdParamName, 1);
+        json.addProperty(AccountDetailConstants.toAccountIdParamName, 1);
+        json.addProperty(AccountDetailConstants.toAccountTypeParamName, 1);
+        json.addProperty(AccountDetailConstants.transferTypeParamName, 2);
+        json.addProperty(StandingInstructionApiConstants.nameParamName, "BASIC LOAN REPAYMENT");
+        json.addProperty(StandingInstructionApiConstants.priorityParamName, 1);
+        json.addProperty(StandingInstructionApiConstants.instructionTypeParamName, 1);
+        json.addProperty(StandingInstructionApiConstants.statusParamName, 1);
+        json.addProperty(StandingInstructionApiConstants.validFromParamName, "16 May 2026");
+        json.addProperty(StandingInstructionApiConstants.validTillParamName, "16 May 2027");
+        json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 2);
 
         return json;
     }
