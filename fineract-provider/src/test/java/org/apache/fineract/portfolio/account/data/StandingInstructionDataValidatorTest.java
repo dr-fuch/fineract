@@ -61,6 +61,7 @@ public class StandingInstructionDataValidatorTest {
     private static final String MUST_BE_GREATER_THAN_ZERO_ERROR_CODE = "not.greater.than.zero";
     private static final String AMOUNT_NOT_ALLOWED_FOR_DUES_ERROR_CODE = "not.allowed.for.dues.instruction";
     private static final String RECURRENCE_AS_PER_DUES_NOT_ALLOWED_FOR_SAVINGS_ERROR_CODE = "as.per.dues.not.allowed.for.account.transfer";
+    private static final String INSTRUCTION_TYPE_DUES_NOT_ALLOWED_FOR_ACCOUNT_TRANSFER_ERROR_CODE = "dues.not.allowed.for.account.transfer";
     
     private static final String invalidParamName = "invalidParam";
     private static final String invalidValue = "invalidValue";
@@ -245,20 +246,23 @@ public class StandingInstructionDataValidatorTest {
         @Nested
         class AccountTransfer {
             @Test
-            void shouldFailWhenRecurrenceTypeIsAsPerDues() {
+            void shouldFailWhenInstructionTypeIsDues() {
                 final JsonObject json = accountTransferRequest();
-                json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 2);
+                json.addProperty(StandingInstructionApiConstants.instructionTypeParamName, 2);
+
                 assertValidation(json,
-                    StandingInstructionApiConstants.recurrenceTypeParamName,
-                    RECURRENCE_AS_PER_DUES_NOT_ALLOWED_FOR_SAVINGS_ERROR_CODE);
+                    StandingInstructionApiConstants.instructionTypeParamName,
+                    INSTRUCTION_TYPE_DUES_NOT_ALLOWED_FOR_ACCOUNT_TRANSFER_ERROR_CODE);
             }
 
             @Test
-            void shouldFailWhenInstructionTypeIsDues() {
-                final JsonObject json = getPeriodicRequest();
-                json.addProperty(StandingInstructionApiConstants.instructionTypeParamName, 2);
+            void shouldFailWhenRecurrenceTypeIsAsPerDues() {
+                final JsonObject json = accountTransferRequest();
+                json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 2);
+                
                 assertValidation(json,
-                    StandingInstructionApiConstants.instructionTypeParamName, "dues.not.allowed.for.account.transfer");
+                    StandingInstructionApiConstants.recurrenceTypeParamName,
+                    RECURRENCE_AS_PER_DUES_NOT_ALLOWED_FOR_SAVINGS_ERROR_CODE);
             }
 
             @Test
