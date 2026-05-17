@@ -52,9 +52,9 @@ import org.mockito.Mock;
 
 @ExtendWith(MockitoExtension.class)
 public class StandingInstructionDataValidatorTest {
-    private static final String STANDING_INSTRUCTION_MSG_BASE = "validation.msg.standinginstruction.";
-    private static final String MSG_CODE_CANNOT_BE_BLANK = "cannot.be.blank";
-    private static final String MSG_CODE_INVALID_RANGE = "is.not.within.expected.range";
+    private static final String STANDING_INSTRUCTION_RESOURCE_NAME_PREFIX = "validation.msg.standinginstruction.";
+    private static final String CANNOT_BE_BLANK_ERROR_CODE = "cannot.be.blank";
+    private static final String OUT_OF_RANGE_ERROR_CODE = "is.not.within.expected.range";
     
     private static final String invalidParamName = "invalidParam";
     private static final String invalidValue = "invalidValue";
@@ -101,16 +101,12 @@ public class StandingInstructionDataValidatorTest {
             }
 
             @ParameterizedTest
-            @ValueSource(strings = {
-                AccountDetailConstants.transferTypeParamName,
-                StandingInstructionApiConstants.nameParamName,
-                StandingInstructionApiConstants.priorityParamName,
-                StandingInstructionApiConstants.instructionTypeParamName,
-                StandingInstructionApiConstants.statusParamName,
-                StandingInstructionApiConstants.validFromParamName,
-                StandingInstructionApiConstants.recurrenceTypeParamName })
+            @MethodSourceSource("requiredBaseParameters")
             void shouldFailWhenRequiredParameterIsMissing(String parameter) {
-                assertBlank(getBaseRequest(), parameter);
+                final JsonObject json = accountTransferRequest();
+                json.remove(parameter);
+
+                assertBlank(json, parameter);
             }
 
             @ParameterizedTest
@@ -129,6 +125,18 @@ public class StandingInstructionDataValidatorTest {
             void shouldFailWhenValidTillDateIsBeforeValidFromDate() {
                 assertValidation(getBaseRequest(), 
                     StandingInstructionApiConstants.validTillParamName, "is.less.than.date");
+            }
+
+            private static Stream<String> requiredBaseParameters() {
+                return Stream.of(
+                    AccountDetailConstants.transferTypeParamName,
+                    StandingInstructionApiConstants.nameParamName,
+                    StandingInstructionApiConstants.priorityParamName,
+                    StandingInstructionApiConstants.instructionTypeParamName,
+                    StandingInstructionApiConstants.statusParamName,
+                    StandingInstructionApiConstants.validFromParamName,
+                    StandingInstructionApiConstants.recurrenceTypeParamName
+                );
             }
         }
         
@@ -424,7 +432,7 @@ public class StandingInstructionDataValidatorTest {
     }
 
     private void assertValidation(final JsonObject json, final String parameter, final String reason) {
-        final String expectedCode = STANDING_INSTRUCTION_MSG_BASE + parameter + "." + reason;
+        final String expectedCode = STANDING_INSTRUCTION_RESOURCE_NAME_PREFIX + parameter + "." + reason;
         
         PlatformApiDataValidationException ex = assertThrows(PlatformApiDataValidationException.class, () -> {
             this.standingInstructionDataValidator.validateForCreate(command(json));
@@ -443,12 +451,12 @@ public class StandingInstructionDataValidatorTest {
     }
 
     private void assertRange(JsonObject json, String param) {
-        assertValidation(json, param, MSG_CODE_INVALID_RANGE);
+        assertValidation(json, param, OUT_OF_RANGE_ERROR_CODE);
     }
 
     private void assertBlank(JsonObject json, String param) {
         json.remove(param);
-        assertValidation(json, param, MSG_CODE_CANNOT_BE_BLANK);
+        assertValidation(json, param, CANNOT_BE_BLANK_ERROR_CODE);
     }
 
     private void assertThrowsException(Class<? extends Throwable> exceptionClass, JsonObject json) {
