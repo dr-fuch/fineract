@@ -60,10 +60,11 @@ public class StandingInstructionDataValidatorTest {
     private static final String BEFORE_FIRST_EXECUTION_DATE_ERROR_CODE = "must.not.be.before.first.execution.date";
     private static final String MUST_BE_GREATER_THAN_ZERO_ERROR_CODE = "not.greater.than.zero";
     private static final String AMOUNT_NOT_ALLOWED_FOR_DUES_ERROR_CODE = "not.allowed.for.dues.instruction";
-    private static final String RECURRENCE_AS_PER_DUES_NOT_ALLOWED_FOR_SAVINGS_ERROR_CODE = "as.per.dues.not.allowed.for.account.transfer";
-    private static final String INSTRUCTION_TYPE_DUES_NOT_ALLOWED_FOR_ACCOUNT_TRANSFER_ERROR_CODE = "dues.not.allowed.for.account.transfer";
-    private static final String ACCOUNT_TRANSFER_NOT_ALLOWED_FOR_LOAN_ERROR_CODE = "not.account.transfer";
     private static final String CANNOT_TRANSFER_TO_SAME_ACCOUNT_ERROR_CODE = "transfer.to.same.account.not.allowed";
+    private static final String INSTRUCTION_TYPE_DUES_NOT_ALLOWED_FOR_ACCOUNT_TRANSFER_ERROR_CODE = "dues.not.allowed.for.account.transfer";
+    private static final String RECURRENCE_AS_PER_DUES_NOT_ALLOWED_FOR_SAVINGS_ERROR_CODE = "as.per.dues.not.allowed.for.account.transfer";
+    private static final String ACCOUNT_TRANSFER_NOT_ALLOWED_FOR_LOAN_ERROR_CODE = "account.transfer.is.not.allowed.for.loan.accounts";
+    private static final String RECURRENCE_AS_PER_DUES_NOT_ALLOWED_WITH_FIXED_INSTRUCTION_ERROR_CODE = "as.per.dues.not.allowed.with.fixed.amount";
     
     
     private static final String invalidParamName = "invalidParam";
@@ -311,19 +312,22 @@ public class StandingInstructionDataValidatorTest {
         @Nested
         class LoanRepayment {
             @Test
+            void shouldFailWhenInstructionTypeIsFixedAndRecurrenceTypeIsAsPerDues() {
+                final JsonObject json = loanRepaymentRequest();
+                json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 1);
+
+                assertValidation(json,
+                    StandingInstructionApiConstants.recurrenceTypeParamName,
+                    RECURRENCE_AS_PER_DUES_NOT_ALLOWED_WITH_FIXED_INSTRUCTION_ERROR_CODE);
+            }
+            
+            @Test
             void shouldFailWhenInstructionTypeIsDuesAndAmountIsNotNull() {
                 final JsonObject json = loanRepaymentRequest();
                 json.addProperty(StandingInstructionApiConstants.amountParamName, BigDecimal.TEN);
 
                 assertValidation(json,
                     StandingInstructionApiConstants.amountParamName, AMOUNT_NOT_ALLOWED_FOR_DUES_ERROR_CODE);
-            }
-
-            @Test
-            void shouldFailWhenInstructionTypeIsFixedAndRecurrenceTypeIsAsPerDues() {
-                assertValidation(getLoanRepaymentRequest(),
-                    StandingInstructionApiConstants.recurrenceTypeParamName,
-                    "as.per.dues.not.allowed.with.fixed.amount");
             }
 
             @Test
