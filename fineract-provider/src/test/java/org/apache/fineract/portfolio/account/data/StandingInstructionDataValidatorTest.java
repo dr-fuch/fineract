@@ -55,6 +55,7 @@ public class StandingInstructionDataValidatorTest {
     private static final String STANDING_INSTRUCTION_RESOURCE_NAME_PREFIX = "validation.msg.standinginstruction.";
     private static final String CANNOT_BE_BLANK_ERROR_CODE = "cannot.be.blank";
     private static final String OUT_OF_RANGE_ERROR_CODE = "is.not.within.expected.range";
+    private static final String DATE_IS_BEFORE_ERROR_CODE = "is.less.than.date";
     
     private static final String invalidParamName = "invalidParam";
     private static final String invalidValue = "invalidValue";
@@ -119,9 +120,12 @@ public class StandingInstructionDataValidatorTest {
             }
 
             @Test 
-            void shouldFailWhenValidTillDateIsBeforeValidFromDate() {
-                assertValidation(getBaseRequest(), 
-                    StandingInstructionApiConstants.validTillParamName, "is.less.than.date");
+            void shouldFailWhenValidTillIsBeforeValidFrom() {
+                final JsonObject json = accountTransferRequest();
+                json.addProperty(StandingInstructionApiConstants.validTillParamName, "15 May 2026");
+
+                assertValidation(json, 
+                    StandingInstructionApiConstants.validTillParamName, DATE_IS_BEFORE_ERROR_CODE);
             }
 
             private static Stream<String> requiredBaseParameters() {
@@ -138,10 +142,10 @@ public class StandingInstructionDataValidatorTest {
             
             private static Stream<String> parametersWithInvalidValues() {
                 return Stream.of(
-                    Arguments.of(AccountDetailConstants.transferTypeParamName, 4)
-                    Arguments.of(StandingInstructionApiConstants.priorityParamName, 5)
-                    Arguments.of(StandingInstructionApiConstants.instructionTypeParamName, 3)
-                    Arguments.of(StandingInstructionApiConstants.statusParamName, 3)
+                    Arguments.of(AccountDetailConstants.transferTypeParamName, 4),
+                    Arguments.of(StandingInstructionApiConstants.priorityParamName, 5),
+                    Arguments.of(StandingInstructionApiConstants.instructionTypeParamName, 3),
+                    Arguments.of(StandingInstructionApiConstants.statusParamName, 3),
                     Arguments.of(StandingInstructionApiConstants.recurrenceTypeParamName, 3)
                 );
             }
