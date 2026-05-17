@@ -77,7 +77,7 @@ public class StandingInstructionDataValidatorTest {
     private final static FromJsonHelper fromApiJsonHelper = new FromJsonHelper();
     private StandingInstructionDataValidator standingInstructionDataValidator;
     
-    private ValidationMode currentMode = ValidationMode.CREATE;
+    private ValidationMode currentMode;
 
     @BeforeEach
     public void setUp() {
@@ -86,7 +86,7 @@ public class StandingInstructionDataValidatorTest {
     }
 
     @Nested
-    class CommonRules() {
+    class CommonRules {
         @ParameterizedTest
         @EnumSource(ValidationMode.class)
         void shouldFailWhenRequestBodyIsNull(ValidationMode mode) {
@@ -97,14 +97,13 @@ public class StandingInstructionDataValidatorTest {
 
     @Nested
     class WhenCreatingStandingInstruction {
+        @BeforeEach
+        public void setUpCreateMode() {
+            this.currentMode = ValidationMode.UPDATE;
+        }
 
         @Nested
         class BaseRules {
-            @Test
-            void shouldFailWhenRequestBodyIsNull(){
-                assertThrowsException(InvalidJsonException.class, null);
-            }
-
             @Test
             void shouldFailWhenRequestContainsUnknownParameter() {
                 final JsonObject json = createAccountTransferRequest();
@@ -388,11 +387,6 @@ public class StandingInstructionDataValidatorTest {
         @BeforeEach
         public void setUpUpdateMode() {
             this.currentMode = ValidationMode.UPDATE;
-        }
-
-        @Test
-        void shouldFailWhenRequestBodyIsNull() {
-            assertThrowsException(InvalidJsonException.class, null);
         }
     }
 
