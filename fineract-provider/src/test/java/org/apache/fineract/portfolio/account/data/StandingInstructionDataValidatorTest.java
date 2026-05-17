@@ -77,7 +77,7 @@ public class StandingInstructionDataValidatorTest {
     private final static FromJsonHelper fromApiJsonHelper = new FromJsonHelper();
     private StandingInstructionDataValidator standingInstructionDataValidator;
     
-    private boolean isUpdateValidation = false;
+    private boolean isUpdateMode = false;
 
     @BeforeEach
     public void setUp() {
@@ -375,7 +375,10 @@ public class StandingInstructionDataValidatorTest {
 
     @Nested
     class WhenUpdatingStandingInstruction {
-        isUpdateValidation = true;
+        @BeforeEach
+        public void setUpUpdateMode() {
+            isUpdateMode = true;
+        }
 
         @Test
         void throwExceptionWhenJsonIsBlankOrNull() {
@@ -383,11 +386,11 @@ public class StandingInstructionDataValidatorTest {
         }
     }
 
-    private JsonCommand command(JsonObject jsonObject) {
-        final String json = jsonObject == null ? "" : jsonObject.toString();
+    private JsonCommand command(JsonObject json) {
+        final String j = json == null ? "" : jsonObject.toString();
         final JsonElement element = fromApiJsonHelper.parse(json);
 
-        return JsonCommand.from(json, element, fromApiJsonHelper, null,
+        return JsonCommand.from(j, element, fromApiJsonHelper, null,
             null, null, null, null, null, null, null, null, null, null, null,
             null, null);
     }
@@ -439,8 +442,8 @@ public class StandingInstructionDataValidatorTest {
         return json;
     }
 
-    private void validate() {
-        if(isUpdateValidation) {
+    private void validate(final JsonObject json) {
+        if(isUpdateMode) {
             this.standingInstructionDataValidator.validateForUpdate(command(json));
         } else {
             this.standingInstructionDataValidator.validateForCreate(command(json));
