@@ -39,6 +39,7 @@ import org.apache.fineract.portfolio.account.AccountDetailConstants;
 import org.apache.fineract.portfolio.account.api.StandingInstructionApiConstants;
 import org.apache.fineract.portfolio.account.data.AccountTransfersDetailDataValidator;
 import org.apache.fineract.portfolio.account.data.StandingInstructionDataValidator;
+import org.apache.fineract.portfolio.account.domain.AccountTransferStandingInstruction;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -74,6 +75,9 @@ public class StandingInstructionDataValidatorTest {
     @Mock
     private AccountTransfersDetailDataValidator accountTransfersDetailDataValidator;
     
+    @Mock
+    private AccountTransferStandingInstruction accountTransferStandingInstruction;
+
     private final static FromJsonHelper fromApiJsonHelper = new FromJsonHelper();
     private StandingInstructionDataValidator standingInstructionDataValidator;
     
@@ -81,6 +85,7 @@ public class StandingInstructionDataValidatorTest {
 
     @BeforeEach
     public void setUp() {
+        this.isUpdateMode = false;
         this.standingInstructionDataValidator = new StandingInstructionDataValidator(fromApiJsonHelper, 
             this.accountTransfersDetailDataValidator);
     }
@@ -88,32 +93,22 @@ public class StandingInstructionDataValidatorTest {
     @Nested
     class Common {
         @ParameterizedTest
-        @MethodSource("modes")
+        @ValueSource(booleans = {false, true})
         void shouldFailWhenRequestBodyIsNull(boolean mode) {
             isUpdateMode = mode;
             assertThrowsException(InvalidJsonException.class, null);
         }
 
         @ParameterizedTest
-        @MethodSource("modes")
+        @ValueSource(booleans = {false, true})
         void shouldFailWhenRequestContainsUnknownParameter(boolean mode) {
             isUpdateMode = mode;
-
-            final JsonObject json;
-            if(mode) {
-                json = commonValuesInUpdateRequest();
-            } else {
-                json = createAccountTransferRequest();
-            }
+            final JsonObject json = isUpdateMode ? 
+                commonValuesInUpdateRequest() :
+                createAccountTransferRequest();
             json.addProperty(invalidParamName, invalidValue);
 
             assertThrowsException(UnsupportedParameterException.class, json);
-        }
-
-        private static Stream<Arguments> modes() {
-            return Stream.of(
-                Arguments.of(false),
-                Arguments.of(true));
         }
     }
 
@@ -470,7 +465,7 @@ public class StandingInstructionDataValidatorTest {
 
     private void validate(final JsonObject json) {
         if(this.isUpdateMode) {
-            this.standingInstructionDataValidator.validateForUpdate(command(json));
+            this.standingInstructionDataValidator.validateForUpdate(command(json), accountTransferStandingInstruction);
         } else {
             this.standingInstructionDataValidator.validateForCreate(command(json));
         }

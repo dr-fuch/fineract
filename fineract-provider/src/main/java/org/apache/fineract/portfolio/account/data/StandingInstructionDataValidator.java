@@ -42,6 +42,7 @@ import org.apache.fineract.portfolio.account.AccountDetailConstants;
 import org.apache.fineract.portfolio.account.PortfolioAccountType;
 import org.apache.fineract.portfolio.account.api.StandingInstructionApiConstants;
 import org.apache.fineract.portfolio.account.domain.AccountTransferRecurrenceType;
+import org.apache.fineract.portfolio.account.domain.AccountTransferStandingInstruction;
 import org.apache.fineract.portfolio.account.domain.AccountTransferType;
 import org.apache.fineract.portfolio.account.domain.StandingInstructionType;
 import org.apache.fineract.portfolio.common.domain.PeriodFrequencyType;
@@ -249,7 +250,8 @@ public class StandingInstructionDataValidator {
         throwExceptionIfValidationWarningsExist(dataValidationErrors);
     }
 
-    public void validateForUpdate(final JsonCommand command) {
+    public void validateForUpdate(final JsonCommand command, final 
+        AccountTransferStandingInstruction accountTransferStandingInstruction) {
         final String json = command.json();
 
         if (StringUtils.isBlank(json)) {
