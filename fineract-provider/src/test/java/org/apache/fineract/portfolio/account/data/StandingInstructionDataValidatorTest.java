@@ -92,14 +92,14 @@ public class StandingInstructionDataValidatorTest {
 
     @Nested
     class Common {
-        @ParameterizedTest
+        @ParameterizedTest(name = "Is Create Mode: {0})")
         @ValueSource(booleans = {true, false})
         void shouldFailWhenRequestBodyIsNull(boolean mode) {
             isCreateMode = mode;
             assertThrowsException(InvalidJsonException.class, null);
         }
 
-        @ParameterizedTest
+        @ParameterizedTest(name = "Is Create Mode: {0})")
         @ValueSource(booleans = {true, false})
         void shouldFailWhenRequestContainsUnknownParameter(boolean mode) {
             isCreateMode = mode;
