@@ -81,11 +81,11 @@ public class StandingInstructionDataValidatorTest {
     private final static FromJsonHelper fromApiJsonHelper = new FromJsonHelper();
     private StandingInstructionDataValidator standingInstructionDataValidator;
     
-    private boolean isUpdateMode;
+    private boolean isCreateMode;
 
     @BeforeEach
     public void setUp() {
-        this.isUpdateMode = false;
+        this.isCreateMode = true;
         this.standingInstructionDataValidator = new StandingInstructionDataValidator(fromApiJsonHelper, 
             this.accountTransfersDetailDataValidator);
     }
@@ -93,19 +93,19 @@ public class StandingInstructionDataValidatorTest {
     @Nested
     class Common {
         @ParameterizedTest
-        @ValueSource(booleans = {false, true})
+        @ValueSource(booleans = {true, false})
         void shouldFailWhenRequestBodyIsNull(boolean mode) {
-            isUpdateMode = mode;
+            isCreateMode = mode;
             assertThrowsException(InvalidJsonException.class, null);
         }
 
         @ParameterizedTest
-        @ValueSource(booleans = {false, true})
+        @ValueSource(booleans = {true, false})
         void shouldFailWhenRequestContainsUnknownParameter(boolean mode) {
-            isUpdateMode = mode;
-            final JsonObject json = isUpdateMode ? 
-                commonValuesInUpdateRequest() :
-                createAccountTransferRequest();
+            isCreateMode = mode;
+            final JsonObject json = isCreateMode ? 
+                createAccountTransferRequest() :
+                commonValuesInUpdateRequest();
             json.addProperty(invalidParamName, invalidValue);
 
             assertThrowsException(UnsupportedParameterException.class, json);
@@ -116,7 +116,7 @@ public class StandingInstructionDataValidatorTest {
     class WhenCreatingStandingInstruction {
         @BeforeEach
         public void setUpCreateMode() {
-            isUpdateMode = false;
+            isCreateMode = true;
         }
 
         @Nested
@@ -395,7 +395,7 @@ public class StandingInstructionDataValidatorTest {
     class WhenUpdatingStandingInstruction {
         @BeforeEach
         public void setUpUpdateMode() {
-            isUpdateMode = true;
+            isCreateMode = false;
         }
     }
 
@@ -464,10 +464,11 @@ public class StandingInstructionDataValidatorTest {
     }
 
     private void validate(final JsonObject json) {
-        if(this.isUpdateMode) {
-            this.standingInstructionDataValidator.validateForUpdate(command(json), accountTransferStandingInstruction);
-        } else {
+        if(this.isCreateMode) {
             this.standingInstructionDataValidator.validateForCreate(command(json));
+        } else {
+            this.standingInstructionDataValidator.validateForUpdate(command(json),
+                accountTransferStandingInstruction);
         }
     }
 
