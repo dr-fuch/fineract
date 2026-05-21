@@ -122,7 +122,7 @@ public class StandingInstructionWritePlatformServiceImpl implements StandingInst
             final PortfolioAccountType toAccountType) {
         return PortfolioAccountType.SAVINGS.equals(fromAccountType) && PortfolioAccountType.SAVINGS.equals(toAccountType);
     }
-    
+
     @Transactional
     @Override
     public CommandProcessingResult update(final Long id, final JsonCommand command) {
@@ -142,11 +142,7 @@ public class StandingInstructionWritePlatformServiceImpl implements StandingInst
             }
         }
 
-        return new CommandProcessingResultBuilder()
-                .withCommandId(command.commandId())
-                .withEntityId(id)
-                .with(actualChanges)
-                .build();
+        return new CommandProcessingResultBuilder().withCommandId(command.commandId()).withEntityId(id).with(actualChanges).build();
     }
 
     @Override

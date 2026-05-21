@@ -42,6 +42,7 @@ import org.apache.fineract.portfolio.loanaccount.domain.LoanTransactionType;
 @SuppressWarnings("unused")
 @Getter
 public final class StandingInstructionData {
+
     private final Long id;
     private final Long accountDetailId;
     private final String name;
@@ -319,8 +320,7 @@ public final class StandingInstructionData {
         if (this.recurrenceFrequencyOptions == null) {
             return null;
         }
-        return this.recurrenceFrequencyOptions.stream()
-                    .filter(option -> option.getId() != null && option.getId() < 4)
-                    .collect(java.util.stream.Collectors.toList());
+        return this.recurrenceFrequencyOptions.stream().filter(option -> option.getId() != null && option.getId() < 4)
+                .collect(java.util.stream.Collectors.toList());
     }
 }
