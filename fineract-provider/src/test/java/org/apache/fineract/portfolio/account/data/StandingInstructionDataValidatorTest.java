@@ -94,7 +94,7 @@ public class StandingInstructionDataValidatorTest {
     private static final FromJsonHelper fromApiJsonHelper = new FromJsonHelper();
     private StandingInstructionDataValidator standingInstructionDataValidator;
 
-    private boolean isCreateMode;
+    private ValidationMode validationMode = ValidationMode.CREATE;
 
     @BeforeEach
     public void setUp() {
@@ -104,18 +104,22 @@ public class StandingInstructionDataValidatorTest {
 
     @Nested
     class Common {
-        @ParameterizedTest(name = "Is Create Mode: {0})")
-        @ValueSource(booleans = { true, false })
-        void shouldFailWhenRequestBodyIsNull(boolean mode) {
-            isCreateMode = mode;
+        @ParameterizedTest(name = "Mode: {0}") // {0} leerá "CREATE" o "UPDATE"
+        @MethodSource("org.apache.fineract.portfolio.account.data.StandingInstructionDataValidatorTest#validationModes")
+        void shouldFailWhenRequestBodyIsNull(ValidationMode mode) {
+            validationMode = mode;
             assertThrowsException(InvalidJsonException.class, null);
         }
 
-        @ParameterizedTest(name = "Is Create Mode: {0})")
-        @ValueSource(booleans = { true, false })
-        void shouldFailWhenRequestContainsUnknownParameter(boolean mode) {
-            isCreateMode = mode;
-            final JsonObject json = isCreateMode ? createAccountTransferRequest() : commonValuesInUpdateRequest();
+        @ParameterizedTest(name = "Mode: {0}")
+        @MethodSource("org.apache.fineract.portfolio.account.data.StandingInstructionDataValidatorTest#validationModes")
+        void shouldFailWhenRequestContainsUnknownParameter(ValidationMode mode) {
+            validationMode = mode;
+
+            final JsonObject json = isCreateMode ? 
+                createAccountTransferRequest() : 
+                commonValuesInUpdateRequest();
+
             json.addProperty(invalidParamName, invalidValue);
 
             assertThrowsException(UnsupportedParameterException.class, json);
@@ -127,7 +131,7 @@ public class StandingInstructionDataValidatorTest {
 
         @BeforeEach
         public void setUpCreateMode() {
-            isCreateMode = true;
+            validationMode = ValidationMode.CREATE;
         }
 
         @Nested
@@ -397,7 +401,7 @@ public class StandingInstructionDataValidatorTest {
 
         @BeforeEach
         public void setUpUpdateMode() {
-            isCreateMode = false;
+            validationMode = ValidationMode.UPDATE;
         }
     }
 
@@ -465,7 +469,7 @@ public class StandingInstructionDataValidatorTest {
     }
 
     private void validate(final JsonObject json) {
-        if (this.isCreateMode) {
+        if (this.validationMode = ValidationMode.CREATE) {
             this.standingInstructionDataValidator.validateForCreate(command(json));
         } else {
             this.standingInstructionDataValidator.validateForUpdate(command(json), accountTransferStandingInstruction);
@@ -498,5 +502,13 @@ public class StandingInstructionDataValidatorTest {
 
     private void assertValidationSuccess(JsonObject json) {
         assertDoesNotThrow(() -> validate(json));
+    }
+
+    public enum ValidationMode {
+        CREATE, UPDATE
+    }
+
+    private static Stream<ValidationMode> validationModes() {
+        return Stream.of(ValidationMode.CREATE, ValidationMode.UPDATE);
     }
 }
