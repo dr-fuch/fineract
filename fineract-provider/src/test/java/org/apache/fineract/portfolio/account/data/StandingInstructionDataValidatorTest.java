@@ -37,8 +37,6 @@ import org.apache.fineract.infrastructure.core.exception.UnsupportedParameterExc
 import org.apache.fineract.infrastructure.core.serialization.FromJsonHelper;
 import org.apache.fineract.portfolio.account.AccountDetailConstants;
 import org.apache.fineract.portfolio.account.api.StandingInstructionApiConstants;
-import org.apache.fineract.portfolio.account.data.AccountTransfersDetailDataValidator;
-import org.apache.fineract.portfolio.account.data.StandingInstructionDataValidator;
 import org.apache.fineract.portfolio.account.domain.AccountTransferStandingInstruction;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -48,11 +46,12 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 public class StandingInstructionDataValidatorTest {
+
     private static final String STANDING_INSTRUCTION_RESOURCE_NAME_PREFIX = "validation.msg.standinginstruction.";
     private static final String CANNOT_BE_BLANK_ERROR_CODE = "cannot.be.blank";
     private static final String OUT_OF_RANGE_ERROR_CODE = "is.not.within.expected.range";
@@ -67,45 +66,43 @@ public class StandingInstructionDataValidatorTest {
     private static final String ACCOUNT_TRANSFER_NOT_ALLOWED_FOR_LOAN_ERROR_CODE = "account.transfer.is.not.allowed.for.loan.accounts";
     private static final String RECURRENCE_AS_PER_DUES_NOT_ALLOWED_WITH_FIXED_INSTRUCTION_ERROR_CODE = "as.per.dues.not.allowed.with.fixed.amount";
     private static final String NOT_A_VALID_LOAN_REPAYMENT_ERROR_CODE = "is.not.a.valid.loan.repayment";
-    
-    
+
     private static final String invalidParamName = "invalidParam";
     private static final String invalidValue = "invalidValue";
-    
+
     @Mock
     private AccountTransfersDetailDataValidator accountTransfersDetailDataValidator;
-    
+
     @Mock
     private AccountTransferStandingInstruction accountTransferStandingInstruction;
 
-    private final static FromJsonHelper fromApiJsonHelper = new FromJsonHelper();
+    private static final FromJsonHelper fromApiJsonHelper = new FromJsonHelper();
     private StandingInstructionDataValidator standingInstructionDataValidator;
-    
+
     private boolean isCreateMode;
 
     @BeforeEach
     public void setUp() {
         this.isCreateMode = true;
-        this.standingInstructionDataValidator = new StandingInstructionDataValidator(fromApiJsonHelper, 
-            this.accountTransfersDetailDataValidator);
+        this.standingInstructionDataValidator = new StandingInstructionDataValidator(fromApiJsonHelper,
+                this.accountTransfersDetailDataValidator);
     }
 
     @Nested
     class Common {
+
         @ParameterizedTest(name = "Is Create Mode: {0})")
-        @ValueSource(booleans = {true, false})
+        @ValueSource(booleans = { true, false })
         void shouldFailWhenRequestBodyIsNull(boolean mode) {
             isCreateMode = mode;
             assertThrowsException(InvalidJsonException.class, null);
         }
 
         @ParameterizedTest(name = "Is Create Mode: {0})")
-        @ValueSource(booleans = {true, false})
+        @ValueSource(booleans = { true, false })
         void shouldFailWhenRequestContainsUnknownParameter(boolean mode) {
             isCreateMode = mode;
-            final JsonObject json = isCreateMode ? 
-                createAccountTransferRequest() :
-                commonValuesInUpdateRequest();
+            final JsonObject json = isCreateMode ? createAccountTransferRequest() : commonValuesInUpdateRequest();
             json.addProperty(invalidParamName, invalidValue);
 
             assertThrowsException(UnsupportedParameterException.class, json);
@@ -114,6 +111,7 @@ public class StandingInstructionDataValidatorTest {
 
     @Nested
     class WhenCreatingStandingInstruction {
+
         @BeforeEach
         public void setUpCreateMode() {
             isCreateMode = true;
@@ -121,15 +119,13 @@ public class StandingInstructionDataValidatorTest {
 
         @Nested
         class BaseRules {
+
             @Test
             void shouldValidateAccountTransferDetails() {
                 final JsonObject json = createAccountTransferRequest();
                 standingInstructionDataValidator.validateForCreate(command(json));
 
-                verify(accountTransfersDetailDataValidator, times(1))
-                    .validate(
-                        any(JsonCommand.class),
-                        any(DataValidatorBuilder.class));
+                verify(accountTransfersDetailDataValidator, times(1)).validate(any(JsonCommand.class), any(DataValidatorBuilder.class));
             }
 
             @ParameterizedTest
@@ -150,40 +146,33 @@ public class StandingInstructionDataValidatorTest {
                 assertRange(json, parameter);
             }
 
-            @Test 
+            @Test
             void shouldFailWhenValidTillIsBeforeValidFrom() {
                 final JsonObject json = createAccountTransferRequest();
                 json.addProperty(StandingInstructionApiConstants.validTillParamName, "15 May 2026");
 
-                assertValidation(json, 
-                    StandingInstructionApiConstants.validTillParamName, DATE_IS_BEFORE_ERROR_CODE);
+                assertValidation(json, StandingInstructionApiConstants.validTillParamName, DATE_IS_BEFORE_ERROR_CODE);
             }
 
             private static Stream<String> requiredBaseParameters() {
-                return Stream.of(
-                    AccountDetailConstants.transferTypeParamName,
-                    StandingInstructionApiConstants.nameParamName,
-                    StandingInstructionApiConstants.priorityParamName,
-                    StandingInstructionApiConstants.instructionTypeParamName,
-                    StandingInstructionApiConstants.statusParamName,
-                    StandingInstructionApiConstants.validFromParamName,
-                    StandingInstructionApiConstants.recurrenceTypeParamName
-                );
+                return Stream.of(AccountDetailConstants.transferTypeParamName, StandingInstructionApiConstants.nameParamName,
+                        StandingInstructionApiConstants.priorityParamName, StandingInstructionApiConstants.instructionTypeParamName,
+                        StandingInstructionApiConstants.statusParamName, StandingInstructionApiConstants.validFromParamName,
+                        StandingInstructionApiConstants.recurrenceTypeParamName);
             }
-            
+
             private static Stream<Arguments> parametersWithInvalidValues() {
-                return Stream.of(
-                    Arguments.of(AccountDetailConstants.transferTypeParamName, 4),
-                    Arguments.of(StandingInstructionApiConstants.priorityParamName, 5),
-                    Arguments.of(StandingInstructionApiConstants.instructionTypeParamName, 3),
-                    Arguments.of(StandingInstructionApiConstants.statusParamName, 3),
-                    Arguments.of(StandingInstructionApiConstants.recurrenceTypeParamName, 3)
-                );
+                return Stream.of(Arguments.of(AccountDetailConstants.transferTypeParamName, 4),
+                        Arguments.of(StandingInstructionApiConstants.priorityParamName, 5),
+                        Arguments.of(StandingInstructionApiConstants.instructionTypeParamName, 3),
+                        Arguments.of(StandingInstructionApiConstants.statusParamName, 3),
+                        Arguments.of(StandingInstructionApiConstants.recurrenceTypeParamName, 3));
             }
         }
-        
+
         @Nested
         class PeriodicRecurrenceRules {
+
             @ParameterizedTest
             @MethodSource("requiredParameters")
             void shouldFailWhenPeriodicFieldIsMissing(String parameter) {
@@ -214,50 +203,43 @@ public class StandingInstructionDataValidatorTest {
                 final JsonObject json = createAccountTransferRequest();
                 json.addProperty(StandingInstructionApiConstants.recurrenceOnMonthDayParamName, "08 Mayo");
 
-                assertValidation(json,
-                    StandingInstructionApiConstants.recurrenceOnMonthDayParamName, INVALID_MONTH_DAY_FORMAT_ERROR_CODE);
+                assertValidation(json, StandingInstructionApiConstants.recurrenceOnMonthDayParamName, INVALID_MONTH_DAY_FORMAT_ERROR_CODE);
             }
 
             @ParameterizedTest
             @MethodSource("invalidExecutionDates")
-            void shouldFailWhenValidTillIsBeforeFirstExecution(String validTill, Integer recurrenceFrequency,
-                Integer recurrenceInterval, String recurrenceOnMonthDay) {
+            void shouldFailWhenValidTillIsBeforeFirstExecution(String validTill, Integer recurrenceFrequency, Integer recurrenceInterval,
+                    String recurrenceOnMonthDay) {
                 final JsonObject json = createAccountTransferRequest();
-            
+
                 json.addProperty(StandingInstructionApiConstants.validTillParamName, validTill);
-                json.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, recurrenceFrequency);                
+                json.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, recurrenceFrequency);
                 json.addProperty(StandingInstructionApiConstants.recurrenceIntervalParamName, recurrenceInterval);
-                
+
                 if (recurrenceOnMonthDay != null) {
-                    json.addProperty(StandingInstructionApiConstants.recurrenceOnMonthDayParamName,
-                        recurrenceOnMonthDay);
+                    json.addProperty(StandingInstructionApiConstants.recurrenceOnMonthDayParamName, recurrenceOnMonthDay);
                 }
-            
-                assertValidation(json, StandingInstructionApiConstants.validTillParamName, 
-                    BEFORE_FIRST_EXECUTION_DATE_ERROR_CODE);
+
+                assertValidation(json, StandingInstructionApiConstants.validTillParamName, BEFORE_FIRST_EXECUTION_DATE_ERROR_CODE);
             }
 
             private static Stream<String> requiredParameters() {
-                return Stream.of(
-                    StandingInstructionApiConstants.recurrenceFrequencyParamName,
-                    StandingInstructionApiConstants.recurrenceIntervalParamName,
-                    StandingInstructionApiConstants.monthDayFormatParamName,
-                    StandingInstructionApiConstants.recurrenceOnMonthDayParamName
-                );
+                return Stream.of(StandingInstructionApiConstants.recurrenceFrequencyParamName,
+                        StandingInstructionApiConstants.recurrenceIntervalParamName,
+                        StandingInstructionApiConstants.monthDayFormatParamName,
+                        StandingInstructionApiConstants.recurrenceOnMonthDayParamName);
             }
 
             private static Stream<Arguments> invalidExecutionDates() {
-                return Stream.of(
-                    Arguments.of("20 May 2026", 0, 5, null),
-                    Arguments.of("29 May 2026", 1, 2, null),
-                    Arguments.of("17 May 2026", 2, 1, "18 May")
-                );
+                return Stream.of(Arguments.of("20 May 2026", 0, 5, null), Arguments.of("29 May 2026", 1, 2, null),
+                        Arguments.of("17 May 2026", 2, 1, "18 May"));
             }
 
         }
 
         @Nested
         class AmountRules {
+
             @Test
             void shouldFailWhenAmountIsMissing() {
                 final JsonObject json = createAccountTransferRequest();
@@ -270,21 +252,20 @@ public class StandingInstructionDataValidatorTest {
             void shouldFailWhenAmountValueIsNotPositive() {
                 final JsonObject json = createAccountTransferRequest();
                 json.addProperty(StandingInstructionApiConstants.amountParamName, BigDecimal.valueOf(-10.00));
-                
-                assertValidation(json,
-                    StandingInstructionApiConstants.amountParamName, MUST_BE_GREATER_THAN_ZERO_ERROR_CODE);
+
+                assertValidation(json, StandingInstructionApiConstants.amountParamName, MUST_BE_GREATER_THAN_ZERO_ERROR_CODE);
             }
         }
 
         @Nested
         class AccountTransferRules {
+
             @Test
             void shouldFailWithEqualAccountsAndEqualOffices() {
                 final JsonObject json = createAccountTransferRequest();
                 json.addProperty(AccountDetailConstants.toAccountIdParamName, 1);
-                
-                assertValidation(json, 
-                    AccountDetailConstants.toAccountIdParamName, CANNOT_TRANSFER_TO_SAME_ACCOUNT_ERROR_CODE);
+
+                assertValidation(json, AccountDetailConstants.toAccountIdParamName, CANNOT_TRANSFER_TO_SAME_ACCOUNT_ERROR_CODE);
             }
 
             @Test
@@ -292,19 +273,17 @@ public class StandingInstructionDataValidatorTest {
                 final JsonObject json = createAccountTransferRequest();
                 json.addProperty(StandingInstructionApiConstants.instructionTypeParamName, 2);
 
-                assertValidation(json,
-                    StandingInstructionApiConstants.instructionTypeParamName,
-                    INSTRUCTION_TYPE_DUES_NOT_ALLOWED_FOR_ACCOUNT_TRANSFER_ERROR_CODE);
+                assertValidation(json, StandingInstructionApiConstants.instructionTypeParamName,
+                        INSTRUCTION_TYPE_DUES_NOT_ALLOWED_FOR_ACCOUNT_TRANSFER_ERROR_CODE);
             }
 
             @Test
             void shouldFailWhenRecurrenceTypeIsAsPerDues() {
                 final JsonObject json = createAccountTransferRequest();
                 json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 2);
-                
-                assertValidation(json,
-                    StandingInstructionApiConstants.recurrenceTypeParamName,
-                    RECURRENCE_AS_PER_DUES_NOT_ALLOWED_FOR_SAVINGS_ERROR_CODE);
+
+                assertValidation(json, StandingInstructionApiConstants.recurrenceTypeParamName,
+                        RECURRENCE_AS_PER_DUES_NOT_ALLOWED_FOR_SAVINGS_ERROR_CODE);
             }
 
             @Test
@@ -312,18 +291,16 @@ public class StandingInstructionDataValidatorTest {
                 final JsonObject json = createAccountTransferRequest();
                 json.addProperty(AccountDetailConstants.fromAccountTypeParamName, 1);
 
-                assertValidation(json,
-                    AccountDetailConstants.transferTypeParamName,
-                    ACCOUNT_TRANSFER_NOT_ALLOWED_FOR_LOAN_ERROR_CODE);
+                assertValidation(json, AccountDetailConstants.transferTypeParamName, ACCOUNT_TRANSFER_NOT_ALLOWED_FOR_LOAN_ERROR_CODE);
             }
 
             @Test
             void shouldPassWithDailyPeriodicRecurrence() {
                 final JsonObject json = createAccountTransferRequest();
-                
-                json.remove(StandingInstructionApiConstants.recurrenceOnMonthDayParamName);                
+
+                json.remove(StandingInstructionApiConstants.recurrenceOnMonthDayParamName);
                 json.remove(StandingInstructionApiConstants.monthDayFormatParamName);
-                
+
                 json.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, 0);
 
                 assertValidationSuccess(json);
@@ -331,7 +308,7 @@ public class StandingInstructionDataValidatorTest {
 
             @Test
             void shouldPassWithYearlyPeriodicRecurrence() {
-                final JsonObject json = createAccountTransferRequest(); 
+                final JsonObject json = createAccountTransferRequest();
                 json.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, 3);
 
                 assertValidationSuccess(json);
@@ -340,23 +317,22 @@ public class StandingInstructionDataValidatorTest {
 
         @Nested
         class LoanRepaymentRules {
+
             @Test
             void shouldFailWhenInstructionTypeIsFixedAndRecurrenceTypeIsAsPerDues() {
                 final JsonObject json = createLoanRepaymentRequest();
                 json.addProperty(StandingInstructionApiConstants.instructionTypeParamName, 1);
 
-                assertValidation(json,
-                    StandingInstructionApiConstants.recurrenceTypeParamName,
-                    RECURRENCE_AS_PER_DUES_NOT_ALLOWED_WITH_FIXED_INSTRUCTION_ERROR_CODE);
+                assertValidation(json, StandingInstructionApiConstants.recurrenceTypeParamName,
+                        RECURRENCE_AS_PER_DUES_NOT_ALLOWED_WITH_FIXED_INSTRUCTION_ERROR_CODE);
             }
-            
+
             @Test
             void shouldFailWhenInstructionTypeIsDuesAndAmountIsNotNull() {
                 final JsonObject json = createLoanRepaymentRequest();
                 json.addProperty(StandingInstructionApiConstants.amountParamName, BigDecimal.TEN);
 
-                assertValidation(json,
-                    StandingInstructionApiConstants.amountParamName, AMOUNT_NOT_ALLOWED_FOR_DUES_ERROR_CODE);
+                assertValidation(json, StandingInstructionApiConstants.amountParamName, AMOUNT_NOT_ALLOWED_FOR_DUES_ERROR_CODE);
             }
 
             @Test
@@ -364,8 +340,7 @@ public class StandingInstructionDataValidatorTest {
                 final JsonObject json = createLoanRepaymentRequest();
                 json.addProperty(AccountDetailConstants.toAccountTypeParamName, 2);
 
-                assertValidation(json,
-                    AccountDetailConstants.transferTypeParamName, NOT_A_VALID_LOAN_REPAYMENT_ERROR_CODE);
+                assertValidation(json, AccountDetailConstants.transferTypeParamName, NOT_A_VALID_LOAN_REPAYMENT_ERROR_CODE);
             }
 
             @Test
@@ -378,7 +353,7 @@ public class StandingInstructionDataValidatorTest {
                 json.addProperty(StandingInstructionApiConstants.recurrenceIntervalParamName, 1);
                 json.addProperty(StandingInstructionApiConstants.recurrenceOnMonthDayParamName, "15 May");
                 json.addProperty(StandingInstructionApiConstants.monthDayFormatParamName, "dd MMMM");
-                
+
                 assertValidationSuccess(json);
             }
 
@@ -388,7 +363,7 @@ public class StandingInstructionDataValidatorTest {
                 json.addProperty(StandingInstructionApiConstants.recurrenceTypeParamName, 1);
                 json.addProperty(StandingInstructionApiConstants.recurrenceFrequencyParamName, 1);
                 json.addProperty(StandingInstructionApiConstants.recurrenceIntervalParamName, 20);
-                
+
                 assertValidationSuccess(json);
             }
 
@@ -401,6 +376,7 @@ public class StandingInstructionDataValidatorTest {
 
     @Nested
     class WhenUpdatingStandingInstruction {
+
         @BeforeEach
         public void setUpUpdateMode() {
             isCreateMode = false;
@@ -411,12 +387,11 @@ public class StandingInstructionDataValidatorTest {
         final String j = json == null ? "" : json.toString();
         final JsonElement element = fromApiJsonHelper.parse(j);
 
-        return JsonCommand.from(j, element, fromApiJsonHelper, null,
-            null, null, null, null, null, null, null, null, null, null, null,
-            null, null);
+        return JsonCommand.from(j, element, fromApiJsonHelper, null, null, null, null, null, null, null, null, null, null, null, null, null,
+                null);
     }
 
-    private JsonObject commonValuesInCreateRequest(){
+    private JsonObject commonValuesInCreateRequest() {
         JsonObject json = new JsonObject();
         json.addProperty(AccountDetailConstants.localeParamName, "en");
         json.addProperty(AccountDetailConstants.dateFormatParamName, "dd MMMM yyyy");
@@ -472,11 +447,10 @@ public class StandingInstructionDataValidatorTest {
     }
 
     private void validate(final JsonObject json) {
-        if(this.isCreateMode) {
+        if (this.isCreateMode) {
             this.standingInstructionDataValidator.validateForCreate(command(json));
         } else {
-            this.standingInstructionDataValidator.validateForUpdate(command(json),
-                accountTransferStandingInstruction);
+            this.standingInstructionDataValidator.validateForUpdate(command(json), accountTransferStandingInstruction);
         }
     }
 
@@ -486,12 +460,11 @@ public class StandingInstructionDataValidatorTest {
 
     private void assertValidation(final JsonObject json, final String parameter, final String reason) {
         final String expectedCode = STANDING_INSTRUCTION_RESOURCE_NAME_PREFIX + parameter + "." + reason;
-        
+
         PlatformApiDataValidationException ex = assertThrows(PlatformApiDataValidationException.class, () -> validate(json));
 
-        boolean hasError = ex.getErrors().stream().anyMatch(error -> 
-            parameter.equals(error.getParameterName()) &&
-            expectedCode.equals(error.getUserMessageGlobalisationCode()));
+        boolean hasError = ex.getErrors().stream().anyMatch(
+                error -> parameter.equals(error.getParameterName()) && expectedCode.equals(error.getUserMessageGlobalisationCode()));
 
         assertTrue(hasError);
     }
