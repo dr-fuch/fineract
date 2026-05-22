@@ -93,8 +93,7 @@ public class StandingInstructionDataValidator {
         this.fromApiJsonHelper.checkForUnsupportedParameters(typeOfMap, json, CREATE_REQUEST_DATA_PARAMETERS);
 
         final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
-        final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
-                .resource(StandingInstructionApiConstants.STANDING_INSTRUCTION_RESOURCE_NAME);
+        final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors).resource(StandingInstructionApiConstants.STANDING_INSTRUCTION_RESOURCE_NAME);
         this.accountTransfersDetailDataValidator.validate(command, baseDataValidator);
 
         final JsonElement element = command.parsedJson();
@@ -130,18 +129,17 @@ public class StandingInstructionDataValidator {
             baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceFrequencyParamName).value(recurrenceFrequency).notNull().inMinMaxRange(0, 3);
             baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceIntervalParamName).value(recurrenceInterval).notNull().integerGreaterThanZero();
             
-            PeriodFrequencyType frequencyType = PeriodFrequencyType.fromInt(recurrenceFrequency);
-            MonthDay monthDay = null;
+            if (recurrenceFrequency != null && recurrenceInterval != null) {
+                MonthDay monthDay = null;
 
-            if (recurrenceFrequency != null) {
-                if (frequencyType.isMonthly() || frequencyType.isYearly()) {
+                if (areMonthlyOrYearlyFrequency(recurrenceFrequency)) {
                     final String monthDayFormat = this.fromApiJsonHelper.extractStringNamed(StandingInstructionApiConstants.monthDayFormatParamName, element);
                     baseDataValidator.reset().parameter(StandingInstructionApiConstants.monthDayFormatParamName).value(monthDayFormat).notBlank();
 
                     final String monthDayStr = this.fromApiJsonHelper.extractStringNamed(StandingInstructionApiConstants.recurrenceOnMonthDayParamName, element);
                     baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceOnMonthDayParamName).value(monthDayStr).notBlank();
 
-                    if (StringUtils.isNotBlank(monthDayStr) && StringUtils.isNotBlank(monthDayFormat)) {
+                    if (areNotBlankMonthDayAndMonthDayFormat(monthDayStr, monthDayFormat)) {
                         try {
                             monthDay = this.fromApiJsonHelper.extractMonthDayNamed(StandingInstructionApiConstants.recurrenceOnMonthDayParamName, element);
                         } catch (Exception e) {
@@ -149,26 +147,12 @@ public class StandingInstructionDataValidator {
                         }
                     }
                 }
-            }
 
-            if (validFrom != null && validTill != null && recurrenceFrequency != null && recurrenceInterval != null) {
-                LocalDate minValidTill = null;
-
-                if (frequencyType.isDaily()) {
-                    minValidTill = validFrom.plusDays(recurrenceInterval);
-                } else if (frequencyType.isWeekly()) {
-                    minValidTill = validFrom.plusWeeks(recurrenceInterval);
-                } else if (monthDay != null) {
-                    minValidTill = monthDay.atYear(validFrom.getYear());
-                    if (!minValidTill.isAfter(validFrom)) {
-                        minValidTill = frequencyType.isMonthly() ? minValidTill.plusMonths(recurrenceInterval)
-                                : minValidTill.plusYears(recurrenceInterval);
+                if (areNotNullDates(validFrom, validTill)) {
+                    LocalDate minValidTill = getMinValidTill(recurrenceFrequency, validFrom, recurrenceInterval, monthDay);
+                    if (!validTill.isBefore(validFrom) && validTill.isBefore(minValidTill)) {
+                        baseDataValidator.reset().parameter(StandingInstructionApiConstants.validTillParamName).value(validTill).failWithCode("must.not.be.before.first.execution.date");
                     }
-                }
-
-                if (minValidTill != null && !validTill.isBefore(validFrom) && validTill.isBefore(minValidTill)) {
-                    baseDataValidator.reset().parameter(StandingInstructionApiConstants.validTillParamName).value(validTill)
-                            .failWithCode("must.not.be.before.first.execution.date");
                 }
             }
         }
@@ -208,7 +192,7 @@ public class StandingInstructionDataValidator {
             }
 
             if (isAccountTransfer(transferType) && isSavingsAccount(fromAccountType) && isSavingsAccount(toAccountType)) {
-                final Long fromOfficeId = this.fromApiJsonHelper.extractLongNamed(AccountDetailConstants.fromOfficeIdParamName,element);
+                final Long fromOfficeId = this.fromApiJsonHelper.extractLongNamed(AccountDetailConstants.fromOfficeIdParamName, element);
                 final Long toOfficeId = this.fromApiJsonHelper.extractLongNamed(AccountDetailConstants.toOfficeIdParamName, element);
                 final Long fromAccountId = this.fromApiJsonHelper.extractLongNamed(AccountDetailConstants.fromAccountIdParamName,element);
                 final Long toAccountId = this.fromApiJsonHelper.extractLongNamed(AccountDetailConstants.toAccountIdParamName, element);
@@ -277,13 +261,11 @@ public class StandingInstructionDataValidator {
         if (this.fromApiJsonHelper.parameterExists(StandingInstructionApiConstants.validTillParamName, element)) {
             final LocalDate validTill = this.fromApiJsonHelper.extractLocalDateNamed(StandingInstructionApiConstants.validTillParamName, element);
             baseDataValidator.reset().parameter(StandingInstructionApiConstants.validTillParamName).value(validTill).notNull();
-            if (validTill != null) {
-                if (validFrom != null) {
-                    baseDataValidator.reset().parameter(StandingInstructionApiConstants.validTillParamName).value(validTill).validateDateAfter(validFrom);
-                }
-                if (existingStandingInstruction.getLastRunDate() != null && validTill.isBefore(existingStandingInstruction.getLastRunDate())) {
-                    baseDataValidator.reset().parameter(StandingInstructionApiConstants.validTillParamName).value(validTill).failWithCode("cannot.be.before.last.run.date");
-                }
+            if (areNotNullDates(validFrom, validTill)) {
+                baseDataValidator.reset().parameter(StandingInstructionApiConstants.validTillParamName).value(validTill).validateDateAfter(validFrom);
+            }
+            if (areNotNullDates(existingStandingInstruction.getLastRunDate(), validTill) && validTill.isBefore(existingStandingInstruction.getLastRunDate())) {
+                baseDataValidator.reset().parameter(StandingInstructionApiConstants.validTillParamName).value(validTill).failWithCode("cannot.be.before.last.run.date");
             }
         }
 
@@ -304,6 +286,7 @@ public class StandingInstructionDataValidator {
             if (isFixedInstruction(instructionType) && isPeriodicRecurrence(recurrenceType)) {
                 baseDataValidator.reset().parameter(StandingInstructionApiConstants.amountParamName).value(amount).positiveAmount();
             }
+            
             if (isDuesInstruction(instructionType) && amount != null) {
                 baseDataValidator.reset().parameter(StandingInstructionApiConstants.amountParamName).failWithCode("not.allowed.for.dues.instruction");
             }
@@ -312,14 +295,49 @@ public class StandingInstructionDataValidator {
         Integer recurrenceFrequency = existingStandingInstruction.getRecurrenceFrequency();
         if (this.fromApiJsonHelper.parameterExists(StandingInstructionApiConstants.recurrenceFrequencyParamName, element)) {
             recurrenceFrequency = this.fromApiJsonHelper.extractIntegerNamed(StandingInstructionApiConstants.recurrenceFrequencyParamName, element, Locale.getDefault());
-            if (isPeriodicRecurrence(recurrenceType)) {
-                baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceFrequencyParamName).value(recurrenceFrequency).notNull().inMinMaxRange(0, 3);
-            }
         }
 
+        Integer recurrenceInterval = existingStandingInstruction.getRecurrenceInterval();
         if (this.fromApiJsonHelper.parameterExists(StandingInstructionApiConstants.recurrenceIntervalParamName, element)) {
-            final Integer recurrenceInterval = this.fromApiJsonHelper.extractIntegerNamed(StandingInstructionApiConstants.recurrenceIntervalParamName, element, Locale.getDefault());
-            baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceIntervalParamName).value(recurrenceInterval).integerGreaterThanZero();
+            recurrenceInterval = this.fromApiJsonHelper.extractIntegerNamed(StandingInstructionApiConstants.recurrenceIntervalParamName, element, Locale.getDefault());
+        }
+
+        if (isPeriodicRecurrence(recurrenceType)) {
+            baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceFrequencyParamName).value(recurrenceFrequency).notNull().inMinMaxRange(0, 3);
+            baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceIntervalParamName).value(recurrenceInterval).notNull().integerGreaterThanZero();
+            
+            if (recurrenceFrequency != null && recurrenceInterval != null) {
+                MonthDay monthDay = existingStandingInstruction.getRecurrenceOnDay() != null 
+                    ? MonthDay.of(existingStandingInstruction.getRecurrenceOnMonth(), existingStandingInstruction.getRecurrenceOnDay()) 
+                    : null;
+
+                if (areMonthlyOrYearlyFrequency(recurrenceFrequency)) {
+                    boolean hasMonthDay = this.fromApiJsonHelper.parameterExists(StandingInstructionApiConstants.monthDayFormatParamName, element);
+                    boolean hasMonthDayFormat = this.fromApiJsonHelper.parameterExists(StandingInstructionApiConstants.recurrenceOnMonthDayParamName, element);
+                    if (hasMonthDay || hasMonthDayFormat) {
+                        String monthDayFormat = this.fromApiJsonHelper.extractStringNamed(StandingInstructionApiConstants.monthDayFormatParamName, element);
+                        baseDataValidator.reset().parameter(StandingInstructionApiConstants.monthDayFormatParamName).value(monthDayFormat).notBlank();
+                        
+                        String monthDayStr = this.fromApiJsonHelper.extractStringNamed(StandingInstructionApiConstants.recurrenceOnMonthDayParamName, element);
+                        baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceOnMonthDayParamName).value(monthDayStr).notBlank();
+                        
+                        if (areNotBlankMonthDayAndMonthDayFormat(monthDayStr, monthDayFormat)) {
+                            try {
+                                monthDay = this.fromApiJsonHelper.extractMonthDayNamed(StandingInstructionApiConstants.recurrenceOnMonthDayParamName, element);
+                            } catch (Exception e) {
+                                baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceOnMonthDayParamName).failWithCode("invalid.month.day.format");
+                            }
+                        }
+                    }
+                }
+
+                if (areNotNullDates(validFrom, validTill)) {
+                    LocalDate minValidTill = getMinValidTill(recurrenceFrequency, validFrom, recurrenceInterval, monthDay);
+                    if (!validTill.isBefore(validFrom) && validTill.isBefore(minValidTill)) {
+                        baseDataValidator.reset().parameter(StandingInstructionApiConstants.validTillParamName).value(validTill).failWithCode("must.not.be.before.first.execution.date");
+                    }
+                }
+            }
         }
 
         throwExceptionIfValidationWarningsExist(dataValidationErrors);
@@ -351,6 +369,10 @@ public class StandingInstructionDataValidator {
         return transferType != null && AccountTransferType.fromInt(transferType).isLoanRepayment();
     }
 
+    private boolean areNotNullDates(final LocalDate validFrom, final LocalDate validTill) {
+        return validFrom != null && validTill != null;
+    }
+
     private boolean isFixedInstruction(final Integer instructionType) {
         return instructionType != null && StandingInstructionType.fromInt(instructionType).isFixedAmoutTransfer();
     }
@@ -365,5 +387,31 @@ public class StandingInstructionDataValidator {
 
     private boolean isAsPerDuesRecurrence(final Integer recurrenceType) {
         return recurrenceType != null && AccountTransferRecurrenceType.fromInt(recurrenceType).isDuesRecurrence();
+    }
+
+    private boolean areMonthlyOrYearlyFrequency(final Integer recurrenceFrequency) {
+        PeriodFrequencyType frequencyType = PeriodFrequencyType.fromInt(recurrenceFrequency);
+        return frequencyType.isMonthly() || frequencyType.isYearly();
+    }
+    
+    private LocalDate getMinValidTill(final Integer recurrenceFrequency, final LocalDate validFrom, final Integer recurrenceInterval, MonthDay monthDay) {
+        PeriodFrequencyType frequencyType = PeriodFrequencyType.fromInt(recurrenceFrequency);
+        LocalDate minValidTill = null;
+        if (frequencyType.isDaily()) {
+            minValidTill = validFrom.plusDays(recurrenceInterval);
+        } else if (frequencyType.isWeekly()) {
+            minValidTill = validFrom.plusWeeks(recurrenceInterval);
+        } else if (monthDay != null) {
+            minValidTill = monthDay.atYear(validFrom.getYear());
+            if (!minValidTill.isAfter(validFrom)) {
+                minValidTill = frequencyType.isMonthly() ? minValidTill.plusMonths(recurrenceInterval)
+                        : minValidTill.plusYears(recurrenceInterval);
+            }
+        }
+        return minValidTill;
+    }
+
+    private boolean areNotBlankMonthDayAndMonthDayFormat(final String monthDay, final String monthDayFormat) {
+        return StringUtils.isNotBlank(monthDay) && StringUtils.isNotBlank(monthDayFormat);
     }
 }
