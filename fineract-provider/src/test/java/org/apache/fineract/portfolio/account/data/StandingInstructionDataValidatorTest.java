@@ -440,7 +440,7 @@ public class StandingInstructionDataValidatorTest {
             @Test
             void shouldFailWhenPriorityHasInvalidValue() {
                 final JsonObject json = commonValuesInUpdateRequest();
-                json.add(priorityParamName, 5);
+                json.addProperty(priorityParamName, 5);
 
                 assertRange(json, priorityParamName);
             }
@@ -456,7 +456,7 @@ public class StandingInstructionDataValidatorTest {
             @Test
             void shouldFailWhenInstructionTypeHasInvalidValue() {
                 final JsonObject json = commonValuesInUpdateRequest();
-                json.add(instructionTypeParamName, 3);
+                json.addProperty(instructionTypeParamName, 3);
 
                 assertRange(json, instructionTypeParamName);
             }
