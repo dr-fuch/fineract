@@ -49,6 +49,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import java.math.BigDecimal;
 import java.util.stream.Stream;
@@ -400,6 +401,14 @@ public class StandingInstructionDataValidatorTest {
         @BeforeEach
         public void setUpUpdateMode() {
             validationMode = ValidationMode.UPDATE;
+        }
+
+        @Test
+        void shouldFailWhenNameExistsButIsNull() {
+            final JsonObject json = commonValuesInUpdateRequest();
+            json.add(nameParamName, JsonNull.INSTANCE);
+
+            assertBlank(json, nameParamName);
         }
 
         @Test
