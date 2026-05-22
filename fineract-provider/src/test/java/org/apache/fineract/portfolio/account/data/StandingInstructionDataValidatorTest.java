@@ -94,7 +94,7 @@ public class StandingInstructionDataValidatorTest {
     private AccountTransfersDetailDataValidator accountTransfersDetailDataValidator;
 
     @Mock
-    private AccountTransferStandingInstruction accountTransferStandingInstruction;
+    private AccountTransferStandingInstruction existingStandingInstruction;
 
     @Mock
     private AccountTransferDetails accountTransferDetails;
@@ -414,7 +414,7 @@ public class StandingInstructionDataValidatorTest {
         class AccountTransfer {
             @BeforeEach
             public void setUp(){
-                Mockito.lenient().when(accountTransferStandingInstruction.getAccountTransferDetails())
+                Mockito.lenient().when(existingStandingInstruction.getAccountTransferDetails())
                         .thenReturn(accountTransferDetails);
 
                 Mockito.lenient().when(accountTransferDetails.getTransferType())
@@ -497,10 +497,10 @@ public class StandingInstructionDataValidatorTest {
             @Test
             void shouldFailWhenNewValidFromIsAfterExistingValidTill() {
                 final JsonObject json = commonValuesInUpdateRequest();
-                json.add(validFromParamName, "16 May 2026");
+                json.addProperty(validFromParamName, "16 May 2026");
 
                 Mockito.lenient().when(existingStandingInstruction.getValidTill())
-                        .thenReturn("15 May 2026");
+                        .thenReturn(LocalDate.parse("15 May 2026"));
                 assertValidation(json, validFromParamName,
                     StandingInstructionApiConstants.MUST_BE_BEFORE_EXISTING_VALID_TILL_ERROR_CODE);
             }
@@ -574,7 +574,7 @@ public class StandingInstructionDataValidatorTest {
         if (this.validationMode == ValidationMode.CREATE) {
             this.standingInstructionDataValidator.validateForCreate(command(json));
         } else {
-            this.standingInstructionDataValidator.validateForUpdate(command(json), accountTransferStandingInstruction);
+            this.standingInstructionDataValidator.validateForUpdate(command(json), existingStandingInstruction);
         }
     }
 
