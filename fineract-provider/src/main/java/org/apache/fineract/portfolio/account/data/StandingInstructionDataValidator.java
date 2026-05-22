@@ -351,8 +351,8 @@ public class StandingInstructionDataValidator {
                         .validateDateAfter(validFrom);
                 }
 
-                if (existingStandingInstruction.lastRunDate() != null && validTill.isBefore(existingStandingInstruction.lastRunDate())) {
-                    baseDataValidator.reset().parameter(StandingInstructionApiConstants.validTillParamName)
+                if (existingStandingInstruction.getLastRunDate() != null && validTill.isBefore(existingStandingInstruction.getLastRunDate())) {
+                    baseDataValidator.reset().parameter(StandingInstructionApiConstants.validTillParamNamegetL
                         .value(validTill).failWithCode("cannot.be.before.last.run.date");
                 }
             }
