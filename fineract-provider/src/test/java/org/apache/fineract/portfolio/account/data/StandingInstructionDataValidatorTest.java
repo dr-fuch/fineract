@@ -501,7 +501,7 @@ public class StandingInstructionDataValidatorTest {
                 json.addProperty(validFromParamName, "16 May 2026");
 
                 Mockito.lenient().when(existingStandingInstruction.getValidTill())
-                        .thenReturn(LocalDate.parse("15 May 2026"));
+                        .thenReturn(LocalDate.of(2026, 5, 15));
                 assertValidation(json, validFromParamName,
                     StandingInstructionApiConstants.MUST_BE_BEFORE_EXISTING_VALID_TILL_ERROR_CODE);
             }

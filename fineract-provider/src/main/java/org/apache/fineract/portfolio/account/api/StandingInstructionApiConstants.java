@@ -49,5 +49,5 @@ public final class StandingInstructionApiConstants {
     public static final String RECURRENCE_AS_PER_DUES_NOT_ALLOWED_WITH_FIXED_INSTRUCTION_ERROR_CODE = "as.per.dues.not.allowed.with.fixed.amount";
     public static final String NOT_A_VALID_LOAN_REPAYMENT_ERROR_CODE = "is.not.a.valid.loan.repayment";
     public static final String MUST_BE_BEFORE_EXISTING_VALID_TILL_ERROR_CODE = "must.be.before.existing.valid.till";
-    public static final String CANNOT_BE_BEFORE_LAST_RUN_DATE = "cannot.be.before.last.run.date";
+    public static final String CANNOT_BE_BEFORE_LAST_RUN_DATE_ERROR_CODE = "cannot.be.before.last.run.date";
 }
