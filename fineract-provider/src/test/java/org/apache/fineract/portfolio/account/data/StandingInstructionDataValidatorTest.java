@@ -104,7 +104,7 @@ public class StandingInstructionDataValidatorTest {
 
     @Nested
     class Common {
-        @ParameterizedTest(name = "Mode: {0}") // {0} leerá "CREATE" o "UPDATE"
+        @ParameterizedTest(name = "Mode: {0}")
         @MethodSource("org.apache.fineract.portfolio.account.data.StandingInstructionDataValidatorTest#validationModes")
         void shouldFailWhenRequestBodyIsNull(ValidationMode mode) {
             validationMode = mode;
@@ -128,7 +128,6 @@ public class StandingInstructionDataValidatorTest {
 
     @Nested
     class WhenCreatingStandingInstruction {
-
         @BeforeEach
         public void setUpCreateMode() {
             validationMode = ValidationMode.CREATE;
@@ -398,10 +397,17 @@ public class StandingInstructionDataValidatorTest {
 
     @Nested
     class WhenUpdatingStandingInstruction {
-
         @BeforeEach
         public void setUpUpdateMode() {
             validationMode = ValidationMode.UPDATE;
+        }
+
+        @Test
+        void shouldFailWhenNameExistsButIsNull() {
+            final JsonObject json = commonValuesInUpdateRequest();
+            json.addProperty(nameParamName, null);
+
+            assertBlank(json, nameParamName);
         }
     }
 
