@@ -142,25 +142,11 @@ public class StandingInstructionDataValidator {
         boolean isPeriodicRecurrenceType = recurrenceType != null
                 && AccountTransferRecurrenceType.fromInt(recurrenceType).isPeriodicRecurrence();
         if (isPeriodicRecurrenceType) {
-<<<<<<< HEAD
             baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceFrequencyParamName).value(recurrenceFrequency).notNull().inMinMaxRange(0, 3);
             baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceIntervalParamName).value(recurrenceInterval).notNull().integerGreaterThanZero();
             MonthDay monthDay = null;
 
             if (recurrenceFrequency != null) {
-=======
-            baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceFrequencyParamName).value(recurrenceFrequency)
-                    .notNull();
-            baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceIntervalParamName).value(recurrenceInterval)
-                    .notNull();
-
-            MonthDay monthDay = null;
-
-            if (recurrenceFrequency != null) {
-                baseDataValidator.reset().parameter(StandingInstructionApiConstants.recurrenceFrequencyParamName).value(recurrenceFrequency)
-                        .inMinMaxRange(0, 3);
-
->>>>>>> 95b7c92fcc283f8db9b63a3ebe4a74890364ea82
                 PeriodFrequencyType frequencyType = PeriodFrequencyType.fromInt(recurrenceFrequency);
                 if (frequencyType.isMonthly() || frequencyType.isYearly()) {
                     final String monthDayFormat = this.fromApiJsonHelper
@@ -219,11 +205,7 @@ public class StandingInstructionDataValidator {
         boolean isDuesInstructionType = instructionType != null && StandingInstructionType.fromInt(instructionType).isDuesAmoutTransfer();
         if (isDuesInstructionType && amount != null) {
             baseDataValidator.reset().parameter(StandingInstructionApiConstants.amountParamName)
-<<<<<<< HEAD
                 .failWithCode("not.allowed.for.dues.instruction");
-=======
-                    .failWithCode("not.allowed.for.dues.instruction");
->>>>>>> 95b7c92fcc283f8db9b63a3ebe4a74890364ea82
         }
 
         boolean isAsPerDuesRecurrenceType = recurrenceType != null
@@ -292,11 +274,7 @@ public class StandingInstructionDataValidator {
         throwExceptionIfValidationWarningsExist(dataValidationErrors);
     }
 
-<<<<<<< HEAD
     public void validateForUpdate(final JsonCommand command, final AccountTransferStandingInstruction existingStandingInstruction) {
-=======
-    public void validateForUpdate(final JsonCommand command, final AccountTransferStandingInstruction accountTransferStandingInstruction) {
->>>>>>> 95b7c92fcc283f8db9b63a3ebe4a74890364ea82
         final String json = command.json();
 
         if (StringUtils.isBlank(json)) {
@@ -311,14 +289,6 @@ public class StandingInstructionDataValidator {
                 .resource(StandingInstructionApiConstants.STANDING_INSTRUCTION_RESOURCE_NAME);
 
         final JsonElement element = command.parsedJson();
-<<<<<<< HEAD
-=======
-        if (this.fromApiJsonHelper.parameterExists(StandingInstructionApiConstants.validFromParamName, element)) {
-            final LocalDate validFrom = this.fromApiJsonHelper.extractLocalDateNamed(StandingInstructionApiConstants.validFromParamName,
-                    element);
-            baseDataValidator.reset().parameter(StandingInstructionApiConstants.validFromParamName).value(validFrom).notNull();
-        }
->>>>>>> 95b7c92fcc283f8db9b63a3ebe4a74890364ea82
 
         if (this.fromApiJsonHelper.parameterExists(StandingInstructionApiConstants.nameParamName, element)) {
             final String name = this.fromApiJsonHelper.extractStringNamed(StandingInstructionApiConstants.nameParamName, element);
@@ -336,7 +306,6 @@ public class StandingInstructionDataValidator {
         if (this.fromApiJsonHelper.parameterExists(StandingInstructionApiConstants.instructionTypeParamName, element)) {
             instructionType = this.fromApiJsonHelper
                     .extractIntegerNamed(StandingInstructionApiConstants.instructionTypeParamName, element, Locale.getDefault());
-<<<<<<< HEAD
             baseDataValidator.reset().parameter(StandingInstructionApiConstants.instructionTypeParamName).value(instructionType)
                     .notNull().inMinMaxRange(1, 2);
             
@@ -349,10 +318,6 @@ public class StandingInstructionDataValidator {
                         .failWithCode("dues.not.allowed.for.account.transfer");
                 }
             }
-=======
-            baseDataValidator.reset().parameter(StandingInstructionApiConstants.instructionTypeParamName).value(instructionType).notNull()
-                    .inMinMaxRange(1, 2);
->>>>>>> 95b7c92fcc283f8db9b63a3ebe4a74890364ea82
         }
 
         if (this.fromApiJsonHelper.parameterExists(StandingInstructionApiConstants.statusParamName, element)) {
