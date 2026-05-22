@@ -559,6 +559,18 @@ public class StandingInstructionDataValidatorTest {
                 assertValidation(json, recurrenceTypeParamName,
                     StandingInstructionApiConstants.RECURRENCE_AS_PER_DUES_NOT_ALLOWED_FOR_SAVINGS_ERROR_CODE);
             }
+            
+            @Test
+            void shouldFailWhenAmountIsNotPositive() {
+                final JsonObject json = commonValuesInUpdateRequest();
+                json.addProperty(amountParamName, BigDecimal.valueOf(-10.00));
+
+                Mockito.lenient().when(existingStandingInstruction.getInstructionType())
+                        .thenReturn(1);
+                Mockito.lenient().when(existingStandingInstruction.getRecurrenceType())
+                        .thenReturn(1);
+                assertValidation(json, amountParamName, NOT_GREATER_THAN_ZERO_ERROR_CODE);
+            }
 
 
         }
