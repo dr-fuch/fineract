@@ -352,7 +352,7 @@ public class StandingInstructionDataValidator {
                 }
 
                 if (existingStandingInstruction.getLastRunDate() != null && validTill.isBefore(existingStandingInstruction.getLastRunDate())) {
-                    baseDataValidator.reset().parameter(StandingInstructionApiConstants.validTillParamNamegetL
+                    baseDataValidator.reset().parameter(StandingInstructionApiConstants.validTillParamName)
                         .value(validTill).failWithCode("cannot.be.before.last.run.date");
                 }
             }
