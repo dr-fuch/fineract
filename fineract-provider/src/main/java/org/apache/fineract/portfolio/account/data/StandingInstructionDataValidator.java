@@ -313,7 +313,7 @@ public class StandingInstructionDataValidator {
                 AccountTransferType existingTransferType = AccountTransferType.fromInt(
                     existingStandingInstruction.getAccountTransferDetails().getTransferType());
                 StandingInstructionType newInstructionType = StandingInstructionType.fromInt(instructionType);
-                if (existingTransferType.isAccountTransfer() && newInstructionType.isDuesAmountTransfer()) {
+                if (existingTransferType.isAccountTransfer() && newInstructionType.isDuesAmoutTransfer()) {
                     baseDataValidator.reset().parameter(StandingInstructionApiConstants.instructionTypeParamName)
                         .failWithCode("dues.not.allowed.for.account.transfer");
                 }
