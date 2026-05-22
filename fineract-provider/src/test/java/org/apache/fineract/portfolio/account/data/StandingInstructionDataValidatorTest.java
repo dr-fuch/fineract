@@ -417,9 +417,12 @@ public class StandingInstructionDataValidatorTest {
             public void setUp(){
                 Mockito.lenient().when(existingStandingInstruction.getAccountTransferDetails())
                         .thenReturn(accountTransferDetails);
-
                 Mockito.lenient().when(accountTransferDetails.getTransferType())
                         .thenReturn(1);
+                Mockito.lenient().when(existingStandingInstruction.getRecurrenceFrequency())
+                        .thenReturn(null);
+                Mockito.lenient().when(existingStandingInstruction.getRecurrenceInterval())
+                        .thenReturn(null);
             }
 
             @Test
@@ -571,8 +574,17 @@ public class StandingInstructionDataValidatorTest {
                         .thenReturn(1);
                 assertValidation(json, amountParamName, NOT_GREATER_THAN_ZERO_ERROR_CODE);
             }
+        }
 
+        class LoanRepayment {
+            @BeforeEach
+            public void setUp(){
+                Mockito.lenient().when(existingStandingInstruction.getAccountTransferDetails())
+                        .thenReturn(accountTransferDetails);
 
+                Mockito.lenient().when(accountTransferDetails.getTransferType())
+                        .thenReturn(2);
+            }
         }
     }
 
