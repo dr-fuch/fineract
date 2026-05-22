@@ -308,16 +308,18 @@ public class StandingInstructionDataValidator {
             }
         }
 
+        BigDecimal amount = existingStandingInstruction.getAmount();
         if (this.fromApiJsonHelper.parameterExists(amountParamName, element)) {
-            final BigDecimal amount = this.fromApiJsonHelper.extractBigDecimalWithLocaleNamed(amountParamName, element);
-            if (isFixedInstruction(instructionType) && isPeriodicRecurrence(recurrenceType)) {
-                baseDataValidator.reset().parameter(amountParamName).value(amount).positiveAmount();
-            }
-            
-            if (isDuesInstruction(instructionType) && amount != null) {
-                baseDataValidator.reset().parameter(amountParamName)
-                    .failWithCode(StandingInstructionApiConstants.AMOUNT_NOT_ALLOWED_FOR_DUES_ERROR_CODE);
-            }
+            amount = this.fromApiJsonHelper.extractBigDecimalWithLocaleNamed(amountParamName, element);
+        }
+
+        if (isFixedInstruction(instructionType) && isPeriodicRecurrence(recurrenceType)) {
+            baseDataValidator.reset().parameter(amountParamName).value(amount).positiveAmount();
+        }
+        
+        if (isDuesInstruction(instructionType) && amount != null) {
+            baseDataValidator.reset().parameter(amountParamName)
+                .failWithCode(StandingInstructionApiConstants.AMOUNT_NOT_ALLOWED_FOR_DUES_ERROR_CODE);
         }
 
         Integer recurrenceFrequency = existingStandingInstruction.getRecurrenceFrequency();
