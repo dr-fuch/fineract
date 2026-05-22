@@ -505,6 +505,24 @@ public class StandingInstructionDataValidatorTest {
                 assertValidation(json, validFromParamName,
                     StandingInstructionApiConstants.MUST_BE_BEFORE_EXISTING_VALID_TILL_ERROR_CODE);
             }
+
+            @Test
+            void shouldFailWhenValidTillExistsButIsNull() {
+                final JsonObject json = commonValuesInUpdateRequest();
+                json.add(validTillParamName, JsonNull.INSTANCE);
+
+                assertBlank(json, validTillParamName);
+            }
+
+            @Test
+            void shouldFailWhenNewValidTillIsBeforeExistingValidFrom() {
+                final JsonObject json = commonValuesInUpdateRequest();
+                json.addProperty(validTillParamName, "16 May 2026");
+
+                Mockito.lenient().when(existingStandingInstruction.getValidFrom())
+                        .thenReturn(LocalDate.of(2026, 5, 17));
+                assertValidation(json, validTillParamName, DATE_IS_BEFORE_ERROR_CODE);
+            }
         }
     }
 
