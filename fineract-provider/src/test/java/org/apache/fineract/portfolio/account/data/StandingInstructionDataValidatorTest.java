@@ -624,6 +624,26 @@ public class StandingInstructionDataValidatorTest {
                 assertValidation(json, amountParamName,
                     StandingInstructionApiConstants.AMOUNT_NOT_ALLOWED_FOR_DUES_ERROR_CODE);
             }
+
+            @Test
+            void shouldPassWhenUpdatingFromMonthlyToWeeklyRecurrence() {
+                final JsonObject json = commonValuesInUpdateRequest();
+                json.addProperty(recurrenceFrequencyParamName, 1);
+                json.addProperty(recurrenceIntervalParamName, 1);
+
+                Mockito.lenient().when(existingStandingInstruction.getRecurrenceFrequency()).thenReturn(2);
+                Mockito.lenient().when(existingStandingInstruction.getRecurrenceInterval()).thenReturn(1);
+
+                Mockito.lenient().when(existingStandingInstruction.getRecurrenceOnMonth()).thenReturn(5);
+                Mockito.lenient().when(existingStandingInstruction.getRecurrenceOnDay()).thenReturn(15);
+
+                Mockito.lenient().when(existingStandingInstruction.getAccountTransferDetails())
+                        .thenReturn(accountTransferDetails);
+                Mockito.lenient().when(accountTransferDetails.getTransferType())
+                        .thenReturn(2);
+
+                assertValidationSuccess(json);
+            }
         }
     }
 
