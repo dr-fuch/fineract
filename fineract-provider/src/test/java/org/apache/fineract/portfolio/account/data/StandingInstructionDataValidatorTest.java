@@ -45,8 +45,10 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
@@ -61,6 +63,7 @@ import org.apache.fineract.infrastructure.core.exception.UnsupportedParameterExc
 import org.apache.fineract.infrastructure.core.serialization.FromJsonHelper;
 import org.apache.fineract.portfolio.account.AccountDetailConstants;
 import org.apache.fineract.portfolio.account.api.StandingInstructionApiConstants;
+import org.apache.fineract.portfolio.account.domain.AccountTransferDetails;
 import org.apache.fineract.portfolio.account.domain.AccountTransferStandingInstruction;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -91,6 +94,9 @@ public class StandingInstructionDataValidatorTest {
 
     @Mock
     private AccountTransferStandingInstruction accountTransferStandingInstruction;
+
+    @Mock
+    private AccountTransferDetails accountTransferDetails;
 
     private static final FromJsonHelper fromApiJsonHelper = new FromJsonHelper();
     private StandingInstructionDataValidator standingInstructionDataValidator;
@@ -403,20 +409,32 @@ public class StandingInstructionDataValidatorTest {
             validationMode = ValidationMode.UPDATE;
         }
 
-        @Test
-        void shouldFailWhenNameExistsButIsNull() {
-            final JsonObject json = commonValuesInUpdateRequest();
-            json.add(nameParamName, JsonNull.INSTANCE);
+        @Nested
+        class AccountTransfer {
+            @BeforeEach
+            public void setUp(){
+                Mockito.lenient().when(accountTransferStandingInstruction.getAccountTransferDetails())
+                        .thenReturn(accountTransferDetails);
 
-            assertBlank(json, nameParamName);
-        }
+                Mockito.lenient().when(accountTransferDetails.getTransferType())
+                        .thenReturn(1);
+            }
 
-        @Test
-        void shouldFailWhenPriorityExistsButIsNull() {
-            final JsonObject json = commonValuesInUpdateRequest();
-            json.add(priorityParamName, JsonNull.INSTANCE);
+            @Test
+            void shouldFailWhenNameExistsButIsNull() {
+                final JsonObject json = commonValuesInUpdateRequest();
+                json.add(nameParamName, JsonNull.INSTANCE);
 
-            assertBlank(json, priorityParamName);
+                assertBlank(json, nameParamName);
+            }
+
+            @Test
+            void shouldFailWhenPriorityExistsButIsNull() {
+                final JsonObject json = commonValuesInUpdateRequest();
+                json.add(priorityParamName, JsonNull.INSTANCE);
+
+                assertBlank(json, priorityParamName);
+            }
         }
     }
 
