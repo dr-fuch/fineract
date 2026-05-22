@@ -418,9 +418,6 @@ public class StandingInstructionDataValidatorTest {
 
             assertBlank(json, priorityParamName);
         }
-
-        @Test
-        void should
     }
 
     private JsonCommand command(JsonObject json) {
