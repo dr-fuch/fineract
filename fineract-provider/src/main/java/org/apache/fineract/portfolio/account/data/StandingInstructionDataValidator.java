@@ -85,7 +85,7 @@ public class StandingInstructionDataValidator {
         recurrenceFrequencyParamName, recurrenceIntervalParamName, recurrenceOnMonthDayParamName, nameParamName, monthDayFormatParamName));
 
     private static final Set<String> UPDATE_REQUEST_DATA_PARAMETERS = new HashSet<>(Arrays.asList(localeParamName, dateFormatParamName,
-        priorityParamName, instructionTypeParamName, statusParamName, amountParamName, validFromParamName, validTillParamName,
+        nameParamName, priorityParamName, instructionTypeParamName, statusParamName, amountParamName, validFromParamName, validTillParamName,
         recurrenceTypeParamName, recurrenceFrequencyParamName, recurrenceIntervalParamName, recurrenceOnMonthDayParamName, 
         monthDayFormatParamName));
 
