@@ -469,6 +469,22 @@ public class StandingInstructionDataValidatorTest {
                 assertValidation(json, instructionTypeParamName,
                     StandingInstructionApiConstants.INSTRUCTION_TYPE_DUES_NOT_ALLOWED_FOR_ACCOUNT_TRANSFER_ERROR_CODE);
             }
+
+            @Test
+            void shouldFailWhenStatusExistsButIsNull() {
+                final JsonObject json = commonValuesInUpdateRequest();
+                json.add(statusParamName, JsonNull.INSTANCE);
+
+                assertBlank(json, statusParamName);
+            }
+
+            @Test
+            void shouldFailWhenStatusHasInvalidValue() {
+                final JsonObject json = commonValuesInUpdateRequest();
+                json.addProperty(statusParamName, 3);
+
+                assertRange(json, statusParamName);
+            }
         }
     }
 
