@@ -436,6 +436,30 @@ public class StandingInstructionDataValidatorTest {
 
                 assertBlank(json, priorityParamName);
             }
+
+            @Test
+            void shouldFailWhenPriorityHasInvalidValue() {
+                final JsonObject json = commonValuesInUpdateRequest();
+                json.add(priorityParamName, 5);
+
+                assertRange(json, priorityParamName);
+            }
+
+            @Test
+            void shouldFailWhenInstructionTypeExistsButIsNull() {
+                final JsonObject json = commonValuesInUpdateRequest();
+                json.add(instructionTypeParamName, JsonNull.INSTANCE);
+
+                assertBlank(json, instructionTypeParamName);
+            }
+
+            @Test
+            void shouldFailWhenInstructionTypeHasInvalidValue() {
+                final JsonObject json = commonValuesInUpdateRequest();
+                json.add(instructionTypeParamName, 3);
+
+                assertRange(json, instructionTypeParamName);
+            }
         }
     }
 
