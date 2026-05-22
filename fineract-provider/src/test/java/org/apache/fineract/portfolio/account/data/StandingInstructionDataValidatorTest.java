@@ -412,11 +412,11 @@ public class StandingInstructionDataValidatorTest {
         }
 
         @Test
-        void shouldFailWhenNameExistsButIsNull() {
+        void shouldFailWhenPriorityExistsButIsNull() {
             final JsonObject json = commonValuesInUpdateRequest();
-            json.add(nameParamName, JsonNull.INSTANCE);
+            json.add(priorityParamName, JsonNull.INSTANCE);
 
-            assertBlank(json, nameParamName);
+            assertBlank(json, priorityParamName);
         }
     }
 
