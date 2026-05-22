@@ -469,7 +469,7 @@ public class StandingInstructionDataValidatorTest {
     }
 
     private void validate(final JsonObject json) {
-        if (this.validationMode = ValidationMode.CREATE) {
+        if (this.validationMode == ValidationMode.CREATE) {
             this.standingInstructionDataValidator.validateForCreate(command(json));
         } else {
             this.standingInstructionDataValidator.validateForUpdate(command(json), accountTransferStandingInstruction);
