@@ -564,7 +564,7 @@ public class StandingInstructionDataValidatorTest {
             }
             
             @Test
-            void shouldFailWhenAmountIsNotPositive() {
+            void shouldFailWhenNewAmountIsNotPositive() {
                 final JsonObject json = commonValuesInUpdateRequest();
                 json.addProperty(amountParamName, BigDecimal.valueOf(-10.00));
 
@@ -584,6 +584,28 @@ public class StandingInstructionDataValidatorTest {
 
                 Mockito.lenient().when(accountTransferDetails.getTransferType())
                         .thenReturn(2);
+            }
+
+            @Test
+            void shouldFailWhenNewRecurrenceTypeIsAsPerDues() {
+                final JsonObject json = commonValuesInUpdateRequest();
+                json.addProperty(recurrenceTypeParamName, 2);
+
+                Mockito.lenient().when(existingStandingInstruction.getInstructionType())
+                        .thenReturn(1);
+                assertValidation(json, recurrenceTypeParamName,
+                    StandingInstructionApiConstants.RECURRENCE_AS_PER_DUES_NOT_ALLOWED_WITH_FIXED_INSTRUCTION_ERROR_CODE);
+            }
+
+            @Test
+            void shouldFailWhenInstructionTypeIsDuesAndNewAmountIsNotNull() {
+                final JsonObject json = commonValuesInUpdateRequest();
+                json.add(amountParamName, JsonNull.INSTANCE);
+
+                Mockito.lenient().when(existingStandingInstruction.getInstructionType())
+                        .thenReturn(2);
+                assertValidation(json, amountParamName,
+                    StandingInstructionApiConstants.AMOUNT_NOT_ALLOWED_FOR_DUES_ERROR_CODE);
             }
         }
     }
