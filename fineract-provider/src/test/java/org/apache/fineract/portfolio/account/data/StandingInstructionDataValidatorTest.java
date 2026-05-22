@@ -460,6 +460,14 @@ public class StandingInstructionDataValidatorTest {
 
                 assertRange(json, instructionTypeParamName);
             }
+
+            @Test
+            void shouldFailWhenNewInstructionTypeIsDues() {
+                final JsonObject json = commonValuesInUpdateRequest();
+                json.addProperty(instructionTypeParamName, 2);
+
+                assertRange(json, instructionTypeParamName);
+            }
         }
     }
 
