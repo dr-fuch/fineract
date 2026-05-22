@@ -405,7 +405,7 @@ public class StandingInstructionDataValidatorTest {
         @Test
         void shouldFailWhenNameExistsButIsNull() {
             final JsonObject json = commonValuesInUpdateRequest();
-            json.addProperty(nameParamName, null);
+            json.add(nameParamName, JsonNull.INSTANCE);
 
             assertBlank(json, nameParamName);
         }
