@@ -144,7 +144,6 @@ public class StandingInstructionDataValidatorTest {
 
         @Nested
         class BaseRules {
-
             @Test
             void shouldValidateAccountTransferDetails() {
                 final JsonObject json = createAccountTransferRequest();
@@ -196,7 +195,6 @@ public class StandingInstructionDataValidatorTest {
 
         @Nested
         class PeriodicRecurrenceRules {
-
             @ParameterizedTest
             @MethodSource("requiredParameters")
             void shouldFailWhenPeriodicFieldIsMissing(String parameter) {
@@ -425,20 +423,13 @@ public class StandingInstructionDataValidatorTest {
                         .thenReturn(null);
             }
 
-            @Test
-            void shouldFailWhenNameExistsButIsNull() {
+            @ParameterizedTest
+            @MethodSource("nullParameters")
+            void shouldFailWhenParameterExistsButIsNull(String parameter) {
                 final JsonObject json = commonValuesInUpdateRequest();
-                json.add(nameParamName, JsonNull.INSTANCE);
+                json.add(parameter, JsonNull.INSTANCE);
 
-                assertBlank(json, nameParamName);
-            }
-
-            @Test
-            void shouldFailWhenPriorityExistsButIsNull() {
-                final JsonObject json = commonValuesInUpdateRequest();
-                json.add(priorityParamName, JsonNull.INSTANCE);
-
-                assertBlank(json, priorityParamName);
+                assertBlank(json, parameter);
             }
 
             @Test
@@ -447,14 +438,6 @@ public class StandingInstructionDataValidatorTest {
                 json.addProperty(priorityParamName, 5);
 
                 assertRange(json, priorityParamName);
-            }
-
-            @Test
-            void shouldFailWhenInstructionTypeExistsButIsNull() {
-                final JsonObject json = commonValuesInUpdateRequest();
-                json.add(instructionTypeParamName, JsonNull.INSTANCE);
-
-                assertBlank(json, instructionTypeParamName);
             }
 
             @Test
@@ -475,27 +458,11 @@ public class StandingInstructionDataValidatorTest {
             }
 
             @Test
-            void shouldFailWhenStatusExistsButIsNull() {
-                final JsonObject json = commonValuesInUpdateRequest();
-                json.add(statusParamName, JsonNull.INSTANCE);
-
-                assertBlank(json, statusParamName);
-            }
-
-            @Test
             void shouldFailWhenStatusHasInvalidValue() {
                 final JsonObject json = commonValuesInUpdateRequest();
                 json.addProperty(statusParamName, 3);
 
                 assertRange(json, statusParamName);
-            }
-
-            @Test
-            void shouldFailWhenValidFromExistsButIsNull() {
-                final JsonObject json = commonValuesInUpdateRequest();
-                json.add(validFromParamName, JsonNull.INSTANCE);
-
-                assertBlank(json, validFromParamName);
             }
 
             @Test
@@ -507,14 +474,6 @@ public class StandingInstructionDataValidatorTest {
                         .thenReturn(LocalDate.of(2026, 5, 15));
                 assertValidation(json, validFromParamName,
                     StandingInstructionApiConstants.MUST_BE_BEFORE_EXISTING_VALID_TILL_ERROR_CODE);
-            }
-
-            @Test
-            void shouldFailWhenValidTillExistsButIsNull() {
-                final JsonObject json = commonValuesInUpdateRequest();
-                json.add(validTillParamName, JsonNull.INSTANCE);
-
-                assertBlank(json, validTillParamName);
             }
 
             @Test
@@ -536,14 +495,6 @@ public class StandingInstructionDataValidatorTest {
                         .thenReturn(LocalDate.of(2026, 5, 17));
                 assertValidation(json, validTillParamName,
                     StandingInstructionApiConstants.CANNOT_BE_BEFORE_LAST_RUN_DATE_ERROR_CODE);
-            }
-
-            @Test
-            void shouldFailWhenRecurrenceTypeExistsButIsNull() {
-                final JsonObject json = commonValuesInUpdateRequest();
-                json.add(recurrenceTypeParamName, JsonNull.INSTANCE);
-
-                assertBlank(json, recurrenceTypeParamName);
             }
 
             @Test
@@ -590,6 +541,16 @@ public class StandingInstructionDataValidatorTest {
                 Mockito.lenient().when(existingStandingInstruction.getRecurrenceOnDay()).thenReturn(null);
 
                 assertValidationSuccess(json);
+            }
+
+            private static Stream<String> nullParameters() {
+                return Stream.of(nameParamName,
+                        priorityParamName,
+                        instructionTypeParamName,
+                        statusParamName,
+                        validFromParamName,
+                        validTillParamName,
+                        recurrenceTypeParamName);
             }
         }
 
