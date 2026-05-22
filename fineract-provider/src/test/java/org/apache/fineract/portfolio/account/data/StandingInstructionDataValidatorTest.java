@@ -466,7 +466,8 @@ public class StandingInstructionDataValidatorTest {
                 final JsonObject json = commonValuesInUpdateRequest();
                 json.addProperty(instructionTypeParamName, 2);
 
-                assertRange(json, instructionTypeParamName);
+                assertValidation(json, instructionTypeParamName,
+                    StandingInstructionApiConstants.INSTRUCTION_TYPE_DUES_NOT_ALLOWED_FOR_ACCOUNT_TRANSFER_ERROR_CODE);
             }
         }
     }
