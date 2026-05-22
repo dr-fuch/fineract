@@ -150,7 +150,7 @@ public class StandingInstructionDataValidator {
 
                 if (areNotNullDates(validFrom, validTill)) {
                     LocalDate minValidTill = getMinValidTill(recurrenceFrequency, validFrom, recurrenceInterval, monthDay);
-                    if (!validTill.isBefore(validFrom) && validTill.isBefore(minValidTill)) {
+                    if (minValidTill != null && !validTill.isBefore(validFrom) && validTill.isBefore(minValidTill)) {
                         baseDataValidator.reset().parameter(StandingInstructionApiConstants.validTillParamName).value(validTill).failWithCode("must.not.be.before.first.execution.date");
                     }
                 }
