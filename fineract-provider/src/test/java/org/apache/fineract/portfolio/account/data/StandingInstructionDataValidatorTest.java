@@ -116,7 +116,7 @@ public class StandingInstructionDataValidatorTest {
         void shouldFailWhenRequestContainsUnknownParameter(ValidationMode mode) {
             validationMode = mode;
 
-            final JsonObject json = isCreateMode ? 
+            final JsonObject json = validationMode == ValidationMode.CREATE ? 
                 createAccountTransferRequest() : 
                 commonValuesInUpdateRequest();
 
