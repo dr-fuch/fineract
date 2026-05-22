@@ -202,6 +202,14 @@ public class StandingInstructionDataValidatorTest {
             }
 
             @Test
+            void shouldFailWhenRecurrenceIntervalHasInvalidValue() {
+                final JsonObject json = createAccountTransferRequest();
+                json.addProperty(StandingInstructionApiConstants.recurrenceIntervalParamName, 0);
+
+                assertRange(json, StandingInstructionApiConstants.recurrenceIntervalParamName);
+            }
+
+            @Test
             void shouldFailWhenRecurrenceOnMonthDayHasInvalidValue() {
                 final JsonObject json = createAccountTransferRequest();
                 json.addProperty(StandingInstructionApiConstants.recurrenceOnMonthDayParamName, "08 Mayo");

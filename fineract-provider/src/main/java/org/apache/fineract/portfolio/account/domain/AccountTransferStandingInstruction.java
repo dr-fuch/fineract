@@ -54,6 +54,7 @@ import org.apache.fineract.portfolio.common.domain.PeriodFrequencyType;
 @Entity
 @Table(name = "m_account_transfer_standing_instructions", uniqueConstraints = {
         @UniqueConstraint(columnNames = { "name" }, name = "name") })
+@Getter
 public class AccountTransferStandingInstruction extends AbstractPersistableCustom<Long> {
 
     @ManyToOne
@@ -97,7 +98,7 @@ public class AccountTransferStandingInstruction extends AbstractPersistableCusto
     private Integer recurrenceOnMonth;
 
     @Column(name = "last_run_date")
-    private LocalDate latsRunDate;
+    private LocalDate lastRunDate;
 
     protected AccountTransferStandingInstruction() {
 
@@ -272,8 +273,8 @@ public class AccountTransferStandingInstruction extends AbstractPersistableCusto
 
     }
 
-    public void updateLatsRunDate(LocalDate latsRunDate) {
-        this.latsRunDate = latsRunDate;
+    public void updateLastRunDate(LocalDate lastRunDate) {
+        this.lastRunDate = lastRunDate;
     }
 
     public void updateStatus(Integer status) {
