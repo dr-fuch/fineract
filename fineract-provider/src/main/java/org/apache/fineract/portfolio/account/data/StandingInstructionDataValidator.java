@@ -276,7 +276,8 @@ public class StandingInstructionDataValidator {
             baseDataValidator.reset().parameter(validFromParamName).value(validFrom).notNull();
             LocalDate existingValidTill = existingStandingInstruction.getValidTill();
             if (validFrom != null && existingValidTill != null && validFrom.isAfter(existingValidTill) && !this.fromApiJsonHelper.parameterExists(validTillParamName, element)) {
-                baseDataValidator.reset().parameter(validFromParamName).failWithCode("must.be.before.existing.valid.till");
+                baseDataValidator.reset().parameter(validFromParamName)
+                    .failWithCode(StandingInstructionApiConstants.MUST_BE_BEFORE_EXISTING_VALID_TILL_ERROR_CODE);
             }
         }
 
@@ -288,7 +289,8 @@ public class StandingInstructionDataValidator {
                 baseDataValidator.reset().parameter(validTillParamName).value(validTill).validateDateAfter(validFrom);
             }
             if (areNotNullDates(existingStandingInstruction.getLastRunDate(), validTill) && validTill.isBefore(existingStandingInstruction.getLastRunDate())) {
-                baseDataValidator.reset().parameter(validTillParamName).value(validTill).failWithCode("cannot.be.before.last.run.date");
+                baseDataValidator.reset().parameter(validTillParamName).value(validTill)
+                    .failWithCode(StandingInstructionApiConstants.CANNOT_BE_BEFORE_LAST_RUN_DATE);
             }
         }
 
