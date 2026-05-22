@@ -432,20 +432,13 @@ public class StandingInstructionDataValidatorTest {
                 assertBlank(json, parameter);
             }
 
-            @Test
-            void shouldFailWhenPriorityHasInvalidValue() {
+            @ParameterizedTest
+            @MethodSource("parametersWithInvalidValues")
+            void shouldFailWhenParameterHasInvalidValue(String parameter, Integer invalidValue) {
                 final JsonObject json = commonValuesInUpdateRequest();
-                json.addProperty(priorityParamName, 5);
+                json.addProperty(parameter, invalidValue);
 
-                assertRange(json, priorityParamName);
-            }
-
-            @Test
-            void shouldFailWhenInstructionTypeHasInvalidValue() {
-                final JsonObject json = commonValuesInUpdateRequest();
-                json.addProperty(instructionTypeParamName, 3);
-
-                assertRange(json, instructionTypeParamName);
+                assertRange(json, parameter);
             }
 
             @Test
@@ -455,14 +448,6 @@ public class StandingInstructionDataValidatorTest {
 
                 assertValidation(json, instructionTypeParamName,
                     StandingInstructionApiConstants.INSTRUCTION_TYPE_DUES_NOT_ALLOWED_FOR_ACCOUNT_TRANSFER_ERROR_CODE);
-            }
-
-            @Test
-            void shouldFailWhenStatusHasInvalidValue() {
-                final JsonObject json = commonValuesInUpdateRequest();
-                json.addProperty(statusParamName, 3);
-
-                assertRange(json, statusParamName);
             }
 
             @Test
@@ -495,14 +480,6 @@ public class StandingInstructionDataValidatorTest {
                         .thenReturn(LocalDate.of(2026, 5, 17));
                 assertValidation(json, validTillParamName,
                     StandingInstructionApiConstants.CANNOT_BE_BEFORE_LAST_RUN_DATE_ERROR_CODE);
-            }
-
-            @Test
-            void shouldFailWhenRecurrenceTypeHasInvalidValue() {
-                final JsonObject json = commonValuesInUpdateRequest();
-                json.addProperty(recurrenceTypeParamName, 3);
-
-                assertRange(json, recurrenceTypeParamName);
             }
 
             @Test
@@ -551,6 +528,14 @@ public class StandingInstructionDataValidatorTest {
                         validFromParamName,
                         validTillParamName,
                         recurrenceTypeParamName);
+            }
+
+            private static Stream<Arguments> parametersWithInvalidValues() {
+                return Stream.of(
+                        Arguments.of(priorityParamName, 5),
+                        Arguments.of(instructionTypeParamName, 3),
+                        Arguments.of(statusParamName, 3),
+                        Arguments.of(recurrenceTypeParamName, 3));
             }
         }
 
