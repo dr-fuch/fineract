@@ -574,6 +574,23 @@ public class StandingInstructionDataValidatorTest {
                         .thenReturn(1);
                 assertValidation(json, amountParamName, NOT_GREATER_THAN_ZERO_ERROR_CODE);
             }
+
+            @Test
+            void shouldPassWhenUpdatingFromDailyToYearlyRecurrence() {
+                final JsonObject json = commonValuesInUpdateRequest();
+                json.addProperty(recurrenceFrequencyParamName, 3);
+                json.addProperty(recurrenceIntervalParamName, 1);
+                json.addProperty(recurrenceOnMonthDayParamName, "25 May");
+                json.addProperty(monthDayFormatParamName, "dd MMMM");
+
+                Mockito.lenient().when(existingStandingInstruction.getRecurrenceFrequency()).thenReturn(0);
+                Mockito.lenient().when(existingStandingInstruction.getRecurrenceInterval()).thenReturn(1);
+
+                Mockito.lenient().when(existingStandingInstruction.getRecurrenceOnMonth()).thenReturn(null);
+                Mockito.lenient().when(existingStandingInstruction.getRecurrenceOnDay()).thenReturn(null);
+
+                assertValidationSuccess(json);
+            }
         }
 
         class LoanRepayment {
