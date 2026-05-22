@@ -385,7 +385,7 @@ public class StandingInstructionDataValidator {
         return PortfolioAccountType.SAVINGS.equals(PortfolioAccountType.fromInt(accountType));
     }
 
-    private boolean areEqualOfficesAndEqualAccounts(final Integer fromOfficeId, final Integer toOfficeId, final Integer fromAccountId, final Integer toAccountId) {
+    private boolean areEqualOfficesAndEqualAccounts(final Long fromOfficeId, final Long toOfficeId, final Long fromAccountId, final Long toAccountId) {
         return fromOfficeId != null && toOfficeId != null && fromOfficeId.equals(toOfficeId) && fromAccountId != null && toAccountId != null && fromAccountId.equals(toAccountId);
     }
 
