@@ -523,6 +523,44 @@ public class StandingInstructionDataValidatorTest {
                         .thenReturn(LocalDate.of(2026, 5, 17));
                 assertValidation(json, validTillParamName, DATE_IS_BEFORE_ERROR_CODE);
             }
+
+            @Test
+            void shouldFailWhenNewValidTillIsBeforeLastRunDate() {
+                final JsonObject json = commonValuesInUpdateRequest();
+                json.addProperty(validTillParamName, "16 May 2026");
+
+                Mockito.lenient().when(existingStandingInstruction.getLastRunDate())
+                        .thenReturn(LocalDate.of(2026, 5, 17));
+                assertValidation(json, validTillParamName,
+                    StandingInstructionApiConstants.CANNOT_BE_BEFORE_LAST_RUN_DATE_ERROR_CODE);
+            }
+
+            @Test
+            void shouldFailWhenRecurrenceTypeExistsButIsNull() {
+                final JsonObject json = commonValuesInUpdateRequest();
+                json.add(recurrenceTypeParamName, JsonNull.INSTANCE);
+
+                assertBlank(json, recurrenceTypeParamName);
+            }
+
+            @Test
+            void shouldFailWhenRecurrenceTypeHasInvalidValue() {
+                final JsonObject json = commonValuesInUpdateRequest();
+                json.addProperty(recurrenceTypeParamName, 3);
+
+                assertRange(json, recurrenceTypeParamName);
+            }
+
+            @Test
+            void shouldFailWhenNewRecurrenceTypeIsAsPerDues() {
+                final JsonObject json = commonValuesInUpdateRequest();
+                json.addProperty(recurrenceTypeParamName, 2);
+
+                assertValidation(json, recurrenceTypeParamName,
+                    StandingInstructionApiConstants.RECURRENCE_AS_PER_DUES_NOT_ALLOWED_FOR_SAVINGS_ERROR_CODE);
+            }
+
+
         }
     }
 
