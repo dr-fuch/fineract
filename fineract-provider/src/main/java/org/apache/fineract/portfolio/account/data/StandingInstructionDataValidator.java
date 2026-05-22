@@ -156,7 +156,8 @@ public class StandingInstructionDataValidator {
                         try {
                             monthDay = this.fromApiJsonHelper.extractMonthDayNamed(recurrenceOnMonthDayParamName, element);
                         } catch (Exception e) {
-                            baseDataValidator.reset().parameter(recurrenceOnMonthDayParamName).failWithCode("invalid.month.day.format");
+                            baseDataValidator.reset().parameter(recurrenceOnMonthDayParamName)
+                                .failWithCode(StandingInstructionApiConstants.INVALID_MONTH_DAY_FORMAT_ERROR_CODE);
                         }
                     }
                 }
@@ -164,7 +165,8 @@ public class StandingInstructionDataValidator {
                 if (areNotNullDates(validFrom, validTill)) {
                     LocalDate minValidTill = getMinValidTill(recurrenceFrequency, validFrom, recurrenceInterval, monthDay);
                     if (minValidTill != null && !validTill.isBefore(validFrom) && validTill.isBefore(minValidTill)) {
-                        baseDataValidator.reset().parameter(validTillParamName).value(validTill).failWithCode("must.not.be.before.first.execution.date");
+                        baseDataValidator.reset().parameter(validTillParamName).value(validTill)
+                            .failWithCode(StandingInstructionApiConstants.BEFORE_FIRST_EXECUTION_DATE_ERROR_CODE);
                     }
                 }
             }
@@ -177,17 +179,21 @@ public class StandingInstructionDataValidator {
         }
 
         if (isDuesInstruction(instructionType) && amount != null) {
-            baseDataValidator.reset().parameter(amountParamName).failWithCode("not.allowed.for.dues.instruction");
+            baseDataValidator.reset().parameter(amountParamName)
+                .failWithCode(StandingInstructionApiConstants.AMOUNT_NOT_ALLOWED_FOR_DUES_ERROR_CODE);
         }
         
         if (isAccountTransfer(transferType) && isDuesInstruction(instructionType)) {
-            baseDataValidator.reset().parameter(instructionTypeParamName).failWithCode("dues.not.allowed.for.account.transfer");
+            baseDataValidator.reset().parameter(instructionTypeParamName)
+                .failWithCode(StandingInstructionApiConstants.INSTRUCTION_TYPE_DUES_NOT_ALLOWED_FOR_ACCOUNT_TRANSFER_ERROR_CODE);
         }
         if (isAccountTransfer(transferType) && isAsPerDuesRecurrence(recurrenceType)) {
-            baseDataValidator.reset().parameter(recurrenceTypeParamName).failWithCode("as.per.dues.not.allowed.for.account.transfer");
+            baseDataValidator.reset().parameter(recurrenceTypeParamName)
+                .failWithCode(StandingInstructionApiConstants.RECURRENCE_AS_PER_DUES_NOT_ALLOWED_FOR_SAVINGS_ERROR_CODE);
         }
         if (isLoanRepayment(transferType) && isFixedInstruction(instructionType) && isAsPerDuesRecurrence(recurrenceType)) {
-            baseDataValidator.reset().parameter(recurrenceTypeParamName).failWithCode("as.per.dues.not.allowed.with.fixed.amount");
+            baseDataValidator.reset().parameter(recurrenceTypeParamName)
+                .failWithCode(StandingInstructionApiConstants.RECURRENCE_AS_PER_DUES_NOT_ALLOWED_WITH_FIXED_INSTRUCTION_ERROR_CODE);
         }
         
         final Integer fromAccountType = this.fromApiJsonHelper.extractIntegerSansLocaleNamed(fromAccountTypeParamName, element);
@@ -195,9 +201,9 @@ public class StandingInstructionDataValidator {
         if (fromAccountType != null && toAccountType != null) {
             String errorCode = null;
             if (isAccountTransfer(transferType) && (isLoanAccount(fromAccountType) || isLoanAccount(toAccountType))) {
-                errorCode = "account.transfer.is.not.allowed.for.loan.accounts";
+                errorCode = StandingInstructionApiConstants.ACCOUNT_TRANSFER_NOT_ALLOWED_FOR_LOAN_ERROR_CODE;
             } else if (isLoanRepayment(transferType) && (isLoanAccount(fromAccountType) || isSavingsAccount(toAccountType))) {
-                errorCode = "is.not.a.valid.loan.repayment";
+                errorCode = StandingInstructionApiConstants.NOT_A_VALID_LOAN_REPAYMENT_ERROR_CODE;
             }
 
             if (errorCode != null) {
@@ -211,7 +217,8 @@ public class StandingInstructionDataValidator {
                 final Long toAccountId = this.fromApiJsonHelper.extractLongNamed(toAccountIdParamName, element);
 
                 if (areEqualOfficesAndEqualAccounts(fromOfficeId, toOfficeId, fromAccountId, toAccountId)) {
-                    baseDataValidator.reset().parameter(toAccountIdParamName).failWithCode("transfer.to.same.account.not.allowed");
+                    baseDataValidator.reset().parameter(toAccountIdParamName)
+                        .failWithCode(StandingInstructionApiConstants.CANNOT_TRANSFER_TO_SAME_ACCOUNT_ERROR_CODE);
                 }
             }
         }
@@ -252,7 +259,8 @@ public class StandingInstructionDataValidator {
             instructionType = this.fromApiJsonHelper.extractIntegerNamed(instructionTypeParamName, element, Locale.getDefault());
             baseDataValidator.reset().parameter(instructionTypeParamName).value(instructionType).notNull().inMinMaxRange(1, 2);  
             if (isAccountTransfer(existingTransferType) && isDuesInstruction(instructionType)) {
-                baseDataValidator.reset().parameter(instructionTypeParamName).failWithCode("dues.not.allowed.for.account.transfer");
+                baseDataValidator.reset().parameter(instructionTypeParamName)
+                    .failWithCode(StandingInstructionApiConstants.INSTRUCTION_TYPE_DUES_NOT_ALLOWED_FOR_ACCOUNT_TRANSFER_ERROR_CODE);
             }
         }
 
@@ -288,10 +296,12 @@ public class StandingInstructionDataValidator {
             recurrenceType = this.fromApiJsonHelper.extractIntegerNamed(recurrenceTypeParamName, element, Locale.getDefault());
             baseDataValidator.reset().parameter(recurrenceTypeParamName).value(recurrenceType).notNull().inMinMaxRange(1, 2);          
             if (isAccountTransfer(existingTransferType) && isAsPerDuesRecurrence(recurrenceType)) {
-                baseDataValidator.reset().parameter(recurrenceTypeParamName).failWithCode("as.per.dues.not.allowed.for.account.transfer");
+                baseDataValidator.reset().parameter(recurrenceTypeParamName)
+                    .failWithCode(StandingInstructionApiConstants.RECURRENCE_AS_PER_DUES_NOT_ALLOWED_FOR_SAVINGS_ERROR_CODE);
             }
             if (isLoanRepayment(existingTransferType) && isFixedInstruction(instructionType) && isAsPerDuesRecurrence(recurrenceType)){
-                baseDataValidator.reset().parameter(recurrenceTypeParamName).failWithCode("as.per.dues.not.allowed.with.fixed.amount");
+                baseDataValidator.reset().parameter(recurrenceTypeParamName)
+                    .failWithCode(StandingInstructionApiConstants.RECURRENCE_AS_PER_DUES_NOT_ALLOWED_WITH_FIXED_INSTRUCTION_ERROR_CODE);
             }
         }
 
@@ -302,7 +312,8 @@ public class StandingInstructionDataValidator {
             }
             
             if (isDuesInstruction(instructionType) && amount != null) {
-                baseDataValidator.reset().parameter(amountParamName).failWithCode("not.allowed.for.dues.instruction");
+                baseDataValidator.reset().parameter(amountParamName)
+                    .failWithCode(StandingInstructionApiConstants.AMOUNT_NOT_ALLOWED_FOR_DUES_ERROR_CODE);
             }
         }
 
@@ -339,7 +350,8 @@ public class StandingInstructionDataValidator {
                             try {
                                 monthDay = this.fromApiJsonHelper.extractMonthDayNamed(recurrenceOnMonthDayParamName, element);
                             } catch (Exception e) {
-                                baseDataValidator.reset().parameter(recurrenceOnMonthDayParamName).failWithCode("invalid.month.day.format");
+                                baseDataValidator.reset().parameter(recurrenceOnMonthDayParamName)
+                                    .failWithCode(StandingInstructionApiConstants.INVALID_MONTH_DAY_FORMAT_ERROR_CODE);
                             }
                         }
                     }
@@ -348,7 +360,8 @@ public class StandingInstructionDataValidator {
                 if (areNotNullDates(validFrom, validTill)) {
                     LocalDate minValidTill = getMinValidTill(recurrenceFrequency, validFrom, recurrenceInterval, monthDay);
                     if (minValidTill != null && !validTill.isBefore(validFrom) && validTill.isBefore(minValidTill)) {
-                        baseDataValidator.reset().parameter(validTillParamName).value(validTill).failWithCode("must.not.be.before.first.execution.date");
+                        baseDataValidator.reset().parameter(validTillParamName).value(validTill)
+                            .failWithCode(StandingInstructionApiConstants.BEFORE_FIRST_EXECUTION_DATE_ERROR_CODE);
                     }
                 }
             }
