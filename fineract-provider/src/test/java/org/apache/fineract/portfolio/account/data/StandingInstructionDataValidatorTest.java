@@ -56,6 +56,7 @@ public class StandingInstructionDataValidatorTest {
     private static final String CANNOT_BE_BLANK_ERROR_CODE = "cannot.be.blank";
     private static final String OUT_OF_RANGE_ERROR_CODE = "is.not.within.expected.range";
     private static final String DATE_IS_BEFORE_ERROR_CODE = "is.less.than.date";
+    private static final String NOT_GREATER_THAN_ZERO_ERROR_CODE = "not.greater.than.zero";
     private static final String INVALID_MONTH_DAY_FORMAT_ERROR_CODE = "invalid.month.day.format";
     private static final String BEFORE_FIRST_EXECUTION_DATE_ERROR_CODE = "must.not.be.before.first.execution.date";
     private static final String MUST_BE_GREATER_THAN_ZERO_ERROR_CODE = "not.greater.than.zero";
@@ -195,7 +196,7 @@ public class StandingInstructionDataValidatorTest {
                 final JsonObject json = createAccountTransferRequest();
                 json.addProperty(StandingInstructionApiConstants.recurrenceIntervalParamName, 0);
 
-                assertRange(json, StandingInstructionApiConstants.recurrenceIntervalParamName);
+                assertValidation(json, StandingInstructionApiConstants.recurrenceIntervalParamName, NOT_GREATER_THAN_ZERO_ERROR_CODE);
             }
 
             @Test
