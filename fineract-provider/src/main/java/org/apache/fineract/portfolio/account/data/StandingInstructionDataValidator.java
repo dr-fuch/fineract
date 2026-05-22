@@ -335,7 +335,7 @@ public class StandingInstructionDataValidator {
             LocalDate existingValidTill = existingStandingInstruction.getValidTill();
             if (validFrom != null && existingValidTill != null && validFrom.isAfter(existingValidTill)
                     && !this.fromApiJsonHelper.parameterExists(StandingInstructionApiConstants.validTillParamName, element)) {
-                baseDataValidator.reset().parameter(validFromParamName)
+                baseDataValidator.reset().parameter(StandingInstructionApiConstants.validFromParamName)
                     .failWithCode("must.be.before.existing.valid.till");
             }
         }
