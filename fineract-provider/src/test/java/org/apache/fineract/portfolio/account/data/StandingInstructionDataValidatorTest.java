@@ -91,7 +91,6 @@ public class StandingInstructionDataValidatorTest {
 
     @Nested
     class Common {
-
         @ParameterizedTest(name = "Is Create Mode: {0})")
         @ValueSource(booleans = { true, false })
         void shouldFailWhenRequestBodyIsNull(boolean mode) {
