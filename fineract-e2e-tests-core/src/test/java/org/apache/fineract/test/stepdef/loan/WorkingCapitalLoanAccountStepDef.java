@@ -33,6 +33,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -59,6 +60,7 @@ import org.apache.fineract.client.models.GetJournalEntriesTransactionIdResponse;
 import org.apache.fineract.client.models.GetWorkingCapitalLoanProductsProductIdResponse;
 import org.apache.fineract.client.models.GetWorkingCapitalLoanTransactionIdResponse;
 import org.apache.fineract.client.models.GetWorkingCapitalLoansLoanIdResponse;
+import org.apache.fineract.client.models.JournalEntryTransactionItem;
 import org.apache.fineract.client.models.LoanTransactionEnumData;
 import org.apache.fineract.client.models.PostAllowAttributeOverrides;
 import org.apache.fineract.client.models.PostClientsResponse;
@@ -75,10 +77,13 @@ import org.apache.fineract.client.models.PostWorkingCapitalLoansRequest;
 import org.apache.fineract.client.models.PostWorkingCapitalLoansResponse;
 import org.apache.fineract.client.models.ProjectedAmortizationScheduleData;
 import org.apache.fineract.client.models.ProjectedAmortizationSchedulePaymentData;
+import org.apache.fineract.client.models.PutWorkingCapitalLoansLoanIdRateRequest;
 import org.apache.fineract.client.models.PutWorkingCapitalLoansLoanIdRequest;
 import org.apache.fineract.client.models.PutWorkingCapitalLoansLoanIdResponse;
 import org.apache.fineract.client.models.WorkingCapitalLoanCommandTemplateData;
+import org.apache.fineract.client.models.WorkingCapitalLoanPeriodPaymentRateChangeData;
 import org.apache.fineract.test.data.LoanStatus;
+import org.apache.fineract.test.data.TransactionType;
 import org.apache.fineract.test.data.paymenttype.DefaultPaymentType;
 import org.apache.fineract.test.data.paymenttype.PaymentTypeResolver;
 import org.apache.fineract.test.data.workingcapitalproduct.DefaultWorkingCapitalLoanProduct;
@@ -92,6 +97,7 @@ import org.apache.fineract.test.helper.Utils;
 import org.apache.fineract.test.helper.WorkingCapitalScheduleMatcher;
 import org.apache.fineract.test.messaging.event.EventCheckHelper;
 import org.apache.fineract.test.stepdef.AbstractStepDef;
+import org.apache.fineract.test.stepdef.common.JournalEntriesStepDef;
 import org.apache.fineract.test.support.TestContextKey;
 import org.junit.jupiter.api.Assertions;
 
@@ -101,6 +107,7 @@ public class WorkingCapitalLoanAccountStepDef extends AbstractStepDef {
 
     private static final String DATE_FORMAT = "dd MMMM yyyy";
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern(DATE_FORMAT);
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(DATE_FORMAT);
     private static final Long NON_EXISTENT_LOAN_ID = 999_999_999L;
     private static final String WC_DISBURSE_CLASSIFICATION_ID = "wcDisburseClassificationId";
     private static final String WC_DISBURSE_CLASSIFICATION_CODE_NAME = "working_capital_loan_disbursement_classification";
@@ -117,6 +124,7 @@ public class WorkingCapitalLoanAccountStepDef extends AbstractStepDef {
     private final EventCheckHelper eventCheckHelper;
     private final PaymentTypeResolver paymentTypeResolver;
     private final BusinessDateHelper businessDateHelper;
+    private final JournalEntriesStepDef journalEntriesStepDef;
 
     @When("Admin creates a working capital loan with the following data:")
     public void createWorkingCapitalLoan(final DataTable table) {
@@ -327,6 +335,273 @@ public class WorkingCapitalLoanAccountStepDef extends AbstractStepDef {
         log.info("Verified working capital loan creation failed with missing mandatory fields");
     }
 
+    @Then("Creating a working capital loan with near breachId {long} on {string} will result with error")
+    public void createLoanWithInvalidNearBreachId(final long nearBreachId, final String submittedOnDate) {
+        final Long breachId = createBreachAndGetId();
+        final PostWorkingCapitalLoansRequest request = createWorkingCapitalLoanAccountDefaultRequest(submittedOnDate).breachId(breachId)
+                .nearBreachId(nearBreachId);
+
+        final CallFailedRuntimeException exception = fail(
+                () -> fineractClient.workingCapitalLoans().submitWorkingCapitalLoanApplication(request));
+        assertThat(exception.getDeveloperMessage())
+                .contains(String.format("Working Capital Near Breach with id %s was not found.", nearBreachId));
+        assertThat(exception.getStatus()).as("HTTP status").isEqualTo(404);
+    }
+
+    @Then("Admin creates working capital loan with breach override allowed with breach override and the following data:")
+    public void createLoanWithBreachOverrideAllowedWithBreach(final DataTable table) {
+        final List<List<String>> data = table.asLists();
+        final List<String> loanData = data.get(1);
+        final Long overrideBreachId = createBreachAndGetId();
+        createWorkingCapitalLoanAccountWithBreachNearBreachData(loanData, overrideBreachId, null);
+    }
+
+    @Then("Admin creates working capital loan with breach override allowed with breach and near breach override and the following data:")
+    public void createLoanWithBreachOverrideAllowedWithBreachAndNearBreachOverride(final DataTable table) {
+        final List<List<String>> data = table.asLists();
+        final List<String> loanData = data.get(1);
+        final Long overrideBreachId = createBreachAndGetId();
+        final Long overrideNearBreachId = createNearBreachAndGetId();
+        createWorkingCapitalLoanAccountWithBreachNearBreachData(loanData, overrideBreachId, overrideNearBreachId);
+    }
+
+    @Then("Admin creates working capital loan with {int} {string} breach override and the following data:")
+    public void createLoanWithBreachOverrideAllowedWithBreachOverrideData(int breachFrequency, String breachFrequencyType,
+            final DataTable table) {
+        final List<List<String>> data = table.asLists();
+        final List<String> loanData = data.get(1);
+        final Long overrideBreachId = createBreachOverrideAndGetId(breachFrequency, breachFrequencyType);
+        createWorkingCapitalLoanAccountWithBreachNearBreachData(loanData, overrideBreachId, null);
+    }
+
+    @Then("Admin creates working capital loan with {int} {string} breach and {int} {string} near breach override and the following data:")
+    public void createLoanWithBreachOverrideAllowedWithBreachAndNearBreachOverrideData(int breachFrequency, String breachFrequencyType,
+            int nearBreachFrequency, String nearBreachFrequencyType, final DataTable table) {
+        final List<List<String>> data = table.asLists();
+        final Long overrideBreachId = createBreachOverrideAndGetId(breachFrequency, breachFrequencyType);
+        final Long overrideNearBreachId = createNearBreachOverrideAndGetId(nearBreachFrequency, nearBreachFrequencyType);
+        createWorkingCapitalLoanAccountWithBreachNearBreachData(data.get(1), overrideBreachId, overrideNearBreachId);
+    }
+
+    @Then("Admin creates working capital loan with breach override allowed with {int} {string} breach and the following data:")
+    public void createLoanWithBreachOverrideAllowedWithBreachhData(final DataTable table, int breachFrequency, String breachFrequencyType,
+            int nearBreachFrequency, String nearBreachFrequencyType) {
+        final List<List<String>> data = table.asLists();
+        final Long overrideBreachId = createBreachOverrideAndGetId(breachFrequency, breachFrequencyType);
+        final Long overrideNearBreachId = createNearBreachOverrideAndGetId(nearBreachFrequency, nearBreachFrequencyType);
+        createWorkingCapitalLoanAccountWithBreachNearBreachData(data.get(1), overrideBreachId, overrideNearBreachId);
+    }
+
+    @Then("Admin creates working capital loan with breach override allowed with {int} {string} breach and {int} {string} near breach and the following data:")
+    public void createLoanWithBreachOverrideAllowedWithBreachAndNearBreachData(int breachFrequency, String breachFrequencyType,
+            int nearBreachFrequency, String nearBreachFrequencyType, final DataTable table) {
+        final List<List<String>> data = table.asLists();
+        final Long overrideBreachId = createBreachAndGetId(breachFrequency, breachFrequencyType);
+        final Long overrideNearBreachId = createNearBreachAndGetId(nearBreachFrequency, nearBreachFrequencyType);
+        createWorkingCapitalLoanAccountWithBreachNearBreachData(data.get(1), overrideBreachId, overrideNearBreachId);
+    }
+
+    @Then("Admin creates working capital loan with breach from WCLP while override is allowed and the following data:")
+    public void createLoanWithBreachFromWCLPOverrideAllowedData(DataTable table) {
+        final List<List<String>> data = table.asLists();
+        final List<String> loanData = data.get(1);
+
+        final String loanProduct = loanData.get(0);
+        final Long loanProductId = resolveLoanProductId(loanProduct);
+        final Long breachIdFromWCLP = getBreachIdFromWCLP(loanProductId);
+        testContext().set(TestContextKey.WORKING_CAPITAL_BREACH_ID, breachIdFromWCLP);
+
+        createWorkingCapitalLoanAccountWithBreachNearBreachData(loanData, breachIdFromWCLP, null);
+    }
+
+    @Then("Admin creates working capital loan with breach and near breach from WCLP while override is allowed and the following data:")
+    public void createLoanWithBreachNearBreachFromWCLPOverrideAllowedData(DataTable table) {
+        final List<List<String>> data = table.asLists();
+        final List<String> loanData = data.get(1);
+        final String loanProduct = loanData.get(0);
+        final Long loanProductId = resolveLoanProductId(loanProduct);
+
+        final Long breachIdFromWCLP = getBreachIdFromWCLP(loanProductId);
+        final Long nearBreachIdFromWCLP = getNearBreachIdFromWCLP(loanProductId);
+        testContext().set(TestContextKey.WORKING_CAPITAL_BREACH_ID, breachIdFromWCLP);
+        testContext().set(TestContextKey.WORKING_CAPITAL_NEAR_BREACH_ID, nearBreachIdFromWCLP);
+
+        createWorkingCapitalLoanAccountWithBreachNearBreachData(loanData, breachIdFromWCLP, nearBreachIdFromWCLP);
+    }
+
+    @Then("Admin creates working capital loan with with breach and near breach on {string} date")
+    public void createLoanWithBreachOverrideAllowedWithBreachAndNearBreachData(String submittedOnDate) {
+        final Long breachId = createBreachAndGetId();
+        final Long nearBreachId = createNearBreachAndGetId();
+
+        final PostWorkingCapitalLoansRequest loansRequest = createWorkingCapitalLoanAccountDefaultRequest(submittedOnDate)
+                .breachId(breachId).nearBreachId(nearBreachId);
+        createWorkingCapitalLoanAccount(loansRequest);
+    }
+
+    @Then("Verify working capital loan account has been created with correct breach data")
+    public void checkCreateWCLoanAccountBreachData() {
+        final Long breachId = testContext().get(TestContextKey.WORKING_CAPITAL_BREACH_ID);
+        checkCreateWCLoanAccountBreachData(breachId);
+    }
+
+    @Then("Verify working capital loan account has been created with correct breach data inherited from WCLP level")
+    public void checkCreateWCLoanAccountBreachDataFromWCLP() {
+        final PostWorkingCapitalLoansResponse loanResponse = testContext().get(TestContextKey.LOAN_CREATE_RESPONSE);
+        long loanId = loanResponse.getLoanId();
+
+        GetWorkingCapitalLoansLoanIdResponse loanProductResponse = fineractClient.workingCapitalLoans()
+                .retrieveWorkingCapitalLoanById(loanId);
+
+        final Long loanProductId = loanProductResponse.getProduct().getId();
+        final Long breachIdFromWCLP = getBreachIdFromWCLP(loanProductId);
+
+        checkCreateWCLoanAccountBreachData(breachIdFromWCLP);
+    }
+
+    @Then("Verify working capital loan account has been created with correct breach override data")
+    public void checkCreateWCLoanAccountBreachOverrideData() {
+        final Long breachIdFromWCLP = testContext().get(TestContextKey.WORKING_CAPITAL_BREACH_ID_OVERRIDE);
+        checkCreateWCLoanAccountBreachData(breachIdFromWCLP);
+    }
+
+    @Then("Verify working capital loan account has been created with correct breach and near breach data")
+    public void checkCreateWCLoanAccountBreachAndNearBreachData() {
+        final Long breachIdFromWCLP = testContext().get(TestContextKey.WORKING_CAPITAL_BREACH_ID);
+        final Long nearBreachIdFromWCLP = testContext().get(TestContextKey.WORKING_CAPITAL_NEAR_BREACH_ID);
+        checkCreateWCLoanAccountBreachNearBreachData(breachIdFromWCLP, nearBreachIdFromWCLP);
+    }
+
+    @Then("Verify working capital loan account has been created with correct breach and near breach override data")
+    public void checkCreateWCLoanAccountBreachAndNearBreachOverrideData() {
+        final Long breachIdFromWCLP = testContext().get(TestContextKey.WORKING_CAPITAL_BREACH_ID_OVERRIDE);
+        final Long nearBreachIdFromWCLP = testContext().get(TestContextKey.WORKING_CAPITAL_NEAR_BREACH_ID_OVERRIDE);
+        checkCreateWCLoanAccountBreachNearBreachData(breachIdFromWCLP, nearBreachIdFromWCLP);
+    }
+
+    @Then("Verify working capital loan account has been created with correct breach and near breach data inherited from WCLP level")
+    public void checkCreateWCLoanAccountBreachNearBreachDataFromWCLP() {
+        final PostWorkingCapitalLoansResponse loanResponse = testContext().get(TestContextKey.LOAN_CREATE_RESPONSE);
+        long loanId = loanResponse.getLoanId();
+
+        GetWorkingCapitalLoansLoanIdResponse loanProductResponse = fineractClient.workingCapitalLoans()
+                .retrieveWorkingCapitalLoanById(loanId);
+
+        final Long loanProductId = loanProductResponse.getProduct().getId();
+        final Long breachIdFromWCLP = getBreachIdFromWCLP(loanProductId);
+        final Long nearBreachIdFromWCLP = getNearBreachIdFromWCLP(loanProductId);
+
+        checkCreateWCLoanAccountBreachNearBreachData(breachIdFromWCLP, nearBreachIdFromWCLP);
+    }
+
+    @Then("Verify working capital loan account has been created with none breach nor near breach data")
+    public void checkCreateWCLoanAccountNoneBreachNearBreachData() {
+        final PostWorkingCapitalLoansResponse loanResponse = testContext().get(TestContextKey.LOAN_CREATE_RESPONSE);
+        Long loanId = loanResponse.getLoanId();
+
+        final GetWorkingCapitalLoansLoanIdResponse loanAccountResponse = retrieveLoanDetails(loanId);
+        assertThat(loanAccountResponse.getBreach()).isNull();
+        assertThat(loanAccountResponse.getNearBreach()).isNull();
+    }
+
+    @Then("Admin failed to create working capital loan while breach override disallowed with breach override and the following data:")
+    public void createLoanWithBreachOverrideDisallowedWithBreachFailure(final DataTable table) {
+        final List<List<String>> data = table.asLists();
+        final List<String> loanData = data.get(1);
+        final Long overrideBreachId = createBreachOverrideAndGetId();
+
+        final PostWorkingCapitalLoansRequest loansRequest = createWorkingCapitalLoanAccountWithBreachNearBreachRequest(loanData,
+                overrideBreachId, null);
+        String message = ErrorMessageHelper.overrideDisallowedByProductFailure();
+        verifyCreateWorkingCapitalLoanAccountFailure(loansRequest, 400, message);
+    }
+
+    @Then("Admin failed to create working capital loan while breach override disallowed with breach override and default following data:")
+    public void createLoanWithBreachOverrideDisallowedWithBreachDefaultFailure(final DataTable table) {
+        final List<String> loanData = table.asLists().get(1);
+        final String loanProduct = loanData.get(0);
+        final String submittedOnDate = loanData.get(1);
+
+        final Long overrideBreachId = createBreachOverrideAndGetId();
+        final PostWorkingCapitalLoansRequest loansRequest = createWorkingCapitalLoanAccountDefaultRequest(loanProduct, submittedOnDate)
+                .breachId(overrideBreachId);
+        String message = ErrorMessageHelper.overrideDisallowedByProductFailure();
+        verifyCreateWorkingCapitalLoanAccountFailure(loansRequest, 400, message);
+    }
+
+    @Then("Admin failed to create working capital loan while breach override disallowed with breach and near breach override and the following data:")
+    public void createLoanWithBreachOverrideDisallowedWithBreachAndNearBreachFailure(final DataTable table) {
+        final List<List<String>> data = table.asLists();
+        final List<String> loanData = data.get(1);
+        final Long overrideBreachId = createBreachOverrideAndGetId();
+        final Long overrideNearBreachId = createNearBreachOverrideAndGetId();
+
+        final PostWorkingCapitalLoansRequest loansRequest = createWorkingCapitalLoanAccountWithBreachNearBreachRequest(loanData,
+                overrideBreachId, overrideNearBreachId);
+        String message = ErrorMessageHelper.overrideDisallowedByProductFailure();
+        verifyCreateWorkingCapitalLoanAccountFailure(loansRequest, 400, message);
+    }
+
+    @Then("Admin failed to create working capital loan while breach override disallowed with breach and near breach override and default following data:")
+    public void createLoanWithBreachOverrideDisallowedWithBreachAndNearBreachDefaultFailure(final DataTable table) {
+        final List<List<String>> data = table.asLists();
+        final List<String> loanData = data.get(1);
+        final String loanProduct = loanData.get(0);
+        final String submittedOnDate = loanData.get(1);
+
+        final Long overrideBreachId = createBreachOverrideAndGetId();
+        final Long overrideNearBreachId = createNearBreachOverrideAndGetId();
+
+        final PostWorkingCapitalLoansRequest loansRequest = createWorkingCapitalLoanAccountDefaultRequest(loanProduct, submittedOnDate)
+                .breachId(overrideBreachId).nearBreachId(overrideNearBreachId);
+
+        String message = ErrorMessageHelper.overrideDisallowedByProductFailure();
+        verifyCreateWorkingCapitalLoanAccountFailure(loansRequest, 400, message);
+    }
+
+    @Then("Admin failed to create WC loan account on {string} with breach {int} {string} frequency lower then near breach {int} {string} frequency")
+    public void createLoanWithBreachLowerThenNearBreachFailure(String submittedOnDate, int breachFrequency, String breachFrequencyType,
+            int nearBreachFrequency, String nearBreachFrequencyType) {
+        final Long breachId = createBreachAndGetId(breachFrequency, breachFrequencyType);
+        final Long nearBreachId = createNearBreachAndGetId(nearBreachFrequency, nearBreachFrequencyType);
+
+        final PostWorkingCapitalLoansRequest loansRequest = createWorkingCapitalLoanAccountDefaultRequest(submittedOnDate)
+                .breachId(breachId).nearBreachId(nearBreachId);
+        String message = ErrorMessageHelper.nearBreachMustBeLowerThenBreachFailure();
+        verifyCreateWorkingCapitalLoanAccountFailure(loansRequest, 400, message);
+    }
+
+    @Then("Admin failed to create WC loan account on {string} without breach, but with near breach")
+    public void createLoanWithoutBreachButWithNearBreachFailure(String submittedOnDate) {
+        final Long nearBreachId = createNearBreachAndGetId();
+
+        final PostWorkingCapitalLoansRequest loansRequest = createWorkingCapitalLoanAccountDefaultRequest(submittedOnDate)
+                .nearBreachId(nearBreachId);
+        String message = ErrorMessageHelper.nearBreachCannotEnableWithoutBreachFailure();
+        verifyCreateWorkingCapitalLoanAccountFailure(loansRequest, 400, message);
+    }
+
+    @When("Admin failed to create Working Capital on {string} with period payment rate {string} value and outcomes with {} error message")
+    public void adminAddWorkingCapitalPeriodPaymentRateInvalidDataFailure(String submittedOnDate, final String periodPaymentRate,
+            final String errorMessage) {
+        final PostWorkingCapitalLoansRequest loansRequest = createWorkingCapitalLoanAccountDefaultRequest(submittedOnDate)
+                .periodPaymentRate(new BigDecimal(periodPaymentRate));
+        verifyCreateWorkingCapitalLoanAccountFailure(loansRequest, 400, errorMessage);
+    }
+
+    @When("Admin failed to create Working Capital with period payment rate {string} value and outcomes with {} error message with default following data:")
+    public void createWorkingCapitalWithPeriodPaymentRateInvalidDataFailure(final String periodPaymentRate, final String errorMessage,
+            final DataTable table) {
+        final List<List<String>> data = table.asLists();
+        final List<String> loanData = data.get(1);
+        final String loanProduct = loanData.get(0);
+        final String submittedOnDate = loanData.get(1);
+
+        final PostWorkingCapitalLoansRequest loansRequest = createWorkingCapitalLoanAccountDefaultRequest(loanProduct, submittedOnDate)
+                .periodPaymentRate(new BigDecimal(periodPaymentRate));
+        verifyCreateWorkingCapitalLoanAccountFailure(loansRequest, 400, errorMessage);
+    }
+
     @When("Admin modifies the working capital loan with the following data:")
     public void modifyWorkingCapitalLoan(final DataTable table) {
         final List<List<String>> data = table.asLists();
@@ -469,6 +744,13 @@ public class WorkingCapitalLoanAccountStepDef extends AbstractStepDef {
                 .nearBreachId(nearBreachId); //
         String errorMessage = ErrorMessageHelper.nearBreachIdNotFoundFailure(nearBreachId);
         verifyModifyWorkingCapitalLoanAccountFailure(modifyRequest, 404, errorMessage);
+    }
+
+    @Then("Admin failed to modify WC loan account with period payment rate {string} value and outcomes with {} error message")
+    public void modifyLoanWithInvalidPeriodPaymentRateFailure(String periodPaymentRate, String errorMessage) {
+        final PutWorkingCapitalLoansLoanIdRequest modifyRequest = workingCapitalLoanRequestFactory.defaultModifyWorkingCapitalLoansRequest() //
+                .periodPaymentRate(new BigDecimal(periodPaymentRate));//
+        verifyModifyWorkingCapitalLoanAccountFailure(modifyRequest, 400, errorMessage);
     }
 
     @When("Admin deletes the working capital loan account")
@@ -651,6 +933,23 @@ public class WorkingCapitalLoanAccountStepDef extends AbstractStepDef {
         log.info("Verified working capital loan approval failed with expected error");
     }
 
+    @When("Admin failed to approve the working capital loan on {string} with {string} amount and expected disbursement date on {string} with {string} exceeded product discount amount")
+    public void approveWorkingCapitalLoanWithExceededProductDiscountFailure(final String approveDate, final String approvedAmount,
+            final String expectedDisbursementDate, final String discountAmount) {
+        final PostWorkingCapitalLoansLoanIdRequest approveRequest = workingCapitalLoanRequestFactory
+                .defaultWorkingCapitalLoanApproveRequest()//
+                .approvedOnDate(approveDate)//
+                .approvedLoanAmount(new BigDecimal(approvedAmount))//
+                .discountAmount(new BigDecimal(discountAmount))//
+                .expectedDisbursementDate(expectedDisbursementDate);//
+
+        final CallFailedRuntimeException exception = fail(() -> fineractClient.workingCapitalLoans()
+                .stateTransitionWorkingCapitalLoanById(getCreatedLoanId(), "approve", approveRequest));
+
+        assertThat(exception.getStatus()).as(ErrorMessageHelper.discountExceedProductDiscountFailure()).isEqualTo(400);
+        assertThat(exception.getDeveloperMessage()).contains(ErrorMessageHelper.discountExceedProductDiscountFailure());
+    }
+
     @When("Admin failed to approve the working capital loan on {string} with {string} amount and expected disbursement date on {string} with {string} exceeded discount amount")
     public void approveWorkingCapitalLoanWithExceededDiscountFailure(final String approveDate, final String approvedAmount,
             final String expectedDisbursementDate, final String discountAmount) {
@@ -818,7 +1117,14 @@ public class WorkingCapitalLoanAccountStepDef extends AbstractStepDef {
     @When("Admin failed to disburse the working capital loan on {string} with {string} amount with {string} exceeded discount amount")
     public void disburseWorkingCapitalLoanWithExceededDiscountFailure(String actualDisbursementDate, String transactionAmount,
             String discountAmount) {
-        String errorMessage = ErrorMessageHelper.discountAmountExceedFailure();
+        String errorMessage = ErrorMessageHelper.discountAmountExceedApprovedFailure();
+        disburseWorkingCapitalLoanFailure(actualDisbursementDate, transactionAmount, discountAmount, errorMessage);
+    }
+
+    @When("Admin failed to disburse the working capital loan on {string} with {string} amount with {string} exceeded product discount amount")
+    public void disburseWorkingCapitalLoanWithExceededProductDiscountFailure(String actualDisbursementDate, String transactionAmount,
+            String discountAmount) {
+        String errorMessage = ErrorMessageHelper.discountExceedProductDiscountFailure();
         disburseWorkingCapitalLoanFailure(actualDisbursementDate, transactionAmount, discountAmount, errorMessage);
     }
 
@@ -997,6 +1303,111 @@ public class WorkingCapitalLoanAccountStepDef extends AbstractStepDef {
         assertTable(GetWorkingCapitalLoanTransactionIdResponse.class, dataTable, actualTransactions);
     }
 
+    @Then("Admin successfully update discount with {string} amount on Working Capital loan account")
+    public void adminSuccessfullyUpdateDiscountWithAmountOnWorkingCapitalLoanAccount(String discountAmount) {
+        PostWorkingCapitalLoansLoanIdResponse lastDisbursementResponse = testContext().get(TestContextKey.LOAN_DISBURSE_RESPONSE);
+        final PostWorkingCapitalLoansLoanIdRequest request = workingCapitalLoanRequestFactory.defaultWorkingCapitalLoanDiscountFeeRequest() //
+                .relatedResourceId(lastDisbursementResponse.getResourceId()).transactionAmount(new BigDecimal(discountAmount));
+        executeStateTransition("DISCOUNTFEE", request, "DISCOUNT", false);
+    }
+
+    @Then("Update discount with {string} amount on Working Capital loan account failed due to date diff from disbursement date")
+    public void updateDiscountWithAmountOnWorkingCapitalLoanAccountFailedDueToDateDiffFromDisbursementDate(String discountAmount) {
+        String errorMessage = ErrorMessageHelper.discountDiffDateFromDisburseFailure();
+        addDiscountFeeFailedCheck(discountAmount, errorMessage);
+    }
+
+    @Then("Add discount with {string} amount on Working Capital loan account failed due to already added discount before disbursement")
+    public void addDiscountWithAmountOnWorkingCapitalLoanAccountFailedDueToAlreadyAddedDiscountBeforeDisbursement(String discountAmount) {
+        String errorMessage = ErrorMessageHelper.discountAlreadySetBeforeDisburseFailure();
+        addDiscountFeeFailedCheck(discountAmount, errorMessage);
+    }
+
+    @Then("Update discount with {string} amount on Working Capital loan account failed due to override disallowed by product")
+    public void updateDiscountWithAmountOnWorkingCapitalLoanAccountFailedDueToOverrideDisallowedByProduct(String discountAmount) {
+        String errorMessage = ErrorMessageHelper.overrideDisallowedByProductFailure();
+        addDiscountFeeFailedCheck(discountAmount, errorMessage);
+    }
+
+    @Then("Update discount with {string} amount on Working Capital loan account failed due to exceed discount amount")
+    public void updateDiscountWithAmountOnWorkingCapitalLoanAccountFailedDueToExceedDiscountAmount(String discountAmount) {
+        String errorMessage = ErrorMessageHelper.discountExceedProductDiscountFailure();
+        addDiscountFeeFailedCheck(discountAmount, errorMessage);
+    }
+
+    @When("Admin update Working Capital period payment rate with {string} value")
+    public void adminAddWorkingCapitalPeriodPaymentRate(String periodPaymentRate) {
+        final PostWorkingCapitalLoansResponse loanResponse = testContext().get(TestContextKey.LOAN_CREATE_RESPONSE);
+        long loanId = loanResponse.getLoanId();
+
+        PutWorkingCapitalLoansLoanIdRateRequest rateChangeRequest = workingCapitalLoanRequestFactory
+                .defaultWorkingCapitalLoanUpdateRateRequest().periodPaymentRate(new BigDecimal(periodPaymentRate));
+
+        final CommandProcessingResult rateChangeResponse = ok(
+                () -> fineractClient.workingCapitalLoans().updateWorkingCapitalLoanRateById(loanId, rateChangeRequest));
+        final Long rateChangeId = rateChangeResponse.getResourceId();
+
+        testContext().set(TestContextKey.WORKING_CAPITAL_LOAN_RATE_CHANGE_ID, rateChangeId);
+        assertThat(rateChangeResponse.getChanges()).isNotNull();
+        checkWorkingCapitalPeriodPaymentRate(loanId, periodPaymentRate);
+    }
+
+    @When("Admin update Working Capital period payment rate with {string} value by externalId")
+    public void adminAddWorkingCapitalPeriodPaymentRateByExternalId(String periodPaymentRate) {
+        final Long loanId = getCreatedLoanId();
+        final String externalId = retrieveLoanExternalId(loanId);
+
+        PutWorkingCapitalLoansLoanIdRateRequest rateChangeRequest = workingCapitalLoanRequestFactory
+                .defaultWorkingCapitalLoanUpdateRateRequest().periodPaymentRate(new BigDecimal(periodPaymentRate));
+
+        final CommandProcessingResult rateChangeResponse = ok(
+                () -> fineractClient.workingCapitalLoans().updateWorkingCapitalLoanRateByExternalId(externalId, rateChangeRequest));
+        final Long rateChangeId = rateChangeResponse.getResourceId();
+
+        testContext().set(TestContextKey.WORKING_CAPITAL_LOAN_RATE_CHANGE_ID, rateChangeId);
+        assertThat(rateChangeResponse.getChanges()).isNotNull();
+        checkWorkingCapitalPeriodPaymentRate(loanId, periodPaymentRate);
+    }
+
+    @When("Admin update Working Capital period payment rate failed with {string} value on non active loan")
+    public void adminAddWorkingCapitalPeriodPaymentRateNonActiveLoanFailure(final String periodPaymentRate) {
+        String errorMessage = ErrorMessageHelper.periodPaymentRateOnNonActiveLoanFailure();
+        updatePeriodPaymentRateFailed(periodPaymentRate, errorMessage);
+    }
+
+    @When("Admin update Working Capital period payment rate failed with {string} value with {} error message")
+    public void adminAddWorkingCapitalPeriodPaymentRateInvalidDataFailure(final String periodPaymentRate, final String errorMessage) {
+        updatePeriodPaymentRateFailed(periodPaymentRate, errorMessage);
+    }
+
+    @When("Working Capital Loan Period Payment Rate changes history contains the following data:")
+    public void adminChecksWorkingCapitalPeriodPaymentRateChangesHistory(DataTable table) {
+        PostWorkingCapitalLoansResponse loanCreateResponse = testContext().get(TestContextKey.LOAN_CREATE_RESPONSE);
+        long loanId = loanCreateResponse.getLoanId();
+        String resourceId = String.valueOf(loanId);
+
+        List<WorkingCapitalLoanPeriodPaymentRateChangeData> rateChangesResponse = ok(
+                () -> fineractClient.workingCapitalLoans().getWorkingCapitalLoanRateChangeHistoryById(loanId));
+
+        List<List<String>> data = table.asLists();
+        List<String> header = table.row(0);
+        checkPeriodPaymentRateChangeHistory(data, rateChangesResponse, header, resourceId);
+    }
+
+    @When("Working Capital Loan Period Payment Rate changes history by externalId contains the following data:")
+    public void adminChecksWorkingCapitalPeriodPaymentRateChangesHistoryByExternalId(DataTable table) {
+        final Long loanId = getCreatedLoanId();
+        String resourceId = String.valueOf(loanId);
+        final String externalId = retrieveLoanExternalId(loanId);
+
+        List<WorkingCapitalLoanPeriodPaymentRateChangeData> rateChangesResponse = ok(
+                () -> fineractClient.workingCapitalLoans().getWorkingCapitalLoanRateChangeHistoryByExternalId(externalId));
+
+        List<List<String>> data = table.asLists();
+        List<String> header = table.row(0);
+        checkPeriodPaymentRateChangeHistory(data, rateChangesResponse, header, resourceId);
+    }
+
     // ====================================
     // Private Helper Methods
     // ====================================
@@ -1146,9 +1557,16 @@ public class WorkingCapitalLoanAccountStepDef extends AbstractStepDef {
                         : new Utils.DoubleFormatter(response.getPeriodPaymentRate().doubleValue()).format());
                 case "discount" -> actualValues.add(
                         response.getDiscount() == null ? "null" : new Utils.DoubleFormatter(response.getDiscount().doubleValue()).format());
+                case "discountProposed" -> actualValues.add(response.getDiscountProposed() == null ? "null"
+                        : new Utils.DoubleFormatter(response.getDiscountProposed().doubleValue()).format());
+                case "discountApproved" -> actualValues.add(response.getDiscountApproved() == null ? "null"
+                        : new Utils.DoubleFormatter(response.getDiscountApproved().doubleValue()).format());
                 case "totalPaidPrincipal" ->
                     actualValues.add(response.getBalance() == null || response.getBalance().getTotalPaidPrincipal() == null ? null
                             : new Utils.DoubleFormatter(response.getBalance().getTotalPaidPrincipal().doubleValue()).format());
+                case "overpaymentAmount" ->
+                    actualValues.add(response.getBalance() == null || response.getBalance().getOverpaymentAmount() == null ? null
+                            : new Utils.DoubleFormatter(response.getBalance().getOverpaymentAmount().doubleValue()).format());
                 case "realizedIncome" ->
                     actualValues.add(response.getBalance() == null || response.getBalance().getRealizedIncome() == null ? null
                             : new Utils.DoubleFormatter(response.getBalance().getRealizedIncome().doubleValue()).format());
@@ -1477,116 +1895,12 @@ public class WorkingCapitalLoanAccountStepDef extends AbstractStepDef {
         assertThat(exception.getStatus()).as("HTTP status").isEqualTo(expectedStatus);
     }
 
-    @Then("Creating a working capital loan with near breachId {long} on {string} will result with error")
-    public void createLoanWithInvalidNearBreachId(final long nearBreachId, final String submittedOnDate) {
-        final Long breachId = createBreachAndGetId();
-        final PostWorkingCapitalLoansRequest request = createWorkingCapitalLoanAccountDefaultRequest(submittedOnDate).breachId(breachId)
-                .nearBreachId(nearBreachId);
-
-        final CallFailedRuntimeException exception = fail(
-                () -> fineractClient.workingCapitalLoans().submitWorkingCapitalLoanApplication(request));
-        assertThat(exception.getDeveloperMessage())
-                .contains(String.format("Working Capital Near Breach with id %s was not found.", nearBreachId));
-        assertThat(exception.getStatus()).as("HTTP status").isEqualTo(404);
-    }
-
-    @Then("Admin creates working capital loan with breach override allowed with breach override and the following data:")
-    public void createLoanWithBreachOverrideAllowedWithBreach(final DataTable table) {
-        final List<List<String>> data = table.asLists();
-        final List<String> loanData = data.get(1);
-        final Long overrideBreachId = createBreachAndGetId();
-        createWorkingCapitalLoanAccountWithBreachNearBreachData(loanData, overrideBreachId, null);
-    }
-
-    @Then("Admin creates working capital loan with breach override allowed with breach and near breach override and the following data:")
-    public void createLoanWithBreachOverrideAllowedWithBreachAndNearBreachOverride(final DataTable table) {
-        final List<List<String>> data = table.asLists();
-        final List<String> loanData = data.get(1);
-        final Long overrideBreachId = createBreachAndGetId();
-        final Long overrideNearBreachId = createNearBreachAndGetId();
-        createWorkingCapitalLoanAccountWithBreachNearBreachData(loanData, overrideBreachId, overrideNearBreachId);
-    }
-
-    @Then("Admin creates working capital loan with {int} {string} breach override and the following data:")
-    public void createLoanWithBreachOverrideAllowedWithBreachOverrideData(int breachFrequency, String breachFrequencyType,
-            final DataTable table) {
-        final List<List<String>> data = table.asLists();
-        final List<String> loanData = data.get(1);
-        final Long overrideBreachId = createBreachOverrideAndGetId(breachFrequency, breachFrequencyType);
-        createWorkingCapitalLoanAccountWithBreachNearBreachData(loanData, overrideBreachId, null);
-    }
-
-    @Then("Admin creates working capital loan with {int} {string} breach and {int} {string} near breach override and the following data:")
-    public void createLoanWithBreachOverrideAllowedWithBreachAndNearBreachOverrideData(int breachFrequency, String breachFrequencyType,
-            int nearBreachFrequency, String nearBreachFrequencyType, final DataTable table) {
-        final List<List<String>> data = table.asLists();
-        final Long overrideBreachId = createBreachOverrideAndGetId(breachFrequency, breachFrequencyType);
-        final Long overrideNearBreachId = createNearBreachOverrideAndGetId(nearBreachFrequency, nearBreachFrequencyType);
-        createWorkingCapitalLoanAccountWithBreachNearBreachData(data.get(1), overrideBreachId, overrideNearBreachId);
-    }
-
-    @Then("Admin creates working capital loan with breach override allowed with {int} {string} breach and the following data:")
-    public void createLoanWithBreachOverrideAllowedWithBreachhData(final DataTable table, int breachFrequency, String breachFrequencyType,
-            int nearBreachFrequency, String nearBreachFrequencyType) {
-        final List<List<String>> data = table.asLists();
-        final Long overrideBreachId = createBreachOverrideAndGetId(breachFrequency, breachFrequencyType);
-        final Long overrideNearBreachId = createNearBreachOverrideAndGetId(nearBreachFrequency, nearBreachFrequencyType);
-        createWorkingCapitalLoanAccountWithBreachNearBreachData(data.get(1), overrideBreachId, overrideNearBreachId);
-    }
-
-    @Then("Admin creates working capital loan with breach override allowed with {int} {string} breach and {int} {string} near breach and the following data:")
-    public void createLoanWithBreachOverrideAllowedWithBreachAndNearBreachData(int breachFrequency, String breachFrequencyType,
-            int nearBreachFrequency, String nearBreachFrequencyType, final DataTable table) {
-        final List<List<String>> data = table.asLists();
-        final Long overrideBreachId = createBreachAndGetId(breachFrequency, breachFrequencyType);
-        final Long overrideNearBreachId = createNearBreachAndGetId(nearBreachFrequency, nearBreachFrequencyType);
-        createWorkingCapitalLoanAccountWithBreachNearBreachData(data.get(1), overrideBreachId, overrideNearBreachId);
-    }
-
-    @Then("Admin creates working capital loan with breach from WCLP while override is allowed and the following data:")
-    public void createLoanWithBreachFromWCLPOverrideAllowedData(DataTable table) {
-        final List<List<String>> data = table.asLists();
-        final List<String> loanData = data.get(1);
-
-        final String loanProduct = loanData.get(0);
-        final Long loanProductId = resolveLoanProductId(loanProduct);
-        final Long breachIdFromWCLP = getBreachIdFromWCLP(loanProductId);
-        testContext().set(TestContextKey.WORKING_CAPITAL_BREACH_ID, breachIdFromWCLP);
-
-        createWorkingCapitalLoanAccountWithBreachNearBreachData(loanData, breachIdFromWCLP, null);
-    }
-
-    @Then("Admin creates working capital loan with breach and near breach from WCLP while override is allowed and the following data:")
-    public void createLoanWithBreachNearBreachFromWCLPOverrideAllowedData(DataTable table) {
-        final List<List<String>> data = table.asLists();
-        final List<String> loanData = data.get(1);
-        final String loanProduct = loanData.get(0);
-        final Long loanProductId = resolveLoanProductId(loanProduct);
-
-        final Long breachIdFromWCLP = getBreachIdFromWCLP(loanProductId);
-        final Long nearBreachIdFromWCLP = getNearBreachIdFromWCLP(loanProductId);
-        testContext().set(TestContextKey.WORKING_CAPITAL_BREACH_ID, breachIdFromWCLP);
-        testContext().set(TestContextKey.WORKING_CAPITAL_NEAR_BREACH_ID, nearBreachIdFromWCLP);
-
-        createWorkingCapitalLoanAccountWithBreachNearBreachData(loanData, breachIdFromWCLP, nearBreachIdFromWCLP);
-    }
-
     @Then("Admin creates working capital loan with with breach on {string} date")
     public void createLoanWithBreachOverrideAllowedWithBreachData(String submittedOnDate) {
         final Long breachId = createBreachAndGetId();
 
         final PostWorkingCapitalLoansRequest loansRequest = createWorkingCapitalLoanAccountDefaultRequest(submittedOnDate)
                 .breachId(breachId);
-        createWorkingCapitalLoanAccount(loansRequest);
-    }
-
-    @Then("Admin creates working capital loan with with breach and near breach on {string} date")
-    public void createLoanWithBreachOverrideAllowedWithBreachAndNearBreachData(String submittedOnDate) {
-        final Long breachId = createBreachAndGetId();
-        final Long nearBreachId = createNearBreachAndGetId();
-
-        final PostWorkingCapitalLoansRequest loansRequest = createWorkingCapitalLoanAccountDefaultRequest(submittedOnDate)
-                .breachId(breachId).nearBreachId(nearBreachId);
         createWorkingCapitalLoanAccount(loansRequest);
     }
 
@@ -1609,148 +1923,6 @@ public class WorkingCapitalLoanAccountStepDef extends AbstractStepDef {
         assert loanAccountResponse.getNearBreach() != null;
         assertThat(loanAccountResponse.getBreach().getId()).isEqualTo(breachId);
         assertThat(loanAccountResponse.getNearBreach().getId()).isEqualTo(nearBreachId);
-    }
-
-    @Then("Verify working capital loan account has been created with correct breach data")
-    public void checkCreateWCLoanAccountBreachData() {
-        final Long breachId = testContext().get(TestContextKey.WORKING_CAPITAL_BREACH_ID);
-        checkCreateWCLoanAccountBreachData(breachId);
-    }
-
-    @Then("Verify working capital loan account has been created with correct breach data inherited from WCLP level")
-    public void checkCreateWCLoanAccountBreachDataFromWCLP() {
-        final PostWorkingCapitalLoansResponse loanResponse = testContext().get(TestContextKey.LOAN_CREATE_RESPONSE);
-        long loanId = loanResponse.getLoanId();
-
-        GetWorkingCapitalLoansLoanIdResponse loanProductResponse = fineractClient.workingCapitalLoans()
-                .retrieveWorkingCapitalLoanById(loanId);
-
-        final Long loanProductId = loanProductResponse.getProduct().getId();
-        final Long breachIdFromWCLP = getBreachIdFromWCLP(loanProductId);
-
-        checkCreateWCLoanAccountBreachData(breachIdFromWCLP);
-    }
-
-    @Then("Verify working capital loan account has been created with correct breach override data")
-    public void checkCreateWCLoanAccountBreachOverrideData() {
-        final Long breachIdFromWCLP = testContext().get(TestContextKey.WORKING_CAPITAL_BREACH_ID_OVERRIDE);
-        checkCreateWCLoanAccountBreachData(breachIdFromWCLP);
-    }
-
-    @Then("Verify working capital loan account has been created with correct breach and near breach data")
-    public void checkCreateWCLoanAccountBreachAndNearBreachData() {
-        final Long breachIdFromWCLP = testContext().get(TestContextKey.WORKING_CAPITAL_BREACH_ID);
-        final Long nearBreachIdFromWCLP = testContext().get(TestContextKey.WORKING_CAPITAL_NEAR_BREACH_ID);
-        checkCreateWCLoanAccountBreachNearBreachData(breachIdFromWCLP, nearBreachIdFromWCLP);
-    }
-
-    @Then("Verify working capital loan account has been created with correct breach and near breach override data")
-    public void checkCreateWCLoanAccountBreachAndNearBreachOverrideData() {
-        final Long breachIdFromWCLP = testContext().get(TestContextKey.WORKING_CAPITAL_BREACH_ID_OVERRIDE);
-        final Long nearBreachIdFromWCLP = testContext().get(TestContextKey.WORKING_CAPITAL_NEAR_BREACH_ID_OVERRIDE);
-        checkCreateWCLoanAccountBreachNearBreachData(breachIdFromWCLP, nearBreachIdFromWCLP);
-    }
-
-    @Then("Verify working capital loan account has been created with correct breach and near breach data inherited from WCLP level")
-    public void checkCreateWCLoanAccountBreachNearBreachDataFromWCLP() {
-        final PostWorkingCapitalLoansResponse loanResponse = testContext().get(TestContextKey.LOAN_CREATE_RESPONSE);
-        long loanId = loanResponse.getLoanId();
-
-        GetWorkingCapitalLoansLoanIdResponse loanProductResponse = fineractClient.workingCapitalLoans()
-                .retrieveWorkingCapitalLoanById(loanId);
-
-        final Long loanProductId = loanProductResponse.getProduct().getId();
-        final Long breachIdFromWCLP = getBreachIdFromWCLP(loanProductId);
-        final Long nearBreachIdFromWCLP = getNearBreachIdFromWCLP(loanProductId);
-
-        checkCreateWCLoanAccountBreachNearBreachData(breachIdFromWCLP, nearBreachIdFromWCLP);
-    }
-
-    @Then("Verify working capital loan account has been created with none breach nor near breach data")
-    public void checkCreateWCLoanAccountNoneBreachNearBreachData() {
-        final PostWorkingCapitalLoansResponse loanResponse = testContext().get(TestContextKey.LOAN_CREATE_RESPONSE);
-        Long loanId = loanResponse.getLoanId();
-
-        final GetWorkingCapitalLoansLoanIdResponse loanAccountResponse = retrieveLoanDetails(loanId);
-        assertThat(loanAccountResponse.getBreach()).isNull();
-        assertThat(loanAccountResponse.getNearBreach()).isNull();
-    }
-
-    @Then("Admin failed to create working capital loan while breach override disallowed with breach override and the following data:")
-    public void createLoanWithBreachOverrideDisallowedWithBreachFailure(final DataTable table) {
-        final List<List<String>> data = table.asLists();
-        final List<String> loanData = data.get(1);
-        final Long overrideBreachId = createBreachOverrideAndGetId();
-
-        final PostWorkingCapitalLoansRequest loansRequest = createWorkingCapitalLoanAccountWithBreachNearBreachRequest(loanData,
-                overrideBreachId, null);
-        String message = ErrorMessageHelper.overrideDisallowedByProductFailure();
-        verifyCreateWorkingCapitalLoanAccountFailure(loansRequest, 400, message);
-    }
-
-    @Then("Admin failed to create working capital loan while breach override disallowed with breach override and default following data:")
-    public void createLoanWithBreachOverrideDisallowedWithBreachDefaultFailure(final DataTable table) {
-        final List<String> loanData = table.asLists().get(1);
-        final String loanProduct = loanData.get(0);
-        final String submittedOnDate = loanData.get(1);
-
-        final Long overrideBreachId = createBreachOverrideAndGetId();
-        final PostWorkingCapitalLoansRequest loansRequest = createWorkingCapitalLoanAccountDefaultRequest(loanProduct, submittedOnDate)
-                .breachId(overrideBreachId);
-        String message = ErrorMessageHelper.overrideDisallowedByProductFailure();
-        verifyCreateWorkingCapitalLoanAccountFailure(loansRequest, 400, message);
-    }
-
-    @Then("Admin failed to create working capital loan while breach override disallowed with breach and near breach override and the following data:")
-    public void createLoanWithBreachOverrideDisallowedWithBreachAndNearBreachFailure(final DataTable table) {
-        final List<List<String>> data = table.asLists();
-        final List<String> loanData = data.get(1);
-        final Long overrideBreachId = createBreachOverrideAndGetId();
-        final Long overrideNearBreachId = createNearBreachOverrideAndGetId();
-
-        final PostWorkingCapitalLoansRequest loansRequest = createWorkingCapitalLoanAccountWithBreachNearBreachRequest(loanData,
-                overrideBreachId, overrideNearBreachId);
-        String message = ErrorMessageHelper.overrideDisallowedByProductFailure();
-        verifyCreateWorkingCapitalLoanAccountFailure(loansRequest, 400, message);
-    }
-
-    @Then("Admin failed to create working capital loan while breach override disallowed with breach and near breach override and default following data:")
-    public void createLoanWithBreachOverrideDisallowedWithBreachAndNearBreachDefaultFailure(final DataTable table) {
-        final List<List<String>> data = table.asLists();
-        final List<String> loanData = data.get(1);
-        final String loanProduct = loanData.get(0);
-        final String submittedOnDate = loanData.get(1);
-
-        final Long overrideBreachId = createBreachOverrideAndGetId();
-        final Long overrideNearBreachId = createNearBreachOverrideAndGetId();
-
-        final PostWorkingCapitalLoansRequest loansRequest = createWorkingCapitalLoanAccountDefaultRequest(loanProduct, submittedOnDate)
-                .breachId(overrideBreachId).nearBreachId(overrideNearBreachId);
-
-        String message = ErrorMessageHelper.overrideDisallowedByProductFailure();
-        verifyCreateWorkingCapitalLoanAccountFailure(loansRequest, 400, message);
-    }
-
-    @Then("Admin failed to create WC loan account on {string} with breach {int} {string} frequency lower then near breach {int} {string} frequency")
-    public void createLoanWithBreachLowerThenNearBreachFailure(String submittedOnDate, int breachFrequency, String breachFrequencyType,
-            int nearBreachFrequency, String nearBreachFrequencyType) {
-        final Long breachId = createBreachAndGetId(breachFrequency, breachFrequencyType);
-        final Long nearBreachId = createNearBreachAndGetId(nearBreachFrequency, nearBreachFrequencyType);
-
-        final PostWorkingCapitalLoansRequest loansRequest = createWorkingCapitalLoanAccountDefaultRequest(submittedOnDate)
-                .breachId(breachId).nearBreachId(nearBreachId);
-        String message = ErrorMessageHelper.nearBreachMustBeLowerThenBreachFailure();
-        verifyCreateWorkingCapitalLoanAccountFailure(loansRequest, 400, message);
-    }
-
-    @Then("Admin failed to create WC loan account on {string} without breach, but with near breach")
-    public void createLoanWithoutBreachButWithNearBreachFailure(String submittedOnDate) {
-        final Long nearBreachId = createNearBreachAndGetId();
-
-        final PostWorkingCapitalLoansRequest loansRequest = createWorkingCapitalLoanAccountDefaultRequest(submittedOnDate)
-                .nearBreachId(nearBreachId);
-        String message = ErrorMessageHelper.nearBreachCannotEnableWithoutBreachFailure();
-        verifyCreateWorkingCapitalLoanAccountFailure(loansRequest, 400, message);
     }
 
     public PostWorkingCapitalLoansRequest createWorkingCapitalLoanAccountDefaultRequest(String submittedOnDate) {
@@ -1927,9 +2099,18 @@ public class WorkingCapitalLoanAccountStepDef extends AbstractStepDef {
 
     @Then("Customer makes repayment on {string} with {double} transaction amount on Working Capital loan")
     public void makeWorkingCapitalLoanRepayment(final String transactionDate, final double transactionAmount) {
+        makeWorkingCapitalLoanRepaymentLike("REPAYMENT", transactionDate, transactionAmount);
+    }
+
+    @Then("Customer makes {string} transaction on {string} with {double} transaction amount on Working Capital loan")
+    public void makeWorkingCapitalLoanRepaymentLike(final String transactionTypeInput, final String transactionDate,
+            final double transactionAmount) {
         final Long loanId = getCreatedLoanId();
+        final TransactionType transactionType = TransactionType.valueOf(transactionTypeInput);
+        final String transactionTypeValue = transactionType.getValue();
         final PostWorkingCapitalLoanTransactionsRequest repaymentRequest = buildRepaymentRequest(transactionDate, transactionAmount, null);
-        final PostWorkingCapitalLoanTransactionsResponse response = executeRepaymentById(loanId, repaymentRequest);
+        final PostWorkingCapitalLoanTransactionsResponse response = executeRepaymentLikeById(loanId, transactionTypeValue,
+                repaymentRequest);
         validateRepaymentResponse(response, transactionAmount, transactionDate, loanId);
     }
 
@@ -1949,7 +2130,7 @@ public class WorkingCapitalLoanAccountStepDef extends AbstractStepDef {
         final PostWorkingCapitalLoanTransactionsPaymentDetailRequest paymentDetails = buildPaymentDetailsFromTable(table);
         final PostWorkingCapitalLoanTransactionsRequest repaymentRequest = buildRepaymentRequest(transactionDate, transactionAmount,
                 paymentDetails);
-        final PostWorkingCapitalLoanTransactionsResponse response = executeRepaymentById(loanId, repaymentRequest);
+        final PostWorkingCapitalLoanTransactionsResponse response = executeRepaymentLikeById(loanId, "repayment", repaymentRequest);
         validateRepaymentResponse(response, transactionAmount, transactionDate, loanId);
     }
 
@@ -2011,12 +2192,12 @@ public class WorkingCapitalLoanAccountStepDef extends AbstractStepDef {
         return request;
     }
 
-    private PostWorkingCapitalLoanTransactionsResponse executeRepaymentById(final Long loanId,
+    private PostWorkingCapitalLoanTransactionsResponse executeRepaymentLikeById(final Long loanId, final String transactionType,
             final PostWorkingCapitalLoanTransactionsRequest repaymentRequest) {
-        log.debug("Making repayment for loan ID: {}, transactionDate: {}, transactionAmount: {}", loanId,
+        log.debug("Making {} for loan ID: {}, transactionDate: {}, transactionAmount: {}", transactionType, loanId,
                 repaymentRequest.getTransactionDate(), repaymentRequest.getTransactionAmount());
 
-        return ok(() -> fineractClient.workingCapitalLoanTransactions().executeWorkingCapitalLoanTransactionById(loanId, "repayment",
+        return ok(() -> fineractClient.workingCapitalLoanTransactions().executeWorkingCapitalLoanTransactionById(loanId, transactionType,
                 repaymentRequest));
     }
 
@@ -2097,15 +2278,11 @@ public class WorkingCapitalLoanAccountStepDef extends AbstractStepDef {
         return switch (headerName) {
             case "paymentNo" -> period.getPaymentNo() == null ? null : period.getPaymentNo().toString();
             case "paymentDate" -> period.getPaymentDate() == null ? null : FORMATTER.format(period.getPaymentDate());
-            case "count" -> period.getCount() == null ? null : period.getCount().toString();
-            case "paymentsLeft" -> period.getPaymentsLeft() == null ? null : period.getPaymentsLeft().toString();
             case "expectedPaymentAmount" -> asText(period.getExpectedPaymentAmount());
-            case "forecastPaymentAmount" -> asText(period.getForecastPaymentAmount());
             case "discountFactor" -> asText(period.getDiscountFactor());
             case "npvValue" -> asText(period.getNpvValue());
             case "balance" -> asText(period.getBalance());
             case "expectedAmortizationAmount" -> asText(period.getExpectedAmortizationAmount());
-            case "netAmortizationAmount" -> asText(period.getNetAmortizationAmount());
             case "actualPaymentAmount" -> asText(period.getActualPaymentAmount());
             case "actualAmortizationAmount" -> asText(period.getActualAmortizationAmount());
             case "incomeModification" -> asText(period.getIncomeModification());
@@ -2168,6 +2345,25 @@ public class WorkingCapitalLoanAccountStepDef extends AbstractStepDef {
         }
 
         return paymentDetails;
+    }
+
+    @Then("Initiating a {string} transaction on {string} with {double} transaction amount on Working Capital loan results an error with the following data:")
+    public void initiateTransactionResultsAnErrorWithDetails(final String transactionTypeInput, final String transactionDate,
+            final double transactionAmount, final DataTable table) {
+        final Long loanId = getCreatedLoanId();
+        final TransactionType transactionType = TransactionType.valueOf(transactionTypeInput);
+        final String transactionTypeValue = transactionType.getValue();
+        final PostWorkingCapitalLoanTransactionsRequest transactionRequest = buildRepaymentRequest(transactionDate, transactionAmount,
+                null);
+
+        final CallFailedRuntimeException exception = fail(() -> fineractClient.workingCapitalLoanTransactions()
+                .executeWorkingCapitalLoanTransactionById(loanId, transactionTypeValue, transactionRequest));
+
+        if (table != null) {
+            verifyRepaymentErrorWithTable(exception, table);
+        }
+
+        log.debug("Verified working capital loan {} transaction failed with expected error for loan {}", transactionTypeValue, loanId);
     }
 
     @Then("Initiating a repayment on {string} with {double} transaction amount on Working Capital loan results an error with the following data:")
@@ -2508,4 +2704,150 @@ public class WorkingCapitalLoanAccountStepDef extends AbstractStepDef {
             }
         }
     }
+
+    @Then("Working Capital Loan Transactions tab has a {string} transaction with date {string} which has the following Journal entries:")
+    public void verifyWorkingCapitalLoanTransactionJournalEntries(String transactionType, String transactionDate, DataTable table) {
+        Long loanId = getCreatedLoanId();
+        TransactionType resolvedTransactionType = resolveTransactionType(transactionType);
+        List<GetWorkingCapitalLoanTransactionIdResponse> transactionsMatch = findMatchingTransactions(loanId, resolvedTransactionType,
+                transactionDate, false);
+
+        verifyJournalEntries(transactionsMatch, loanId, table);
+    }
+
+    @Then("Working Capital Loan Transactions tab has {int} {string} transactions with date {string} which have the following Journal entries:")
+    public void verifyMultipleWorkingCapitalLoanTransactionsJournalEntries(int expectedCount, String transactionType,
+            String transactionDate, DataTable table) {
+        Long loanId = getCreatedLoanId();
+        TransactionType resolvedTransactionType = resolveTransactionType(transactionType);
+        List<GetWorkingCapitalLoanTransactionIdResponse> transactionsMatch = findMatchingTransactions(loanId, resolvedTransactionType,
+                transactionDate, false);
+
+        assertThat(transactionsMatch.size()).as("The number of transactions does not match the expected count! Expected: " + expectedCount
+                + ", Actual: " + transactionsMatch.size()).isEqualTo(expectedCount);
+
+        verifyJournalEntries(transactionsMatch, loanId, table);
+    }
+
+    @Then("Working Capital Loan Transactions tab has a reversed {string} transaction with date {string} which has the following Journal entries:")
+    public void verifyReversedWorkingCapitalLoanTransactionJournalEntries(String transactionType, String transactionDate, DataTable table) {
+        Long loanId = getCreatedLoanId();
+        TransactionType resolvedTransactionType = resolveTransactionType(transactionType);
+        List<GetWorkingCapitalLoanTransactionIdResponse> transactionsMatch = findMatchingTransactions(loanId, resolvedTransactionType,
+                transactionDate, true);
+        verifyJournalEntries(transactionsMatch, loanId, table);
+    }
+
+    private TransactionType resolveTransactionType(String transactionType) {
+        return TransactionType.valueOf(transactionType.toUpperCase().replace(' ', '_'));
+    }
+
+    private List<GetWorkingCapitalLoanTransactionIdResponse> findMatchingTransactions(Long loanId, TransactionType transactionType,
+            String transactionDate, boolean reversed) {
+        GetWorkingCapitalLoansLoanIdResponse loanDetailsResponse = ok(
+                () -> fineractClient.workingCapitalLoans().retrieveWorkingCapitalLoanById(loanId));
+
+        String expectedCode = "loanTransactionType." + transactionType.getValue();
+        return loanDetailsResponse.getTransactions().stream()
+                .filter(t -> t.getType() != null && transactionDate.equals(DATE_FORMATTER.format(t.getTransactionDate()))
+                        && expectedCode.equals(t.getType().getCode())
+                        && (reversed ? Boolean.TRUE.equals(t.getReversed()) : !Boolean.TRUE.equals(t.getReversed())))
+                .collect(Collectors.toList());
+    }
+
+    private void verifyJournalEntries(List<GetWorkingCapitalLoanTransactionIdResponse> transactions, Long loanId, DataTable table) {
+        List<List<JournalEntryTransactionItem>> journalLinesActualList = getWorkingCapitalJournalLinesActualList(transactions);
+        journalEntriesStepDef.checkJournalEntryData(journalLinesActualList, loanId, table);
+    }
+
+    private List<List<JournalEntryTransactionItem>> getWorkingCapitalJournalLinesActualList(
+            List<GetWorkingCapitalLoanTransactionIdResponse> transactions) {
+        log.debug("Processing {} working capital loan transactions for journal entries", transactions.size());
+        return transactions.stream().map(this::retrieveJournalEntriesForTransaction).collect(Collectors.toList());
+    }
+
+    private List<JournalEntryTransactionItem> retrieveJournalEntriesForTransaction(GetWorkingCapitalLoanTransactionIdResponse transaction) {
+        String transactionId = "WC" + transaction.getId();
+        log.debug("Retrieving journal entries for working capital transaction: {}", transactionId);
+
+        JournalEntriesApi.RetrieveAllJournalEntriesQueryParams params = new JournalEntriesApi.RetrieveAllJournalEntriesQueryParams()
+                .transactionId(transactionId).runningBalance(true);
+
+        GetJournalEntriesTransactionIdResponse journalEntryDataResponse = ok(
+                () -> fineractClient.journalEntries().retrieveAllJournalEntries(params));
+
+        return journalEntryDataResponse != null && journalEntryDataResponse.getPageItems() != null ? journalEntryDataResponse.getPageItems()
+                : List.of();
+    }
+
+    @When("Customer undo {string}th {string} transaction made on {string} on Working Capital loan")
+    public void undoWorkingCapitalLoanTransaction(String nthItemStr, String transactionType, String transactionDate) throws IOException {
+        // TODO: Implement undo transaction for working capital loans when backend support is available
+        // ("[BE] WC - Transaction Type- Repayment- Backdated and Undo Repayment")
+        throw new UnsupportedOperationException("Undo transaction for working capital loans is not yet implemented");
+    }
+
+    public void updatePeriodPaymentRateFailed(String periodPaymentRate, String errorMessage) {
+        final PostWorkingCapitalLoansResponse loanResponse = testContext().get(TestContextKey.LOAN_CREATE_RESPONSE);
+        long loanId = loanResponse.getLoanId();
+
+        PutWorkingCapitalLoansLoanIdRateRequest rateChangeRequest = workingCapitalLoanRequestFactory
+                .defaultWorkingCapitalLoanUpdateRateRequest().periodPaymentRate(new BigDecimal(periodPaymentRate));
+
+        CallFailedRuntimeException exception = fail(
+                () -> fineractClient.workingCapitalLoans().updateWorkingCapitalLoanRateById(loanId, rateChangeRequest));
+
+        assertThat(exception.getStatus()).as(errorMessage).isEqualTo(400);
+        assertThat(exception.getDeveloperMessage()).contains(errorMessage);
+    }
+
+    public void checkWorkingCapitalPeriodPaymentRate(Long loanId, String periodPaymentRate) {
+        final GetWorkingCapitalLoansLoanIdResponse loanDetailsResponse = retrieveLoanDetails(loanId);
+        assert loanDetailsResponse.getPeriodPaymentRate() != null;
+        assertThat(loanDetailsResponse.getPeriodPaymentRate().compareTo(new BigDecimal(periodPaymentRate))).isZero();
+    }
+
+    public void checkPeriodPaymentRateChangeHistory(List<List<String>> data,
+            List<WorkingCapitalLoanPeriodPaymentRateChangeData> rateChanges, List<String> header, String resourceId) {
+        checkPeriodPaymentRatesTabRows(data, rateChanges, header, resourceId);
+        assertThat(rateChanges.size())
+                .as(ErrorMessageHelper.nrOfLinesWrongInTransactionsTab(resourceId, rateChanges.size(), data.size() - 1))
+                .isEqualTo(data.size() - 1);
+    }
+
+    public void checkPeriodPaymentRatesTabRows(List<List<String>> data, List<WorkingCapitalLoanPeriodPaymentRateChangeData> rateChanges,
+            List<String> header, String resourceId) {
+        for (int i = 1; i < data.size(); i++) {
+            List<String> expectedValues = data.get(i);
+            String transactionDateExpected = expectedValues.get(0);
+            List<List<String>> actualValuesList = rateChanges.stream()//
+                    .filter(rate -> transactionDateExpected.equals(FORMATTER.format(rate.getEffectiveDate())))//
+                    .map(rate -> fetchValuesOfRateChangesHistory(header, rate))//
+                    .collect(Collectors.toList());//
+            boolean containsExpectedValues = actualValuesList.stream()//
+                    .anyMatch(actualValues -> actualValues.equals(expectedValues));//
+            assertThat(containsExpectedValues)
+                    .as(ErrorMessageHelper.wrongValueInLineInTransactionsTab(resourceId, i, actualValuesList, expectedValues)).isTrue();
+        }
+    }
+
+    private List<String> fetchValuesOfRateChangesHistory(List<String> header,
+            WorkingCapitalLoanPeriodPaymentRateChangeData rateChangeData) {
+        List<String> actualValues = new ArrayList<>();
+        for (String headerName : header) {
+            switch (headerName) {
+                case "Effective Date" -> actualValues
+                        .add(rateChangeData.getEffectiveDate() == null ? null : FORMATTER.format(rateChangeData.getEffectiveDate()));
+                case "Previous Rate" -> actualValues.add(rateChangeData.getPreviousRate() == null ? null
+                        : new Utils.DoubleFormatter(rateChangeData.getPreviousRate().doubleValue()).format());
+                case "New Rate" -> actualValues.add(rateChangeData.getNewRate() == null ? null
+                        : new Utils.DoubleFormatter(rateChangeData.getNewRate().doubleValue()).format());
+                case "Reversed" ->
+                    actualValues.add(rateChangeData.getReversed() == null ? null : String.valueOf(rateChangeData.getReversed()));
+                default -> throw new IllegalStateException(String.format("Header name %s cannot be found", headerName));
+            }
+        }
+        return actualValues;
+    }
+
 }

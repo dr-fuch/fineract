@@ -123,11 +123,26 @@ public class WorkingCapitalLoanTransaction extends AbstractAuditableWithUTCDateT
         return txn;
     }
 
+    public static WorkingCapitalLoanTransaction goodwillCredit(final WorkingCapitalLoan loan, final BigDecimal amount,
+            final PaymentDetail paymentDetail, final LocalDate transactionDate, final CodeValue classification,
+            final ExternalId externalId) {
+        final WorkingCapitalLoanTransaction txn = new WorkingCapitalLoanTransaction();
+        txn.initialize(loan, LoanTransactionType.GOODWILL_CREDIT, transactionDate, amount, paymentDetail, classification, externalId);
+        return txn;
+    }
+
     public static WorkingCapitalLoanTransaction creditBalanceRefund(final WorkingCapitalLoan loan, final BigDecimal amount,
             final PaymentDetail paymentDetail, final LocalDate transactionDate, final CodeValue classification,
             final ExternalId externalId) {
         final WorkingCapitalLoanTransaction txn = new WorkingCapitalLoanTransaction();
         txn.initialize(loan, LoanTransactionType.CREDIT_BALANCE_REFUND, transactionDate, amount, paymentDetail, classification, externalId);
+        return txn;
+    }
+
+    public static WorkingCapitalLoanTransaction discountFeeAmortization(final WorkingCapitalLoan loan, final BigDecimal amount,
+            final LocalDate transactionDate, final ExternalId externalId) {
+        final WorkingCapitalLoanTransaction txn = new WorkingCapitalLoanTransaction();
+        txn.initialize(loan, LoanTransactionType.DISCOUNT_FEE_AMORTIZATION, transactionDate, amount, null, null, externalId);
         return txn;
     }
 

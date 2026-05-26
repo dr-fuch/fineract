@@ -651,6 +651,10 @@ public class AdvancedPaymentScheduleTransactionProcessor extends AbstractLoanRep
                             modifiedTransactions, unmodifiedTransactionIds, ctx.getActiveLoanTermVariations());
                     final Money newAmount = interestBeforeRefund.minus(progCtx.getSumOfInterestRefundAmount()).minus(interestAfterRefund);
                     loanTransaction.updateAmount(newAmount.getAmount());
+                    if (MathUtil.isZero(loanTransaction.getAmount())) {
+                        loanTransaction.reverse();
+                        return;
+                    }
                 }
                 progCtx.setSumOfInterestRefundAmount(progCtx.getSumOfInterestRefundAmount().add(loanTransaction.getAmount()));
             }
@@ -1260,7 +1264,7 @@ public class AdvancedPaymentScheduleTransactionProcessor extends AbstractLoanRep
         // let's figure out the original transaction for these chargebacks, and order them by ascending order
         Comparator<LoanTransaction> comparator = LoanTransactionComparator.INSTANCE;
         List<LoanTransaction> chargebacksForTheSameOriginal = chargebacks.stream()
-                .filter(tr -> findChargebackOriginalTransaction(tr, ctx) == originalTransaction
+                .filter(tr -> Objects.equals(findChargebackOriginalTransaction(tr, ctx), originalTransaction)
                         && comparator.compare(tr, chargebackTransaction) < 0)
                 .sorted(comparator).toList();
 
@@ -1351,7 +1355,7 @@ public class AdvancedPaymentScheduleTransactionProcessor extends AbstractLoanRep
 
     private Predicate<LoanTransactionRelation> hasMatchingToLoanTransaction(LoanTransaction loanTransaction,
             LoanTransactionRelationTypeEnum typeEnum) {
-        return relation -> relation.getRelationType().equals(typeEnum) && relation.getToTransaction() == loanTransaction;
+        return relation -> relation.getRelationType().equals(typeEnum) && Objects.equals(relation.getToTransaction(), loanTransaction);
     }
 
     protected void handleRefund(LoanTransaction loanTransaction, TransactionCtx ctx) {
@@ -2051,10 +2055,15 @@ public class AdvancedPaymentScheduleTransactionProcessor extends AbstractLoanRep
 
     private void handleOverpayment(Money overpaymentPortion, LoanTransaction loanTransaction, TransactionCtx transactionCtx) {
         MoneyHolder overpaymentHolder = transactionCtx.getOverpaymentHolder();
+        if (loanTransaction != null && MathUtil.isZero(loanTransaction.getAmount())) {
+            return;
+        }
         if (MathUtil.isGreaterThanZero(overpaymentPortion)) {
             onLoanOverpayment(loanTransaction, overpaymentPortion);
             overpaymentHolder.setMoneyObject(overpaymentHolder.getMoneyObject().add(overpaymentPortion));
-            loanTransaction.setOverPayments(overpaymentPortion);
+            if (loanTransaction != null) {
+                loanTransaction.setOverPayments(overpaymentPortion);
+            }
         } else {
             overpaymentHolder.setMoneyObject(Money.zero(transactionCtx.getCurrency()));
         }

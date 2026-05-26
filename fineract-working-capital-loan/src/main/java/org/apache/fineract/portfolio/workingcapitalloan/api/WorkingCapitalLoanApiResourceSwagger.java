@@ -191,8 +191,12 @@ public final class WorkingCapitalLoanApiResourceSwagger {
         @Schema(example = "30")
         public Integer repaymentEvery;
         public StringEnumOptionData repaymentFrequencyType;
-        @Schema(example = "0.0")
+        @Schema(example = "0.0", description = "Discount set during loan disbursement")
         public BigDecimal discount;
+        @Schema(example = "0.0", description = "Proposed discount at loan submission time")
+        public BigDecimal discountProposed;
+        @Schema(example = "0.0", description = "Approved discount set during loan approval")
+        public BigDecimal discountApproved;
         @Schema(description = "Working capital breach)")
         public WorkingCapitalLoanProductApiResourceSwagger.GetWorkingCapitalLoanProductsResponse.GetWorkingCapitalLoanBreach breach;
         public WorkingCapitalLoanProductApiResourceSwagger.GetWorkingCapitalLoanNearBreach nearBreach;
@@ -615,6 +619,21 @@ public final class WorkingCapitalLoanApiResourceSwagger {
         public Integer periodNumber;
         @Schema(example = "123.45")
         public BigDecimal delinquentAmount;
+    }
+
+    @Schema(description = "Request for updating period payment rate on an active Working Capital Loan")
+    public static final class PutWorkingCapitalLoansLoanIdRateRequest {
+
+        private PutWorkingCapitalLoansLoanIdRateRequest() {}
+
+        @Schema(example = "0.17", description = "New period payment rate")
+        public BigDecimal periodPaymentRate;
+
+        @Schema(example = "Rate change note")
+        public String note;
+
+        @Schema(example = "en_GB")
+        public String locale;
     }
 
 }

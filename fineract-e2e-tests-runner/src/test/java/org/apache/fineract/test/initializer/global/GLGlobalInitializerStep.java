@@ -50,7 +50,7 @@ public class GLGlobalInitializerStep implements FineractGlobalInitializerStep {
     public static final String GLA_NAME_1 = "Loans Receivable";
     public static final String GLA_NAME_2 = "Interest/Fee Receivable";
     public static final String GLA_NAME_3 = "Other Receivables";
-    public static final String GLA_NAME_4 = "UNC Receivable";
+    public static final String GLA_NAME_4 = "Other Credit Liability";
     public static final String GLA_NAME_5 = "AA Suspense Balance";
     public static final String GLA_NAME_6 = "Suspense/Clearing account";
     public static final String GLA_NAME_7 = "Deferred Interest Revenue";
@@ -112,10 +112,10 @@ public class GLGlobalInitializerStep implements FineractGlobalInitializerStep {
         List<GLAccountDefinition> items = List.of(new GLAccountDefinition(GLA_NAME_1, GLA_GL_CODE_1, GLA_TYPE_ASSET),
                 new GLAccountDefinition(GLA_NAME_2, GLA_GL_CODE_2, GLA_TYPE_ASSET),
                 new GLAccountDefinition(GLA_NAME_3, GLA_GL_CODE_3, GLA_TYPE_ASSET),
-                new GLAccountDefinition(GLA_NAME_4, GLA_GL_CODE_4, GLA_TYPE_ASSET),
+                new GLAccountDefinition(GLA_NAME_4, GLA_GL_CODE_4, GLA_TYPE_LIABILITY),
                 new GLAccountDefinition(GLA_NAME_5, GLA_GL_CODE_5, GLA_TYPE_LIABILITY),
                 new GLAccountDefinition(GLA_NAME_6, GLA_GL_CODE_6, GLA_TYPE_LIABILITY),
-                new GLAccountDefinition(GLA_NAME_7, GLA_GL_CODE_7, GLA_TYPE_INCOME),
+                new GLAccountDefinition(GLA_NAME_7, GLA_GL_CODE_7, GLA_TYPE_LIABILITY),
                 new GLAccountDefinition(GLA_NAME_8, GLA_GL_CODE_8, GLA_TYPE_INCOME),
                 new GLAccountDefinition(GLA_NAME_9, GLA_GL_CODE_9, GLA_TYPE_INCOME),
                 new GLAccountDefinition(GLA_NAME_10, GLA_GL_CODE_10, GLA_TYPE_INCOME),

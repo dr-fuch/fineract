@@ -30,8 +30,15 @@ import org.apache.fineract.client.models.GetWorkingCapitalLoanProductsResponse;
 import org.apache.fineract.client.models.PostAllowAttributeOverrides;
 import org.apache.fineract.client.models.PostWorkingCapitalLoanProductsRequest;
 import org.apache.fineract.client.models.PostWorkingCapitalLoanProductsResponse;
+import org.apache.fineract.test.data.accounttype.AccountTypeResolver;
+import org.apache.fineract.test.data.accounttype.DefaultAccountType;
+import org.apache.fineract.test.data.codevalue.CodeValueResolver;
+import org.apache.fineract.test.data.codevalue.DefaultCodeValue;
+import org.apache.fineract.test.data.paymenttype.DefaultPaymentType;
+import org.apache.fineract.test.data.paymenttype.PaymentTypeResolver;
 import org.apache.fineract.test.data.workingcapitalproduct.DefaultWorkingCapitalLoanProduct;
 import org.apache.fineract.test.factory.WorkingCapitalRequestFactory;
+import org.apache.fineract.test.helper.CodeHelper;
 import org.apache.fineract.test.helper.ParallelExecutionHelper;
 import org.apache.fineract.test.support.TestContext;
 import org.apache.fineract.test.support.TestContextKey;
@@ -44,12 +51,23 @@ public class WorkingCapitalInitializerStep implements FineractGlobalInitializerS
 
     private final FineractFeignClient fineractClient;
     private final WorkingCapitalRequestFactory workingCapitalRequestFactory;
+    private final PaymentTypeResolver paymentTypeResolver;
+    private final AccountTypeResolver accountTypeResolver;
+    private final CodeValueResolver codeValueResolver;
+    private final CodeHelper codeHelper;
 
     @Override
     public void initialize() throws Exception {
         PostAllowAttributeOverrides allowAttributeOverridesDisabled = new PostAllowAttributeOverrides()
                 .delinquencyBucketClassification(false).discountDefault(false).periodPaymentFrequencyType(false)
                 .periodPaymentFrequency(false).breach(false);
+
+        PostAllowAttributeOverrides allowAttributeOverrides = new PostAllowAttributeOverrides().delinquencyBucketClassification(true)
+                .breach(true).discountDefault(true).periodPaymentFrequencyType(true).periodPaymentFrequency(true);
+
+        // Retrieve code IDs for charge-off and write-off reasons
+        final Long chargeOffReasonCodeId = codeHelper.retrieveCodeByName("ChargeOffReasons").getId();
+        final Long writeOffReasonCodeId = codeHelper.retrieveCodeByName("WriteOffReasons").getId();
 
         List<Runnable> items = List.of(
                 () -> TestContext.INSTANCE.set(TestContextKey.DEFAULT_WORKING_CAPITAL_LOAN_PRODUCT_CREATE_RESPONSE_WCLP,
@@ -95,10 +113,44 @@ public class WorkingCapitalInitializerStep implements FineractGlobalInitializerS
                                 .name(DefaultWorkingCapitalLoanProduct.WCLP_BREACH_DISALLOW_ATTRIBUTES_OVERRIDE.getName()))),
                 () -> TestContext.INSTANCE.set(
                         TestContextKey.DEFAULT_WORKING_CAPITAL_LOAN_PRODUCT_CREATE_RESPONSE_WCLP_BREACH_NEAR_BREACH_DISALLOW_OVERRIDES,
+                        createWorkingCapitalLoanProductIdempotent(
+                                workingCapitalRequestFactory.defaultWorkingCapitalLoanProductBreachNearBreachRequest()
+                                        .allowAttributeOverrides(allowAttributeOverridesDisabled)
+                                        .name(DefaultWorkingCapitalLoanProduct.WCLP_BREACH_NEAR_BREACH_DISALLOW_ATTRIBUTES_OVERRIDE
+                                                .getName()))),
+                () -> TestContext.INSTANCE.set(TestContextKey.DEFAULT_WORKING_CAPITAL_LOAN_PRODUCT_CREATE_RESPONSE_WCLP_ADVANCED_ACCOUNTING,
                         createWorkingCapitalLoanProductIdempotent(workingCapitalRequestFactory
-                                .defaultWorkingCapitalLoanProductBreachNearBreachRequest()
-                                .allowAttributeOverrides(allowAttributeOverridesDisabled)
-                                .name(DefaultWorkingCapitalLoanProduct.WCLP_BREACH_NEAR_BREACH_DISALLOW_ATTRIBUTES_OVERRIDE.getName()))));
+                                .defaultWorkingCapitalLoanProductRequestWithCashAccounting()
+                                .name(DefaultWorkingCapitalLoanProduct.WCLP_ADVANCED_ACCOUNTING.getName())
+                                .allowAttributeOverrides(allowAttributeOverrides)
+                                .overpaymentLiabilityAccountId(accountTypeResolver.resolve(DefaultAccountType.OTHER_CREDIT_LIABILITY))
+                                .paymentChannelToFundSourceMappings(
+                                        List.of(new org.apache.fineract.client.models.WorkingCapitalLoanPaymentChannelToFundSourceMappings()
+                                                .paymentTypeId(paymentTypeResolver.resolve(DefaultPaymentType.MONEY_TRANSFER))
+                                                .fundSourceAccountId(accountTypeResolver.resolve(DefaultAccountType.FUND_RECEIVABLES))))
+                                .chargeOffReasonToExpenseAccountMappings(List.of(
+                                        new org.apache.fineract.client.models.WorkingCapitalPostChargeOffReasonToExpenseAccountMappings()
+                                                .chargeOffReasonCodeValueId(
+                                                        codeValueResolver.resolve(chargeOffReasonCodeId, DefaultCodeValue.valueOf("FRAUD")))
+                                                .expenseAccountId(
+                                                        accountTypeResolver.resolve(DefaultAccountType.CREDIT_LOSS_BAD_DEBT_FRAUD))))
+                                .writeOffReasonsToExpenseMappings(List
+                                        .of(new org.apache.fineract.client.models.WorkingCapitalPostWriteOffReasonToExpenseAccountMappings()
+                                                .writeOffReasonCodeValueId(codeValueResolver.resolve(writeOffReasonCodeId,
+                                                        DefaultCodeValue.valueOf("BAD_DEBT")))
+                                                .expenseAccountId(accountTypeResolver.resolve(DefaultAccountType.CREDIT_LOSS_BAD_DEBT)))))),
+                () -> TestContext.INSTANCE.set(
+                        TestContextKey.DEFAULT_WORKING_CAPITAL_LOAN_PRODUCT_CREATE_RESPONSE_WCLP_ACCOUNTING_CASH_BASED,
+                        createWorkingCapitalLoanProductIdempotent(
+                                workingCapitalRequestFactory.defaultWorkingCapitalLoanProductRequestWithCashAccounting()
+                                        .name(DefaultWorkingCapitalLoanProduct.WCLP_ACCOUNTING_CASH_BASED.getName())
+                                        .allowAttributeOverrides(allowAttributeOverrides).overpaymentLiabilityAccountId(
+                                                accountTypeResolver.resolve(DefaultAccountType.OTHER_CREDIT_LIABILITY)))),
+                () -> TestContext.INSTANCE.set(TestContextKey.DEFAULT_WORKING_CAPITAL_LOAN_PRODUCT_CREATE_RESPONSE_WCLP_PERIOD_PAYMENT_RATE,
+                        createWorkingCapitalLoanProductIdempotent(workingCapitalRequestFactory
+                                .defaultWorkingCapitalLoanProductAllowAttributesOverrideRequest().minPeriodPaymentRate(new BigDecimal(1))
+                                .maxPeriodPaymentRate(new BigDecimal(95)).periodPaymentRate(new BigDecimal(10))
+                                .name(DefaultWorkingCapitalLoanProduct.WCLP_PERIOD_PAYMENT_RATE.getName()))));
         ParallelExecutionHelper.runInParallel(items);
     }
 
