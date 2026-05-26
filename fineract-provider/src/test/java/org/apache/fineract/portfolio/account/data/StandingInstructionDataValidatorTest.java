@@ -18,37 +18,35 @@
  */
 package org.apache.fineract.portfolio.account.data;
 
-import static org.apache.fineract.portfolio.account.AccountDetailConstants.localeParamName;
 import static org.apache.fineract.portfolio.account.AccountDetailConstants.dateFormatParamName;
-import static org.apache.fineract.portfolio.account.AccountDetailConstants.fromOfficeIdParamName;
-import static org.apache.fineract.portfolio.account.AccountDetailConstants.fromClientIdParamName;
 import static org.apache.fineract.portfolio.account.AccountDetailConstants.fromAccountIdParamName;
 import static org.apache.fineract.portfolio.account.AccountDetailConstants.fromAccountTypeParamName;
-import static org.apache.fineract.portfolio.account.AccountDetailConstants.toOfficeIdParamName;
-import static org.apache.fineract.portfolio.account.AccountDetailConstants.toClientIdParamName;
+import static org.apache.fineract.portfolio.account.AccountDetailConstants.fromClientIdParamName;
+import static org.apache.fineract.portfolio.account.AccountDetailConstants.fromOfficeIdParamName;
+import static org.apache.fineract.portfolio.account.AccountDetailConstants.localeParamName;
 import static org.apache.fineract.portfolio.account.AccountDetailConstants.toAccountIdParamName;
 import static org.apache.fineract.portfolio.account.AccountDetailConstants.toAccountTypeParamName;
+import static org.apache.fineract.portfolio.account.AccountDetailConstants.toClientIdParamName;
+import static org.apache.fineract.portfolio.account.AccountDetailConstants.toOfficeIdParamName;
 import static org.apache.fineract.portfolio.account.AccountDetailConstants.transferTypeParamName;
+import static org.apache.fineract.portfolio.account.api.StandingInstructionApiConstants.amountParamName;
+import static org.apache.fineract.portfolio.account.api.StandingInstructionApiConstants.instructionTypeParamName;
+import static org.apache.fineract.portfolio.account.api.StandingInstructionApiConstants.monthDayFormatParamName;
 import static org.apache.fineract.portfolio.account.api.StandingInstructionApiConstants.nameParamName;
 import static org.apache.fineract.portfolio.account.api.StandingInstructionApiConstants.priorityParamName;
-import static org.apache.fineract.portfolio.account.api.StandingInstructionApiConstants.instructionTypeParamName;
-import static org.apache.fineract.portfolio.account.api.StandingInstructionApiConstants.statusParamName;
-import static org.apache.fineract.portfolio.account.api.StandingInstructionApiConstants.amountParamName;
-import static org.apache.fineract.portfolio.account.api.StandingInstructionApiConstants.validFromParamName;
-import static org.apache.fineract.portfolio.account.api.StandingInstructionApiConstants.validTillParamName;
-import static org.apache.fineract.portfolio.account.api.StandingInstructionApiConstants.recurrenceTypeParamName;
 import static org.apache.fineract.portfolio.account.api.StandingInstructionApiConstants.recurrenceFrequencyParamName;
 import static org.apache.fineract.portfolio.account.api.StandingInstructionApiConstants.recurrenceIntervalParamName;
 import static org.apache.fineract.portfolio.account.api.StandingInstructionApiConstants.recurrenceOnMonthDayParamName;
-import static org.apache.fineract.portfolio.account.api.StandingInstructionApiConstants.monthDayFormatParamName;
+import static org.apache.fineract.portfolio.account.api.StandingInstructionApiConstants.recurrenceTypeParamName;
+import static org.apache.fineract.portfolio.account.api.StandingInstructionApiConstants.statusParamName;
+import static org.apache.fineract.portfolio.account.api.StandingInstructionApiConstants.validFromParamName;
+import static org.apache.fineract.portfolio.account.api.StandingInstructionApiConstants.validTillParamName;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
@@ -62,7 +60,6 @@ import org.apache.fineract.infrastructure.core.exception.InvalidJsonException;
 import org.apache.fineract.infrastructure.core.exception.PlatformApiDataValidationException;
 import org.apache.fineract.infrastructure.core.exception.UnsupportedParameterException;
 import org.apache.fineract.infrastructure.core.serialization.FromJsonHelper;
-import org.apache.fineract.portfolio.account.AccountDetailConstants;
 import org.apache.fineract.portfolio.account.api.StandingInstructionApiConstants;
 import org.apache.fineract.portfolio.account.domain.AccountTransferDetails;
 import org.apache.fineract.portfolio.account.domain.AccountTransferStandingInstruction;
@@ -73,7 +70,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -113,6 +109,7 @@ public class StandingInstructionDataValidatorTest {
 
     @Nested
     class Common {
+
         @ParameterizedTest(name = "Mode: {0}")
         @MethodSource("org.apache.fineract.portfolio.account.data.StandingInstructionDataValidatorTest#validationModes")
         void shouldFailWhenRequestBodyIsNull(ValidationMode mode) {
@@ -125,9 +122,8 @@ public class StandingInstructionDataValidatorTest {
         void shouldFailWhenRequestContainsUnknownParameter(ValidationMode mode) {
             validationMode = mode;
 
-            final JsonObject json = validationMode == ValidationMode.CREATE ? 
-                createAccountTransferRequest() : 
-                commonValuesInUpdateRequest();
+            final JsonObject json = validationMode == ValidationMode.CREATE ? createAccountTransferRequest()
+                    : commonValuesInUpdateRequest();
 
             json.addProperty(invalidParamName, invalidValue);
 
@@ -137,6 +133,7 @@ public class StandingInstructionDataValidatorTest {
 
     @Nested
     class WhenCreatingStandingInstruction {
+
         @BeforeEach
         public void setUpCreateMode() {
             validationMode = ValidationMode.CREATE;
@@ -144,6 +141,7 @@ public class StandingInstructionDataValidatorTest {
 
         @Nested
         class BaseRules {
+
             @Test
             void shouldValidateAccountTransferDetails() {
                 final JsonObject json = createAccountTransferRequest();
@@ -179,22 +177,20 @@ public class StandingInstructionDataValidatorTest {
             }
 
             private static Stream<String> requiredBaseParameters() {
-                return Stream.of(transferTypeParamName, nameParamName, priorityParamName, instructionTypeParamName,
-                        statusParamName, validFromParamName, recurrenceTypeParamName);
+                return Stream.of(transferTypeParamName, nameParamName, priorityParamName, instructionTypeParamName, statusParamName,
+                        validFromParamName, recurrenceTypeParamName);
             }
 
             private static Stream<Arguments> parametersWithInvalidValues() {
-                return Stream.of(
-                        Arguments.of(transferTypeParamName, 4),
-                        Arguments.of(priorityParamName, 5),
-                        Arguments.of(instructionTypeParamName, 3),
-                        Arguments.of(statusParamName, 3),
+                return Stream.of(Arguments.of(transferTypeParamName, 4), Arguments.of(priorityParamName, 5),
+                        Arguments.of(instructionTypeParamName, 3), Arguments.of(statusParamName, 3),
                         Arguments.of(recurrenceTypeParamName, 3));
             }
         }
 
         @Nested
         class PeriodicRecurrenceRules {
+
             @ParameterizedTest
             @MethodSource("requiredParameters")
             void shouldFailWhenPeriodicFieldIsMissing(String parameter) {
@@ -225,8 +221,7 @@ public class StandingInstructionDataValidatorTest {
                 final JsonObject json = createAccountTransferRequest();
                 json.addProperty(recurrenceOnMonthDayParamName, "08 Mayo");
 
-                assertValidation(json, recurrenceOnMonthDayParamName, 
-                    StandingInstructionApiConstants.INVALID_MONTH_DAY_FORMAT_ERROR_CODE);
+                assertValidation(json, recurrenceOnMonthDayParamName, StandingInstructionApiConstants.INVALID_MONTH_DAY_FORMAT_ERROR_CODE);
             }
 
             @ParameterizedTest
@@ -243,14 +238,11 @@ public class StandingInstructionDataValidatorTest {
                     json.addProperty(recurrenceOnMonthDayParamName, recurrenceOnMonthDay);
                 }
 
-                assertValidation(json, validTillParamName, 
-                    StandingInstructionApiConstants.BEFORE_FIRST_EXECUTION_DATE_ERROR_CODE);
+                assertValidation(json, validTillParamName, StandingInstructionApiConstants.BEFORE_FIRST_EXECUTION_DATE_ERROR_CODE);
             }
 
             private static Stream<String> requiredParameters() {
-                return Stream.of(recurrenceFrequencyParamName,
-                        recurrenceIntervalParamName,
-                        monthDayFormatParamName,
+                return Stream.of(recurrenceFrequencyParamName, recurrenceIntervalParamName, monthDayFormatParamName,
                         recurrenceOnMonthDayParamName);
             }
 
@@ -289,8 +281,7 @@ public class StandingInstructionDataValidatorTest {
                 final JsonObject json = createAccountTransferRequest();
                 json.addProperty(toAccountIdParamName, 1);
 
-                assertValidation(json, toAccountIdParamName,
-                    StandingInstructionApiConstants.CANNOT_TRANSFER_TO_SAME_ACCOUNT_ERROR_CODE);
+                assertValidation(json, toAccountIdParamName, StandingInstructionApiConstants.CANNOT_TRANSFER_TO_SAME_ACCOUNT_ERROR_CODE);
             }
 
             @Test
@@ -317,7 +308,7 @@ public class StandingInstructionDataValidatorTest {
                 json.addProperty(fromAccountTypeParamName, 1);
 
                 assertValidation(json, transferTypeParamName,
-                    StandingInstructionApiConstants.ACCOUNT_TRANSFER_NOT_ALLOWED_FOR_LOAN_ERROR_CODE);
+                        StandingInstructionApiConstants.ACCOUNT_TRANSFER_NOT_ALLOWED_FOR_LOAN_ERROR_CODE);
             }
 
             @Test
@@ -358,8 +349,7 @@ public class StandingInstructionDataValidatorTest {
                 final JsonObject json = createLoanRepaymentRequest();
                 json.addProperty(amountParamName, BigDecimal.TEN);
 
-                assertValidation(json, amountParamName,
-                    StandingInstructionApiConstants.AMOUNT_NOT_ALLOWED_FOR_DUES_ERROR_CODE);
+                assertValidation(json, amountParamName, StandingInstructionApiConstants.AMOUNT_NOT_ALLOWED_FOR_DUES_ERROR_CODE);
             }
 
             @Test
@@ -367,8 +357,7 @@ public class StandingInstructionDataValidatorTest {
                 final JsonObject json = createLoanRepaymentRequest();
                 json.addProperty(toAccountTypeParamName, 2);
 
-                assertValidation(json, transferTypeParamName,
-                    StandingInstructionApiConstants.NOT_A_VALID_LOAN_REPAYMENT_ERROR_CODE);
+                assertValidation(json, transferTypeParamName, StandingInstructionApiConstants.NOT_A_VALID_LOAN_REPAYMENT_ERROR_CODE);
             }
 
             @Test
@@ -404,6 +393,7 @@ public class StandingInstructionDataValidatorTest {
 
     @Nested
     class WhenUpdatingStandingInstruction {
+
         @BeforeEach
         public void setUpUpdateMode() {
             validationMode = ValidationMode.UPDATE;
@@ -411,16 +401,13 @@ public class StandingInstructionDataValidatorTest {
 
         @Nested
         class AccountTransfer {
+
             @BeforeEach
-            public void setUp(){
-                Mockito.lenient().when(existingStandingInstruction.getAccountTransferDetails())
-                        .thenReturn(accountTransferDetails);
-                Mockito.lenient().when(accountTransferDetails.getTransferType())
-                        .thenReturn(1);
-                Mockito.lenient().when(existingStandingInstruction.getRecurrenceFrequency())
-                        .thenReturn(null);
-                Mockito.lenient().when(existingStandingInstruction.getRecurrenceInterval())
-                        .thenReturn(null);
+            public void setUp() {
+                Mockito.lenient().when(existingStandingInstruction.getAccountTransferDetails()).thenReturn(accountTransferDetails);
+                Mockito.lenient().when(accountTransferDetails.getTransferType()).thenReturn(1);
+                Mockito.lenient().when(existingStandingInstruction.getRecurrenceFrequency()).thenReturn(null);
+                Mockito.lenient().when(existingStandingInstruction.getRecurrenceInterval()).thenReturn(null);
             }
 
             @ParameterizedTest
@@ -447,7 +434,7 @@ public class StandingInstructionDataValidatorTest {
                 json.addProperty(instructionTypeParamName, 2);
 
                 assertValidation(json, instructionTypeParamName,
-                    StandingInstructionApiConstants.INSTRUCTION_TYPE_DUES_NOT_ALLOWED_FOR_ACCOUNT_TRANSFER_ERROR_CODE);
+                        StandingInstructionApiConstants.INSTRUCTION_TYPE_DUES_NOT_ALLOWED_FOR_ACCOUNT_TRANSFER_ERROR_CODE);
             }
 
             @Test
@@ -455,10 +442,8 @@ public class StandingInstructionDataValidatorTest {
                 final JsonObject json = commonValuesInUpdateRequest();
                 json.addProperty(validFromParamName, "16 May 2026");
 
-                Mockito.lenient().when(existingStandingInstruction.getValidTill())
-                        .thenReturn(LocalDate.of(2026, 5, 15));
-                assertValidation(json, validFromParamName,
-                    StandingInstructionApiConstants.MUST_BE_BEFORE_EXISTING_VALID_TILL_ERROR_CODE);
+                Mockito.lenient().when(existingStandingInstruction.getValidTill()).thenReturn(LocalDate.of(2026, 5, 15));
+                assertValidation(json, validFromParamName, StandingInstructionApiConstants.MUST_BE_BEFORE_EXISTING_VALID_TILL_ERROR_CODE);
             }
 
             @Test
@@ -466,8 +451,7 @@ public class StandingInstructionDataValidatorTest {
                 final JsonObject json = commonValuesInUpdateRequest();
                 json.addProperty(validTillParamName, "16 May 2026");
 
-                Mockito.lenient().when(existingStandingInstruction.getValidFrom())
-                        .thenReturn(LocalDate.of(2026, 5, 17));
+                Mockito.lenient().when(existingStandingInstruction.getValidFrom()).thenReturn(LocalDate.of(2026, 5, 17));
                 assertValidation(json, validTillParamName, DATE_IS_BEFORE_ERROR_CODE);
             }
 
@@ -476,10 +460,8 @@ public class StandingInstructionDataValidatorTest {
                 final JsonObject json = commonValuesInUpdateRequest();
                 json.addProperty(validTillParamName, "16 May 2026");
 
-                Mockito.lenient().when(existingStandingInstruction.getLastRunDate())
-                        .thenReturn(LocalDate.of(2026, 5, 17));
-                assertValidation(json, validTillParamName,
-                    StandingInstructionApiConstants.CANNOT_BE_BEFORE_LAST_RUN_DATE_ERROR_CODE);
+                Mockito.lenient().when(existingStandingInstruction.getLastRunDate()).thenReturn(LocalDate.of(2026, 5, 17));
+                assertValidation(json, validTillParamName, StandingInstructionApiConstants.CANNOT_BE_BEFORE_LAST_RUN_DATE_ERROR_CODE);
             }
 
             @Test
@@ -488,18 +470,16 @@ public class StandingInstructionDataValidatorTest {
                 json.addProperty(recurrenceTypeParamName, 2);
 
                 assertValidation(json, recurrenceTypeParamName,
-                    StandingInstructionApiConstants.RECURRENCE_AS_PER_DUES_NOT_ALLOWED_FOR_SAVINGS_ERROR_CODE);
+                        StandingInstructionApiConstants.RECURRENCE_AS_PER_DUES_NOT_ALLOWED_FOR_SAVINGS_ERROR_CODE);
             }
-            
+
             @Test
             void shouldFailWhenNewAmountIsNotPositive() {
                 final JsonObject json = commonValuesInUpdateRequest();
                 json.addProperty(amountParamName, BigDecimal.valueOf(-10.00));
 
-                Mockito.lenient().when(existingStandingInstruction.getInstructionType())
-                        .thenReturn(1);
-                Mockito.lenient().when(existingStandingInstruction.getRecurrenceType())
-                        .thenReturn(1);
+                Mockito.lenient().when(existingStandingInstruction.getInstructionType()).thenReturn(1);
+                Mockito.lenient().when(existingStandingInstruction.getRecurrenceType()).thenReturn(1);
                 assertValidation(json, amountParamName, NOT_GREATER_THAN_ZERO_ERROR_CODE);
             }
 
@@ -521,32 +501,23 @@ public class StandingInstructionDataValidatorTest {
             }
 
             private static Stream<String> nullParameters() {
-                return Stream.of(nameParamName,
-                        priorityParamName,
-                        instructionTypeParamName,
-                        statusParamName,
-                        validFromParamName,
-                        validTillParamName,
-                        recurrenceTypeParamName);
+                return Stream.of(nameParamName, priorityParamName, instructionTypeParamName, statusParamName, validFromParamName,
+                        validTillParamName, recurrenceTypeParamName);
             }
 
             private static Stream<Arguments> parametersWithInvalidValues() {
-                return Stream.of(
-                        Arguments.of(priorityParamName, 5),
-                        Arguments.of(instructionTypeParamName, 3),
-                        Arguments.of(statusParamName, 3),
-                        Arguments.of(recurrenceTypeParamName, 3));
+                return Stream.of(Arguments.of(priorityParamName, 5), Arguments.of(instructionTypeParamName, 3),
+                        Arguments.of(statusParamName, 3), Arguments.of(recurrenceTypeParamName, 3));
             }
         }
 
         class LoanRepayment {
-            @BeforeEach
-            public void setUp(){
-                Mockito.lenient().when(existingStandingInstruction.getAccountTransferDetails())
-                        .thenReturn(accountTransferDetails);
 
-                Mockito.lenient().when(accountTransferDetails.getTransferType())
-                        .thenReturn(2);
+            @BeforeEach
+            public void setUp() {
+                Mockito.lenient().when(existingStandingInstruction.getAccountTransferDetails()).thenReturn(accountTransferDetails);
+
+                Mockito.lenient().when(accountTransferDetails.getTransferType()).thenReturn(2);
             }
 
             @Test
@@ -554,10 +525,9 @@ public class StandingInstructionDataValidatorTest {
                 final JsonObject json = commonValuesInUpdateRequest();
                 json.addProperty(recurrenceTypeParamName, 2);
 
-                Mockito.lenient().when(existingStandingInstruction.getInstructionType())
-                        .thenReturn(1);
+                Mockito.lenient().when(existingStandingInstruction.getInstructionType()).thenReturn(1);
                 assertValidation(json, recurrenceTypeParamName,
-                    StandingInstructionApiConstants.RECURRENCE_AS_PER_DUES_NOT_ALLOWED_WITH_FIXED_INSTRUCTION_ERROR_CODE);
+                        StandingInstructionApiConstants.RECURRENCE_AS_PER_DUES_NOT_ALLOWED_WITH_FIXED_INSTRUCTION_ERROR_CODE);
             }
 
             @Test
@@ -565,10 +535,8 @@ public class StandingInstructionDataValidatorTest {
                 final JsonObject json = commonValuesInUpdateRequest();
                 json.add(amountParamName, JsonNull.INSTANCE);
 
-                Mockito.lenient().when(existingStandingInstruction.getInstructionType())
-                        .thenReturn(2);
-                assertValidation(json, amountParamName,
-                    StandingInstructionApiConstants.AMOUNT_NOT_ALLOWED_FOR_DUES_ERROR_CODE);
+                Mockito.lenient().when(existingStandingInstruction.getInstructionType()).thenReturn(2);
+                assertValidation(json, amountParamName, StandingInstructionApiConstants.AMOUNT_NOT_ALLOWED_FOR_DUES_ERROR_CODE);
             }
 
             @Test
@@ -583,10 +551,8 @@ public class StandingInstructionDataValidatorTest {
                 Mockito.lenient().when(existingStandingInstruction.getRecurrenceOnMonth()).thenReturn(5);
                 Mockito.lenient().when(existingStandingInstruction.getRecurrenceOnDay()).thenReturn(15);
 
-                Mockito.lenient().when(existingStandingInstruction.getAccountTransferDetails())
-                        .thenReturn(accountTransferDetails);
-                Mockito.lenient().when(accountTransferDetails.getTransferType())
-                        .thenReturn(2);
+                Mockito.lenient().when(existingStandingInstruction.getAccountTransferDetails()).thenReturn(accountTransferDetails);
+                Mockito.lenient().when(accountTransferDetails.getTransferType()).thenReturn(2);
 
                 assertValidationSuccess(json);
             }
@@ -670,7 +636,7 @@ public class StandingInstructionDataValidatorTest {
 
     private void assertValidation(final JsonObject json, final String parameter, final String reason) {
         final String expectedCode = String.join(MSG_SEPARATOR, VALIDATION_MSG_PREFIX,
-            StandingInstructionApiConstants.STANDING_INSTRUCTION_RESOURCE_NAME, parameter, reason);
+                StandingInstructionApiConstants.STANDING_INSTRUCTION_RESOURCE_NAME, parameter, reason);
 
         PlatformApiDataValidationException ex = assertThrows(PlatformApiDataValidationException.class, () -> validate(json));
 
